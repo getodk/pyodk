@@ -1,0 +1,15 @@
+# Common editing files.
+*.pyc
+*.swp
+.DS_Store
+.idea
+*.iml
+.vscode
+
+# Folders created by setuptools.
+build
+dist
+pyodk.egg-info
+
+# Pypi manifest.
+MANIFEST
