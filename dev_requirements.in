@@ -1,0 +1,8 @@
+-e .
+# Testing and Development
+nose
+mock
+pip-tools
+flake8
+isort
+black
