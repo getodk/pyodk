@@ -1,12 +1,11 @@
-from typing import Optional
-
 from pyodk import config
 from pyodk.errors import PyODKError
+from pyodk.session import ClientSession
 
 
 class AuthService:
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, session: ClientSession):
+        self.session: ClientSession = session
 
     def verify_token(self, token: str) -> str:
         """
@@ -25,7 +24,11 @@ class AuthService:
         if response.status_code == 200:
             return token
         else:
-            raise PyODKError("The login token was not valid.")
+            msg = (
+                f"The token verification request failed."
+                f" Status: {response.status_code}, content: {response.content}"
+            )
+            raise PyODKError(msg)
 
     def get_new_token(self, username: str, password: str) -> str:
         """
@@ -56,9 +59,7 @@ class AuthService:
             )
             raise PyODKError(msg)
 
-    def get_token(
-        self, username: str, password: str, cache_file: Optional[str] = None
-    ) -> str:
+    def get_token(self, username: str, password: str) -> str:
         """
         Get a verified session token with the provided credential.
 
@@ -66,22 +67,15 @@ class AuthService:
 
         :param username: The username of the Web User to auth with.
         :param password: The Web User's password.
-        :param cache_file: The file path for caching the session token. This is
-          recommended to minimize the login events logged on the server.
         :return: The session token or None if anything has gone wrong
         """
-        token = None
-        if cache_file is not None:
-            try:
-                token = config.read_cache_token()
-                self.verify_token(token=token)
-            except PyODKError:
-                pass
+        try:
+            token = config.read_cache_token()
+            return self.verify_token(token=token)
+        except PyODKError:
+            # Couldn't read the token, or it wasn't valid.
+            pass
 
-        if token is None:
-            token = self.get_new_token(username=username, password=password)
-
-        if cache_file is not None:
-            config.write_cache(key="token", value=token)
-
+        token = self.get_new_token(username=username, password=password)
+        config.write_cache(key="token", value=token)
         return token

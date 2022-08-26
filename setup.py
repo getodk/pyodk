@@ -15,6 +15,6 @@ setup(
     python_requires=">=3.8",
     install_requires=(
         "requests>=2.28.1",
-        "tomli>=1.1.0; python_version < '3.11'"
+        "toml>=0.10.2"
     ),
 )

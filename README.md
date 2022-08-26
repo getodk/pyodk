@@ -38,6 +38,27 @@ deactivate
 ```
 
 
+# Configuration
+
+
+## Main configuration file
+
+The main configuration file uses the TOML format. The default file name is `.pyodk_config.toml`, and the default location is the user home directory. The file name and location can be customised by setting the environment variable `PYODK_CONFIG_FILE` to some other file path. The expected file structure is as follows:
+
+```
+[central]
+base_url = "https://www.example.com"
+username = "my_user"
+password = "my_password"
+default_project_id = "123"
+```
+
+
+## Session cache file
+
+The session cache file uses the TOML format. THe default file name is `.pyodk_cache.toml`, and the default location is the user home directory. The file name and location can be customised by setting the environment variable `PYODK_CACHE_FILE` to some other file path. This file should not be pre-configured as it is used to store a session token after login.
+
+
 # Development
 
 Install the source files as described above, then:

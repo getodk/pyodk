@@ -1,49 +1,32 @@
-from typing import Optional
-
-from requests import Session
-from requests.adapters import HTTPAdapter, Retry
-
+from pyodk import config
 from pyodk.auth import AuthService
-
-
-class PyODKAdapter(HTTPAdapter):
-    def __init__(self, *args, **kwargs):
-        if "timeout" in kwargs:
-            self.timeout = kwargs["timeout"]
-            del kwargs["timeout"]
-        if "max_retries" not in kwargs:
-            kwargs["max_retries"] = Retry(
-                total=3,
-                backoff_factor=2,
-                status_forcelist=(429, 500, 502, 503, 504),
-                method_whitelist=("GET", "PUT", "POST", "DELETE"),
-            )
-        super().__init__(*args, **kwargs)
-
-    def send(self, request, **kwargs):
-        timeout = kwargs.get("timeout")
-        if timeout is None and hasattr(self, "timeout"):
-            kwargs["timeout"] = self.timeout
-        return super().send(request, **kwargs)
+from pyodk.project import ProjectService
+from pyodk.session import ClientSession
 
 
 class Client:
-    def __init__(self, base_url: str) -> None:
-        self.session: ClientSession = ClientSession(base_url=base_url)
+    def __init__(self) -> None:
+        self.config = config.read_config()
+        self.session: ClientSession = ClientSession(
+            base_url=self.config["central"]["base_url"]
+        )
         self.auth: AuthService = AuthService(session=self.session)
+        self.project: ProjectService = ProjectService(
+            session=self.session,
+            default_project_id=self.config["central"].get("default_project_id"),
+        )
 
+    def _login(self):
+        token = self.auth.get_token(
+            username=self.config["central"]["username"],
+            password=self.config["central"]["password"],
+        )
+        self.session.s.headers["Authorization"] = "Bearer " + token
 
-class ClientSession:
-    def __init__(self, base_url: str) -> None:
-        self.base_url: str = base_url
-        self.s: Optional[Session] = None
-
-    def __enter__(self) -> Session:
-        self.s = Session()
-        self.s.mount("https://", PyODKAdapter(timeout=30))
-        return self.s
+    def __enter__(self) -> "Client":
+        self.session.__enter__()
+        self._login()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.s is not None:
-            self.s.close()
-        self.session = None
+        self.session.__exit__(exc_type, exc_val, exc_tb)
