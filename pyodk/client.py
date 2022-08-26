@@ -2,8 +2,9 @@ from typing import Optional
 
 from pyodk import config
 from pyodk.endpoints.auth import AuthService
-from pyodk.endpoints.form import FormService
-from pyodk.endpoints.project import ProjectService
+from pyodk.endpoints.forms import FormService
+from pyodk.endpoints.projects import ProjectService
+from pyodk.endpoints.submissions import SubmissionService
 from pyodk.session import ClientSession
 
 
@@ -14,11 +15,14 @@ class Client:
             base_url=self.config["central"]["base_url"]
         )
         self.auth: AuthService = AuthService(session=self.session)
-        self.project: ProjectService = ProjectService(
+        self.projects: ProjectService = ProjectService(
             session=self.session,
             default_project_id=self.default_project_id,
         )
-        self.form: FormService = FormService(
+        self.forms: FormService = FormService(
+            session=self.session, default_project_id=self.default_project_id
+        )
+        self.submissions: SubmissionService = SubmissionService(
             session=self.session, default_project_id=self.default_project_id
         )
 

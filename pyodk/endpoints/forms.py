@@ -59,7 +59,7 @@ class FormService:
 
     def read_all(self, project_id: Optional[int] = None) -> List[FormEntity]:
         """
-        Read the details of all projects.
+        Read the details of all Forms.
 
         :param project_id: The id of the project the forms belong to.
         """
@@ -88,7 +88,7 @@ class FormService:
         project_id: Optional[int] = None,
     ) -> FormEntity:
         """
-        Read the details of a Project.
+        Read the details of a Form.
 
         :param form_id: The id of this form as given in its XForms XML definition.
         :param project_id: The id of the project this form belongs to.
