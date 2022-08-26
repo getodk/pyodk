@@ -1,5 +1,8 @@
+from typing import Optional
+
 from pyodk import config
 from pyodk.endpoints.auth import AuthService
+from pyodk.endpoints.form import FormService
 from pyodk.endpoints.project import ProjectService
 from pyodk.session import ClientSession
 
@@ -13,8 +16,15 @@ class Client:
         self.auth: AuthService = AuthService(session=self.session)
         self.project: ProjectService = ProjectService(
             session=self.session,
-            default_project_id=self.config["central"].get("default_project_id"),
+            default_project_id=self.default_project_id,
         )
+        self.form: FormService = FormService(
+            session=self.session, default_project_id=self.default_project_id
+        )
+
+    @property
+    def default_project_id(self) -> Optional[int]:
+        return self.config["central"].get("default_project_id")
 
     def _login(self):
         token = self.auth.get_token(

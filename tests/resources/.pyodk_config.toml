@@ -2,4 +2,4 @@
 base_url = "https://example.com"
 username = "user@example.com"
 password = "SomePassword"
-default_project_id = "1"
+default_project_id = 1
