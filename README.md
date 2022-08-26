@@ -50,7 +50,7 @@ The main configuration file uses the TOML format. The default file name is `.pyo
 base_url = "https://www.example.com"
 username = "my_user"
 password = "my_password"
-default_project_id = "123"
+default_project_id = 123
 ```
 
 
