@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 from requests import Session
 
 from pyodk import config
-from pyodk.auth import AuthService
 from pyodk.client import Client
+from pyodk.endpoints.auth import AuthService
 from pyodk.errors import PyODKError
 from tests.resources import CONFIG_DATA
 

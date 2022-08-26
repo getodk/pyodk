@@ -1,6 +1,6 @@
 from pyodk import config
-from pyodk.auth import AuthService
-from pyodk.project import ProjectService
+from pyodk.endpoints.auth import AuthService
+from pyodk.endpoints.project import ProjectService
 from pyodk.session import ClientSession
 
 

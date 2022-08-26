@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 from requests import Session
 
 from pyodk.client import Client
-from pyodk.project import ProjectEntity
+from pyodk.endpoints.project import ProjectEntity
 from tests.resources import CONFIG_DATA, project_data
 
 
