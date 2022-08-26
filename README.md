@@ -59,6 +59,41 @@ default_project_id = "123"
 The session cache file uses the TOML format. THe default file name is `.pyodk_cache.toml`, and the default location is the user home directory. The file name and location can be customised by setting the environment variable `PYODK_CACHE_FILE` to some other file path. This file should not be pre-configured as it is used to store a session token after login.
 
 
+# Usage
+
+```python
+from pyodk.client import Client
+
+
+with Client() as client:
+    projects = client.projects.read_all()
+    forms = client.forms.read_all()
+    form_id = next(forms).xmlFormId
+    submissions = client.submissions.read_all(form_id=form_id)
+    odata = client.odata.read_table(form_id=form_id)
+```
+
+The client is not specific to a project, but a default `project_id` can be set by:
+
+- A `default_project_id` in the configuration file.
+- An initialisation argument on the client: `Client(project_id=1)`.
+- A property on the client: `client.project_id = 1`.
+
+Available endpoints on `Client`:
+
+- Projects
+  - read
+  - read_all
+- Forms
+  - read
+  - read_all
+- Submissions
+  - read
+  - read_all
+- OData
+  - read_table
+
+
 # Development
 
 Install the source files as described above, then:
