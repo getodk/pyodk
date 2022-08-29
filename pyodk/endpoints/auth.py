@@ -1,6 +1,10 @@
+import logging
+
 from pyodk import config
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
+
+log = logging.getLogger(__name__)
 
 
 class AuthService:
@@ -28,7 +32,9 @@ class AuthService:
                 f"The token verification request failed."
                 f" Status: {response.status_code}, content: {response.content}"
             )
-            raise PyODKError(msg)
+            err = PyODKError(msg)
+            log.error(err, exc_info=True)
+            raise err
 
     def get_new_token(self, username: str, password: str) -> str:
         """
@@ -49,7 +55,9 @@ class AuthService:
             data = response.json()
             if "token" not in data:
                 msg = "The login request was OK but there was no token in the response."
-                raise PyODKError(msg)
+                err = PyODKError(msg)
+                log.error(err, exc_info=True)
+                raise err
             else:
                 return data["token"]
         else:
@@ -57,7 +65,9 @@ class AuthService:
                 f"The login request failed."
                 f" Status: {response.status_code}, content: {response.content}"
             )
-            raise PyODKError(msg)
+            err = PyODKError(msg)
+            log.error(err, exc_info=True)
+            raise err
 
     def get_token(self, username: str, password: str) -> str:
         """

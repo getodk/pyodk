@@ -1,9 +1,12 @@
+import logging
 from dataclasses import dataclass, fields
 from typing import Dict, List, Optional
 
+from pyodk import validators
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
-from pyodk.utils import coalesce
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -27,13 +30,6 @@ class ProjectService:
         self.session: ClientSession = session
         self.default_project_id: Optional[int] = default_project_id
 
-    def _validate_project_id(self, project_id: Optional[int] = None) -> int:
-        pid = coalesce(project_id, self.default_project_id)
-        if pid is None:
-            msg = "No project ID was provided, either directly or via a default setting."
-            raise PyODKError(msg)
-        return pid
-
     def _read_all_request(self) -> List[Dict]:
         response = self.session.s.get(
             url=f"{self.session.base_url}/v1/projects",
@@ -45,7 +41,9 @@ class ProjectService:
                 f"The project listing request failed."
                 f" Status: {response.status_code}, content: {response.content}"
             )
-            raise PyODKError(msg)
+            err = PyODKError(msg)
+            log.error(err, exc_info=True)
+            raise err
 
     def read_all(self) -> List[ProjectEntity]:
         """
@@ -68,7 +66,9 @@ class ProjectService:
                 f"The project read request failed."
                 f" Status: {response.status_code}, content: {response.content}"
             )
-            raise PyODKError(msg)
+            err = PyODKError(msg)
+            log.error(err, exc_info=True)
+            raise err
 
     def read(self, project_id: Optional[int] = None) -> ProjectEntity:
         """
@@ -76,6 +76,15 @@ class ProjectService:
 
         :param project_id: The id of the project to read.
         """
-        pid = self._validate_project_id(project_id=project_id)
-        raw = self._read_request(project_id=pid)
-        return ProjectEntity(**{f.name: raw.get(f.name) for f in fields(ProjectEntity)})
+        try:
+            pid = validators.validate_project_id(
+                project_id=project_id, default_project_id=self.default_project_id
+            )
+        except PyODKError as err:
+            log.error(err, exc_info=True)
+            raise err
+        else:
+            raw = self._read_request(project_id=pid)
+            return ProjectEntity(
+                **{f.name: raw.get(f.name) for f in fields(ProjectEntity)}
+            )

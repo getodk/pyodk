@@ -11,11 +11,9 @@ from pyodk.session import ClientSession
 
 class Client:
     def __init__(self, project_id: Optional[int] = None) -> None:
-        self.config = config.read_config()
+        self.config: config.Config = config.read_config()
         self._project_id: Optional[int] = project_id
-        self.session: ClientSession = ClientSession(
-            base_url=self.config["central"]["base_url"]
-        )
+        self.session: ClientSession = ClientSession(base_url=self.config.central.base_url)
         self.auth: AuthService = AuthService(session=self.session)
         self.projects: ProjectService = ProjectService(
             session=self.session,
@@ -34,7 +32,7 @@ class Client:
     @property
     def project_id(self) -> Optional[int]:
         if self._project_id is None:
-            return self.config["central"].get("default_project_id")
+            return self.config.central.default_project_id
         else:
             return self._project_id
 
@@ -44,8 +42,8 @@ class Client:
 
     def _login(self):
         token = self.auth.get_token(
-            username=self.config["central"]["username"],
-            password=self.config["central"]["password"],
+            username=self.config.central.username,
+            password=self.config.central.password,
         )
         self.session.s.headers["Authorization"] = "Bearer " + token
 

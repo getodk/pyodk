@@ -20,20 +20,20 @@ class TestAuth(TestCase):
         with patch.object(Session, "post") as mock_session:
             mock_session.return_value.status_code = 200
             mock_session.return_value.json.return_value = {"token": "here"}
-            conf = config.read_config()["central"]
+            conf = config.read_config().central
             client = Client()
             with client.session:
-                token = client.auth.get_new_token(conf["username"], conf["password"])
+                token = client.auth.get_new_token(conf.username, conf.password)
         self.assertEqual("here", token)
 
     def test_get_new_token__error__response_status(self):
         """Should raise an error if login request is not OK (HTTP 200)."""
         with patch.object(Session, "post") as mock_session:
             mock_session.return_value.status_code = 404
-            conf = config.read_config()["central"]
+            conf = config.read_config().central
             client = Client()
             with client.session, self.assertRaises(PyODKError) as err:
-                client.auth.get_new_token(conf["username"], conf["password"])
+                client.auth.get_new_token(conf.username, conf.password)
         msg = "The login request failed. Status:"
         self.assertTrue(err.exception.args[0].startswith(msg))
 
@@ -42,10 +42,10 @@ class TestAuth(TestCase):
         with patch.object(Session, "post") as mock_session:
             mock_session.return_value.status_code = 200
             mock_session.return_value.json.return_value = {"not": "here"}
-            conf = config.read_config()["central"]
+            conf = config.read_config().central
             client = Client()
             with client.session, self.assertRaises(PyODKError) as err:
-                client.auth.get_new_token(conf["username"], conf["password"])
+                client.auth.get_new_token(conf.username, conf.password)
         msg = "The login request was OK but there was no token in the response."
         self.assertTrue(err.exception.args[0].startswith(msg))
 

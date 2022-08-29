@@ -1,17 +1,52 @@
+import logging
 import os
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict
+from typing import Dict, Optional
 
 import toml
 
 from pyodk.errors import PyODKError
+
+log = logging.getLogger(__name__)
 
 defaults = {
     "PYODK_CONFIG_FILE": Path.home() / ".pyodk_config.toml",
     "PYODK_CACHE_FILE": Path.home() / ".pyodk_cache.toml",
 }
 
-# TODO: logging config, and log messages in all thrown errors
+
+@dataclass
+class CentralConfig:
+
+    base_url: str
+    username: str
+    password: str = field(repr=False)
+    default_project_id: Optional[int] = None
+
+    def validate(self):
+        for key in ["base_url", "username", "password"]:  # Mandatory keys.
+            if getattr(self, key) is None or getattr(self, key) == "":
+                err = PyODKError(f"Config value '{key}' must not be empty.")
+                log.error(err, exc_info=True)
+                raise err
+
+    def __post_init__(self):
+        self.validate()
+
+
+@dataclass
+class Config:
+    central: CentralConfig
+
+
+def objectify_config(config_data: Dict) -> Config:
+    """
+    Convert a config dict into objects to validate the data.
+    """
+    central = CentralConfig(**config_data["central"])
+    config = Config(central=central)
+    return config
 
 
 def get_config_path():
@@ -22,13 +57,15 @@ def get_config_path():
     return file_path
 
 
-# TODO: validate config for mandatory items - url, user, password
-def read_config() -> Dict[str, Any]:
+def read_config() -> Config:
     file_path = get_config_path()
     if not (file_path.exists() and file_path.is_file()):
-        raise PyODKError("Config file does not exist.")
+        err = PyODKError(f"Config file does not exist, expected at: {file_path}")
+        log.error(err, exc_info=True)
+        raise err
     with open(file_path, "r") as f:
-        return toml.load(f)
+        config_data = toml.load(f)
+    return objectify_config(config_data=config_data)
 
 
 def get_cache_path():
@@ -46,7 +83,9 @@ def read_cache_token() -> str:
             cache = toml.load(cache_file)
             return cache["token"]
     except (FileNotFoundError, KeyError) as err:
-        raise PyODKError("Could not read cached token.") from err
+        err = PyODKError(f"Could not read cached token: {repr(err)}.")
+        log.error(err, exc_info=True)
+        raise err
 
 
 def write_cache(key: str, value: str):

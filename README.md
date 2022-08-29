@@ -61,6 +61,9 @@ The session cache file uses the TOML format. THe default file name is `.pyodk_ca
 
 # Usage
 
+
+## Example
+
 ```python
 from pyodk.client import Client
 
@@ -73,11 +76,14 @@ with Client() as client:
     odata = client.odata.read_table(form_id=form_id)
 ```
 
-The client is not specific to a project, but a default `project_id` can be set by:
+The `Client` is not specific to a project, but a default `project_id` can be set by:
 
 - A `default_project_id` in the configuration file.
 - An initialisation argument on the client: `Client(project_id=1)`.
 - A property on the client: `client.project_id = 1`.
+
+
+## Endpoints
 
 Available endpoints on `Client`:
 
@@ -92,6 +98,31 @@ Available endpoints on `Client`:
   - read_all
 - OData
   - read_table
+
+
+## Logging
+
+Errors and other messages are logged to a standard library `logging` logger in the `pyodk` namespace / hierarchy (e.g `pyodk.config`, `pyodk.endpoints.auth`, etc.). The logs can be manipulated from an application as follows.
+
+```python
+import logging
+
+
+# Initialise an example basic logging config (writes to stdout/stderr).
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
+
+# Get a reference to the pyodk logger.
+pyodk_log = logging.getLogger("pyodk")
+
+# Receive everything DEBUG level and higher.
+pyodk_log.setLevel(logging.DEBUG)
+pyodk_log.propagate = True
+
+# Ignore everything below FATAL level.
+pyodk_log.setLevel(logging.FATAL)
+pyodk_log.propagate = False
+```
 
 
 # Development

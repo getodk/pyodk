@@ -1,9 +1,12 @@
+import logging
 from dataclasses import dataclass, fields
 from typing import Dict, List, Optional
 
+from pyodk import validators
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
-from pyodk.utils import coalesce
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -24,27 +27,6 @@ class SubmissionService:
         self.session: ClientSession = session
         self.default_project_id: Optional[int] = default_project_id
 
-    def _validate_project_id(self, project_id: Optional[int] = None) -> int:
-        pid = coalesce(project_id, self.default_project_id)
-        if pid is None:
-            msg = "No project ID was provided, either directly or via a default setting."
-            raise PyODKError(msg)
-        return pid
-
-    @staticmethod
-    def _validate_form_id(form_id: Optional[str] = None) -> str:
-        if form_id is None:
-            msg = "No form ID was provided."
-            raise PyODKError(msg)
-        return form_id
-
-    @staticmethod
-    def _validate_instance_id(instance_id: Optional[str] = None) -> str:
-        if instance_id is None:
-            msg = "No instance ID was provided."
-            raise PyODKError(msg)
-        return instance_id
-
     def _read_all_request(self, project_id: int, form_id: str) -> List[Dict]:
         response = self.session.s.get(
             url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}"
@@ -57,7 +39,9 @@ class SubmissionService:
                 f"The submission listing request failed."
                 f" Status: {response.status_code}, content: {response.content}"
             )
-            raise PyODKError(msg)
+            err = PyODKError(msg)
+            log.error(err, exc_info=True)
+            raise err
 
     def read_all(
         self, form_id: str, project_id: Optional[int] = None
@@ -68,13 +52,22 @@ class SubmissionService:
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project the Submissions belong to.
         """
-        pid = self._validate_project_id(project_id=project_id)
-        fid = self._validate_form_id(form_id=form_id)
-        raw = self._read_all_request(project_id=pid, form_id=fid)
-        return [
-            SubmissionEntity(**{f.name: r.get(f.name) for f in fields(SubmissionEntity)})
-            for r in raw
-        ]
+        try:
+            pid = validators.validate_project_id(
+                project_id=project_id, default_project_id=self.default_project_id
+            )
+            fid = validators.validate_form_id(form_id=form_id)
+        except PyODKError as err:
+            log.error(err, exc_info=True)
+            raise err
+        else:
+            raw = self._read_all_request(project_id=pid, form_id=fid)
+            return [
+                SubmissionEntity(
+                    **{f.name: r.get(f.name) for f in fields(SubmissionEntity)}
+                )
+                for r in raw
+            ]
 
     def _read_request(self, project_id: int, form_id: str, instance_id: str) -> Dict:
         response = self.session.s.get(
@@ -88,7 +81,9 @@ class SubmissionService:
                 f"The submission read request failed."
                 f" Status: {response.status_code}, content: {response.content}"
             )
-            raise PyODKError(msg)
+            err = PyODKError(msg)
+            log.error(err, exc_info=True)
+            raise err
 
     def read(
         self,
@@ -103,10 +98,17 @@ class SubmissionService:
         :param instance_id: The instanceId of the Submission being referenced.
         :param project_id: The id of the project this form belongs to.
         """
-        pid = self._validate_project_id(project_id=project_id)
-        fid = self._validate_form_id(form_id=form_id)
-        iid = self._validate_instance_id(instance_id=instance_id)
-        raw = self._read_request(project_id=pid, form_id=fid, instance_id=iid)
-        return SubmissionEntity(
-            **{f.name: raw.get(f.name) for f in fields(SubmissionEntity)}
-        )
+        try:
+            pid = validators.validate_project_id(
+                project_id=project_id, default_project_id=self.default_project_id
+            )
+            fid = validators.validate_form_id(form_id=form_id)
+            iid = validators.validate_instance_id(instance_id=instance_id)
+        except PyODKError as err:
+            log.error(err, exc_info=True)
+            raise err
+        else:
+            raw = self._read_request(project_id=pid, form_id=fid, instance_id=iid)
+            return SubmissionEntity(
+                **{f.name: raw.get(f.name) for f in fields(SubmissionEntity)}
+            )

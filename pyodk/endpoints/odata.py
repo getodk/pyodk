@@ -1,35 +1,17 @@
+import logging
 from typing import Dict, List, Optional
 
+from pyodk import validators
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
-from pyodk.utils import coalesce
+
+log = logging.getLogger(__name__)
 
 
 class ODataService:
     def __init__(self, session: ClientSession, default_project_id: Optional[int] = None):
         self.session: ClientSession = session
         self.default_project_id: Optional[int] = default_project_id
-
-    def _validate_project_id(self, project_id: Optional[int] = None) -> int:
-        pid = coalesce(project_id, self.default_project_id)
-        if pid is None:
-            msg = "No project ID was provided, either directly or via a default setting."
-            raise PyODKError(msg)
-        return pid
-
-    @staticmethod
-    def _validate_form_id(form_id: Optional[str] = None) -> str:
-        if form_id is None:
-            msg = "No form ID was provided."
-            raise PyODKError(msg)
-        return form_id
-
-    @staticmethod
-    def _validate_table_name(table_name: Optional[str] = None) -> str:
-        if table_name is None:
-            msg = "No table name was provided."
-            raise PyODKError(msg)
-        return table_name
 
     def _read_table_request(
         self, project_id: int, form_id: str, table_name: str, params: Dict
@@ -46,7 +28,9 @@ class ODataService:
                 f"The submission read request failed."
                 f" Status: {response.status_code}, content: {response.content}"
             )
-            raise PyODKError(msg)
+            err = PyODKError(msg)
+            log.error(err, exc_info=True)
+            raise err
 
     # TODO: map filter params to args
     def read_table(
@@ -64,10 +48,17 @@ class ODataService:
         :param table_name: The name of the table to be returned.
         :param params: Parameters to pass through to the OData call.
         """
-        pid = self._validate_project_id(project_id=project_id)
-        fid = self._validate_form_id(form_id=form_id)
-        table = self._validate_table_name(table_name=table_name)
-        raw = self._read_table_request(
-            project_id=pid, form_id=fid, table_name=table, params=params
-        )
-        return raw["value"]
+        try:
+            pid = validators.validate_project_id(
+                project_id=project_id, default_project_id=self.default_project_id
+            )
+            fid = validators.validate_form_id(form_id=form_id)
+            table = validators.validate_table_name(table_name=table_name)
+        except PyODKError as err:
+            log.error(err, exc_info=True)
+            raise err
+        else:
+            raw = self._read_table_request(
+                project_id=pid, form_id=fid, table_name=table, params=params
+            )
+            return raw["value"]
