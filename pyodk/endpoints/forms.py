@@ -1,15 +1,16 @@
 import logging
 from dataclasses import dataclass, fields
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from pyodk import validators
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
+from pyodk.utils import STRPTIME_FMT_UTC
 
 log = logging.getLogger(__name__)
 
 
-# TODO: convert post-init *At fields from str to datetime e.g. "2018-01-21T00:04:11.153Z"
 # TODO: actual response has undocumented fields: enketoOnceId, sha, sha256, draftToken
 
 
@@ -24,9 +25,17 @@ class FormEntity:
     hash: str
     keyId: int
     state: str  # open, closing, closed
-    publishedAt: str
     createdAt: str
-    updatedAt: str
+    updatedAt: Optional[datetime] = None
+    publishedAt: Optional[datetime] = None
+
+    def __post_init__(self):
+        # Convert date strings to datetime objects.
+        dt_fields = ["createdAt", "updatedAt", "publishedAt"]
+        for d in dt_fields:
+            dt_value = getattr(self, d)
+            if isinstance(dt_value, str):
+                setattr(self, d, datetime.strptime(dt_value, STRPTIME_FMT_UTC))
 
 
 class FormService:

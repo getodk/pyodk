@@ -1,10 +1,12 @@
 import logging
 from dataclasses import dataclass, fields
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from pyodk import validators
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
+from pyodk.utils import STRPTIME_FMT_UTC
 
 log = logging.getLogger(__name__)
 
@@ -13,13 +15,21 @@ log = logging.getLogger(__name__)
 class SubmissionEntity:
 
     instanceId: str
-    instanceName: str
     submitterId: int
     deviceId: str
-    userAgent: str
-    reviewState: str  # null, edited, hasIssues, rejected, approved
     createdAt: str
-    updatedAt: str
+    reviewState: Optional[str] = None  # null, edited, hasIssues, rejected, approved
+    userAgent: Optional[str] = None
+    instanceName: Optional[str] = None
+    updatedAt: Optional[datetime] = None
+
+    def __post_init__(self):
+        # Convert date strings to datetime objects.
+        dt_fields = ["createdAt", "updatedAt"]
+        for d in dt_fields:
+            dt_value = getattr(self, d)
+            if isinstance(dt_value, str):
+                setattr(self, d, datetime.strptime(dt_value, STRPTIME_FMT_UTC))
 
 
 class SubmissionService:
