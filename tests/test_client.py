@@ -12,6 +12,9 @@ class TestUsage(TestCase):
             submissions = client.submissions.read_all(form_id=forms[3].xmlFormId)
             odata = client.odata.read_table(form_id=forms[3].xmlFormId)
             odata_filter = client.odata.read_table(
-                form_id="range", table_name="Submissions", params={"$top": 2}
+                form_id="range",
+                table_name="Submissions",
+                count=True,
             )
-            print([projects, forms, submissions, odata, odata_filter])
+            odata_metadata = client.odata.read_metadata(form_id="range")
+            print([projects, forms, submissions, odata, odata_filter, odata_metadata])

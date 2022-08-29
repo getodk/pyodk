@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from pyodk import validators
+from pyodk.endpoints.utils import error_if_not_200
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
 from pyodk.utils import STRPTIME_FMT_UTC
@@ -47,16 +48,7 @@ class FormService:
         response = self.session.s.get(
             url=f"{self.session.base_url}/v1/projects/{project_id}/forms",
         )
-        if response.status_code == 200:
-            return response.json()
-        else:
-            msg = (
-                f"The form listing request failed."
-                f" Status: {response.status_code}, content: {response.content}"
-            )
-            err = PyODKError(msg)
-            log.error(err, exc_info=True)
-            raise err
+        return error_if_not_200(response=response, log=log, action="form listing")
 
     def read_all(self, project_id: Optional[int] = None) -> List[FormEntity]:
         """
@@ -82,16 +74,7 @@ class FormService:
         response = self.session.s.get(
             url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}",
         )
-        if response.status_code == 200:
-            return response.json()
-        else:
-            msg = (
-                f"The form read request failed."
-                f" Status: {response.status_code}, content: {response.content}"
-            )
-            err = PyODKError(msg)
-            log.error(err, exc_info=True)
-            raise err
+        return error_if_not_200(response=response, log=log, action="form read")
 
     def read(
         self,
