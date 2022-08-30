@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from pyodk import config
 from pyodk.errors import PyODKError
@@ -8,8 +9,9 @@ log = logging.getLogger(__name__)
 
 
 class AuthService:
-    def __init__(self, session: ClientSession):
+    def __init__(self, session: ClientSession, cache_path: Optional[str] = None) -> None:
         self.session: ClientSession = session
+        self.cache_path: str = cache_path
 
     def verify_token(self, token: str) -> str:
         """
@@ -80,12 +82,12 @@ class AuthService:
         :return: The session token or None if anything has gone wrong
         """
         try:
-            token = config.read_cache_token()
+            token = config.read_cache_token(cache_path=self.cache_path)
             return self.verify_token(token=token)
         except PyODKError:
             # Couldn't read the token, or it wasn't valid.
             pass
 
         token = self.get_new_token(username=username, password=password)
-        config.write_cache(key="token", value=token)
+        config.write_cache(key="token", value=token, cache_path=self.cache_path)
         return token

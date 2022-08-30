@@ -10,11 +10,24 @@ from pyodk.session import ClientSession
 
 
 class Client:
-    def __init__(self, project_id: Optional[int] = None) -> None:
-        self.config: config.Config = config.read_config()
+    def __init__(
+        self,
+        config_path: Optional[str] = None,
+        cache_path: Optional[str] = None,
+        project_id: Optional[int] = None,
+    ) -> None:
+        """
+        :param config_path: Where to read the pyodk_config.toml. Defaults to the
+          path in PYODK_CONFIG_FILE, then the user home directory.
+        :param cache_path: Where to read/write pyodk_cache.toml. Defaults to the
+          path in PYODK_CACHE_FILE, then the user home directory.
+        :param project_id: The project ID to use for all client calls. Defaults to the
+          "default_project_id" in pyodk_config.toml, or can be specified per call.
+        """
+        self.config: config.Config = config.read_config(config_path=config_path)
         self._project_id: Optional[int] = project_id
         self.session: ClientSession = ClientSession(base_url=self.config.central.base_url)
-        self.auth: AuthService = AuthService(session=self.session)
+        self.auth: AuthService = AuthService(session=self.session, cache_path=cache_path)
         self.projects: ProjectService = ProjectService(
             session=self.session,
             default_project_id=self.project_id,

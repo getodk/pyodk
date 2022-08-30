@@ -49,62 +49,78 @@ def objectify_config(config_data: Dict) -> Config:
     return config
 
 
-def get_config_path():
-    file_path = defaults["PYODK_CONFIG_FILE"]
-    env_file_path = os.environ.get("PYODK_CONFIG_FILE")
+def get_path(path: str, env_key: str) -> Path:
+    """
+    Get a path from the path argument, the environment key, or the default.
+    """
+    if path is not None:
+        return Path(path)
+    env_file_path = os.environ.get(env_key)
     if env_file_path is not None:
-        file_path = Path(env_file_path)
-    return file_path
+        return Path(env_file_path)
+    return defaults[env_key]
 
 
-def read_config() -> Config:
-    file_path = get_config_path()
-    if not (file_path.exists() and file_path.is_file()):
-        err = PyODKError(f"Config file does not exist, expected at: {file_path}")
-        log.error(err, exc_info=True)
-        raise err
-    with open(file_path, "r") as f:
-        config_data = toml.load(f)
-    return objectify_config(config_data=config_data)
+def get_config_path(config_path: Optional[str] = None) -> Path:
+    return get_path(path=config_path, env_key="PYODK_CONFIG_FILE")
 
 
-def get_cache_path():
-    file_path = defaults["PYODK_CACHE_FILE"]
-    env_file_path = os.environ.get("PYODK_CACHE_FILE")
-    if env_file_path is not None:
-        file_path = Path(env_file_path)
-    return file_path
+def get_cache_path(cache_path: Optional[str] = None) -> Path:
+    return get_path(path=cache_path, env_key="PYODK_CACHE_FILE")
 
 
-def read_cache_token() -> str:
-    file_path = get_cache_path()
+def read_toml(path: Path) -> Dict:
+    """
+    Read a toml file.
+    """
     try:
-        with open(file_path, "r") as cache_file:
-            cache = toml.load(cache_file)
-            return cache["token"]
-    except (FileNotFoundError, KeyError) as err:
-        err = PyODKError(f"Could not read cached token: {repr(err)}.")
+        with open(path, "r") as f:
+            return toml.load(f)
+    except (FileNotFoundError, PermissionError) as err:
+        err = PyODKError(f"Could not read file at: {path}. {repr(err)}.")
         log.error(err, exc_info=True)
         raise err
 
 
-def write_cache(key: str, value: str):
+def read_config(config_path: Optional[str] = None) -> Config:
+    """
+    Read the config file.
+    """
+    file_path = get_path(path=config_path, env_key="PYODK_CONFIG_FILE")
+    file_data = read_toml(path=file_path)
+    return objectify_config(config_data=file_data)
+
+
+def read_cache_token(cache_path: Optional[str] = None) -> str:
+    """
+    Read the "token" key from the cache file.
+    """
+    file_path = get_cache_path(cache_path=cache_path)
+    file_data = read_toml(path=file_path)
+    if "token" not in file_data:
+        err = PyODKError(f"Cached token not found in file: {file_path}")
+        log.error(err, exc_info=True)
+        raise err
+    return file_data["token"]
+
+
+def write_cache(key: str, value: str, cache_path: Optional[str] = None) -> None:
     """
     Append or overwrite the given key/value pair to the cache file.
     """
-    file_path = get_cache_path()
-    try:
-        with open(file_path, "r") as file:
-            cache = toml.load(file)
-            cache[key] = value
-    except FileNotFoundError:
-        cache = {key: value}
-
+    file_path = get_cache_path(cache_path=cache_path)
+    if file_path.exists() and file_path.is_file():
+        file_data = read_toml(path=file_path)
+        file_data[key] = value
+    else:
+        file_data = {key: value}
     with open(file_path, "w") as outfile:
-        toml.dump(cache, outfile)
+        toml.dump(file_data, outfile)
 
 
-def delete_cache():
-    """Delete the cache file, if it exists."""
-    file_path = get_cache_path()
-    Path.unlink(file_path, missing_ok=True)
+def delete_cache(cache_path: Optional[str] = None) -> None:
+    """
+    Delete the cache file, if it exists.
+    """
+    file_path = get_cache_path(cache_path=cache_path)
+    file_path.unlink(missing_ok=True)
