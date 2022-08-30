@@ -13,3 +13,7 @@ pyodk.egg-info
 
 # Pypi manifest.
 MANIFEST
+
+# Jupyter
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
