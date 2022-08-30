@@ -104,6 +104,8 @@ Available endpoints on `Client`:
   - read_all
   - read_all_table
 
+A detailed listing of current and planned endpoint mappings is in `docs/api_index.csv`.
+
 
 ## Logging
 
