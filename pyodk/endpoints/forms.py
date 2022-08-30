@@ -98,3 +98,44 @@ class FormService:
         else:
             raw = self._read_request(project_id=pid, form_id=fid)
             return FormEntity(**{f.name: raw.get(f.name) for f in fields(FormEntity)})
+
+    def _read_odata_metadata_request(self, project_id: int, form_id: str) -> str:
+        response = self.session.s.get(
+            url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}.svc"
+            f"/$metadata",
+        )
+        if response.status_code == 200:
+            return response.text
+        else:
+            msg = (
+                f"The metadata read request failed."
+                f" Status: {response.status_code}, content: {response.content}"
+            )
+            err = PyODKError(msg)
+            log.error(err, exc_info=True)
+            raise err
+
+    def read_odata_metadata(
+        self,
+        form_id: str,
+        project_id: Optional[int] = None,
+    ) -> str:
+        """
+        Read the OData metadata XML.
+
+        :param form_id: The xmlFormId of the Form being referenced.
+        :param project_id: The id of the project this form belongs to.
+        """
+        try:
+            pid = validators.validate_project_id(
+                project_id=project_id, default_project_id=self.default_project_id
+            )
+            fid = validators.validate_form_id(form_id=form_id)
+        except PyODKError as err:
+            log.error(err, exc_info=True)
+            raise err
+        else:
+            return self._read_odata_metadata_request(
+                project_id=pid,
+                form_id=fid,
+            )

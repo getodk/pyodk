@@ -10,11 +10,20 @@ class TestUsage(TestCase):
             projects = client.projects.read_all()
             forms = client.forms.read_all()
             submissions = client.submissions.read_all(form_id=forms[3].xmlFormId)
-            odata = client.odata.read_table(form_id=forms[3].xmlFormId)
-            odata_filter = client.odata.read_table(
+            form_data = client.submissions.read_all_table(form_id=forms[3].xmlFormId)
+            form_data_params = client.submissions.read_all_table(
                 form_id="range",
                 table_name="Submissions",
                 count=True,
             )
-            odata_metadata = client.odata.read_metadata(form_id="range")
-            print([projects, forms, submissions, odata, odata_filter, odata_metadata])
+            form_odata_metadata = client.forms.read_odata_metadata(form_id="range")
+            print(
+                [
+                    projects,
+                    forms,
+                    submissions,
+                    form_data,
+                    form_data_params,
+                    form_odata_metadata,
+                ]
+            )

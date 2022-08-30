@@ -3,7 +3,6 @@ from typing import Optional
 from pyodk import config
 from pyodk.endpoints.auth import AuthService
 from pyodk.endpoints.forms import FormService
-from pyodk.endpoints.odata import ODataService
 from pyodk.endpoints.projects import ProjectService
 from pyodk.endpoints.submissions import SubmissionService
 from pyodk.session import ClientSession
@@ -36,9 +35,6 @@ class Client:
             session=self.session, default_project_id=self.project_id
         )
         self.submissions: SubmissionService = SubmissionService(
-            session=self.session, default_project_id=self.project_id
-        )
-        self.odata: ODataService = ODataService(
             session=self.session, default_project_id=self.project_id
         )
 

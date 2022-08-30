@@ -73,7 +73,7 @@ with Client() as client:
     forms = client.forms.read_all()
     form_id = next(forms).xmlFormId
     submissions = client.submissions.read_all(form_id=form_id)
-    odata = client.odata.read_table(form_id=form_id)
+    form_data = client.submissions.read_all_table(form_id=form_id)
 ```
 
 The `Client` is not specific to a project, but a default `project_id` can be set by:
@@ -98,11 +98,11 @@ Available endpoints on `Client`:
 - Forms
   - read
   - read_all
+  - read_odata_metadata
 - Submissions
   - read
   - read_all
-- OData
-  - read_table
+  - read_all_table
 
 
 ## Logging
