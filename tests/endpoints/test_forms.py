@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 from requests import Session
 
 from pyodk.client import Client
-from pyodk.endpoints.forms import FormEntity
+from pyodk.endpoints.forms import Form
 from tests.resources import CONFIG_DATA, forms_data
 
 
@@ -12,7 +12,7 @@ from tests.resources import CONFIG_DATA, forms_data
 @patch("pyodk.config.read_config", MagicMock(return_value=CONFIG_DATA))
 class TestForms(TestCase):
     def test_read_all__ok(self):
-        """Should return a list of FormEntity objects."""
+        """Should return a list of FormType objects."""
         fixture = forms_data.test_forms
         with patch.object(Session, "get") as mock_session:
             mock_session.return_value.status_code = 200
@@ -22,10 +22,10 @@ class TestForms(TestCase):
         self.assertEqual(4, len(observed))
         for i, o in enumerate(observed):
             with self.subTest(i):
-                self.assertIsInstance(o, FormEntity)
+                self.assertIsInstance(o, Form)
 
     def test_read__ok(self):
-        """Should return a FormEntity object."""
+        """Should return a FormType object."""
         fixture = forms_data.test_forms
         with patch.object(Session, "get") as mock_session:
             mock_session.return_value.status_code = 200
@@ -36,9 +36,9 @@ class TestForms(TestCase):
                     project_id=fixture["project_id"],
                     form_id=fixture["response_data"][0]["xmlFormId"],
                 )
-                self.assertIsInstance(observed, FormEntity)
+                self.assertIsInstance(observed, Form)
                 # Use default
                 observed = client.forms.read(
                     form_id=fixture["response_data"][0]["xmlFormId"]
                 )
-                self.assertIsInstance(observed, FormEntity)
+                self.assertIsInstance(observed, Form)

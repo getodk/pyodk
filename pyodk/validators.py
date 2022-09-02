@@ -9,16 +9,19 @@ def validate_project_id(
 ) -> int:
     pid = coalesce(project_id, default_project_id)
     if pid is None:
-        msg = "No project ID was provided, either directly or via a default setting."
+        msg = "No project ID was provided."
         raise PyODKError(msg)
     return pid
 
 
-def validate_form_id(form_id: Optional[str] = None) -> str:
-    if form_id is None:
+def validate_form_id(
+    form_id: Optional[str] = None, default_form_id: Optional[str] = None
+) -> str:
+    fid = coalesce(form_id, default_form_id)
+    if fid is None:
         msg = "No form ID was provided."
         raise PyODKError(msg)
-    return form_id
+    return fid
 
 
 def validate_table_name(table_name: Optional[str] = None) -> str:

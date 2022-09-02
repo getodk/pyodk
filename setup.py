@@ -14,7 +14,8 @@ setup(
     license="Apache License, Version 2.0",
     python_requires=">=3.8",
     install_requires=(
-        "requests>=2.28.1",
-        "toml>=0.10.2"
+        "requests==2.28.1",
+        "toml==0.10.2",
+        "pydantic==1.10.1",
     ),
 )

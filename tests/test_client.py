@@ -5,7 +5,9 @@ from pyodk.client import Client
 
 @skip
 class TestUsage(TestCase):
-    def test_usage(self):
+    """Tests for experimenting with usage scenarios / general debugging."""
+
+    def test_direct(self):
         with Client() as client:
             projects = client.projects.read_all()
             forms = client.forms.read_all()
@@ -27,3 +29,12 @@ class TestUsage(TestCase):
                     form_odata_metadata,
                 ]
             )
+
+    def test_fluent(self):
+        with Client() as client:
+            project = client.projects.read(8)
+            form = client.projects.read(8).m.forms.read("range")
+            submission = (
+                client.projects.read(8).m.forms.read("range").m.submissions.read_all()[0]
+            )
+            print(project.dict(), form.dict(), submission.dict())

@@ -1,53 +1,90 @@
 import logging
-from dataclasses import dataclass, fields
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from pyodk import validators
-from pyodk.endpoints.utils import error_if_not_200
+from pydantic import Field
+
+from pyodk import validators as pv
+from pyodk.endpoints import bases, utils
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
-from pyodk.utils import STRPTIME_FMT_UTC
 
 log = logging.getLogger(__name__)
 
 
-@dataclass
-class SubmissionEntity:
+class Submission(bases.Model):
+    m: "SubmissionManager" = Field(repr=False, exclude=True)
 
     instanceId: str
     submitterId: int
-    deviceId: str
-    createdAt: str
-    reviewState: Optional[str] = None  # null, edited, hasIssues, rejected, approved
-    userAgent: Optional[str] = None
-    instanceName: Optional[str] = None
-    updatedAt: Optional[datetime] = None
-
-    def __post_init__(self):
-        # Convert date strings to datetime objects.
-        dt_fields = ["createdAt", "updatedAt"]
-        for d in dt_fields:
-            dt_value = getattr(self, d)
-            if isinstance(dt_value, str):
-                setattr(self, d, datetime.strptime(dt_value, STRPTIME_FMT_UTC))
+    createdAt: datetime
+    deviceId: Optional[str]
+    # null, edited, hasIssues, rejected, approved
+    reviewState: Optional[str]
+    userAgent: Optional[str]
+    instanceName: Optional[str]
+    updatedAt: Optional[datetime]
 
 
-class SubmissionService:
-    def __init__(self, session: ClientSession, default_project_id: Optional[int] = None):
+class SubmissionManager(bases.Manager):
+    """An instance of a Submission."""
+
+    __slots__ = ("session", "project_id", "form_id", "_forms", "_submissions")
+
+    def __init__(self, session: ClientSession, project_id: int, form_id: str):
+        self.session: ClientSession = session
+        self.project_id: int = project_id
+        self.form_id: str = form_id
+        self._submissions: Optional[SubmissionService] = None
+
+    @property
+    def submissions(self) -> "SubmissionService":
+        if self._submissions is None:
+            self._submissions = SubmissionService(
+                session=self.session,
+                default_project_id=self.project_id,
+                default_form_id=self.form_id,
+            )
+        return self._submissions
+
+    @classmethod
+    def from_dict(
+        cls,
+        session: ClientSession,
+        project_id: int,
+        data: Dict,
+        form_id: str = None,
+    ) -> Submission:
+        mgr = cls(session=session, project_id=project_id, form_id=form_id)
+        return Submission(m=mgr, **data)
+
+
+Submission.update_forward_refs()
+
+
+class SubmissionService(bases.Service):
+    def __init__(
+        self,
+        session: ClientSession,
+        default_project_id: Optional[int] = None,
+        default_form_id: Optional[str] = None,
+    ):
         self.session: ClientSession = session
         self.default_project_id: Optional[int] = default_project_id
+        self.default_form_id: Optional[str] = default_form_id
 
     def _read_all_request(self, project_id: int, form_id: str) -> List[Dict]:
         response = self.session.s.get(
             url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}"
             f"/submissions",
         )
-        return error_if_not_200(response=response, log=log, action="submission listing")
+        return utils.error_if_not_200(
+            response=response, log=log, action="submission listing"
+        )
 
     def read_all(
-        self, form_id: str, project_id: Optional[int] = None
-    ) -> List[SubmissionEntity]:
+        self, form_id: Optional[str] = None, project_id: Optional[int] = None
+    ) -> List[Submission]:
         """
         Read the details of all Submissions.
 
@@ -55,18 +92,23 @@ class SubmissionService:
         :param project_id: The id of the project the Submissions belong to.
         """
         try:
-            pid = validators.validate_project_id(
+            pid = pv.validate_project_id(
                 project_id=project_id, default_project_id=self.default_project_id
             )
-            fid = validators.validate_form_id(form_id=form_id)
+            fid = pv.validate_form_id(
+                form_id=form_id, default_form_id=self.default_form_id
+            )
         except PyODKError as err:
             log.error(err, exc_info=True)
             raise err
         else:
             raw = self._read_all_request(project_id=pid, form_id=fid)
             return [
-                SubmissionEntity(
-                    **{f.name: r.get(f.name) for f in fields(SubmissionEntity)}
+                SubmissionManager.from_dict(
+                    session=self.session,
+                    project_id=pid,
+                    form_id=fid,
+                    data=r,
                 )
                 for r in raw
             ]
@@ -76,34 +118,41 @@ class SubmissionService:
             url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}"
             f"/submissions/{instance_id}"
         )
-        return error_if_not_200(response=response, log=log, action="submission read")
+        return utils.error_if_not_200(
+            response=response, log=log, action="submission read"
+        )
 
     def read(
         self,
-        form_id: str,
         instance_id: str,
+        form_id: Optional[str] = None,
         project_id: Optional[int] = None,
-    ) -> SubmissionEntity:
+    ) -> Submission:
         """
         Read the details of a Submission.
 
-        :param form_id: The xmlFormId of the Form being referenced.
         :param instance_id: The instanceId of the Submission being referenced.
+        :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         """
         try:
-            pid = validators.validate_project_id(
+            pid = pv.validate_project_id(
                 project_id=project_id, default_project_id=self.default_project_id
             )
-            fid = validators.validate_form_id(form_id=form_id)
-            iid = validators.validate_instance_id(instance_id=instance_id)
+            fid = pv.validate_form_id(
+                form_id=form_id, default_form_id=self.default_form_id
+            )
+            iid = pv.validate_instance_id(instance_id=instance_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
             raise err
         else:
             raw = self._read_request(project_id=pid, form_id=fid, instance_id=iid)
-            return SubmissionEntity(
-                **{f.name: raw.get(f.name) for f in fields(SubmissionEntity)}
+            return SubmissionManager.from_dict(
+                session=self.session,
+                project_id=pid,
+                form_id=fid,
+                data=raw,
             )
 
     def _read_all_table_request(
@@ -114,11 +163,11 @@ class SubmissionService:
             f"/{table_name}",
             params=params,
         )
-        return error_if_not_200(response=response, log=log, action="table read")
+        return utils.error_if_not_200(response=response, log=log, action="table read")
 
     def read_all_table(
         self,
-        form_id: str,
+        form_id: Optional[str] = None,
         project_id: Optional[int] = None,
         table_name: Optional[str] = "Submissions",
         skip: Optional[int] = None,
@@ -148,11 +197,13 @@ class SubmissionService:
           is implemented, which expands all repetitions.
         """
         try:
-            pid = validators.validate_project_id(
+            pid = pv.validate_project_id(
                 project_id=project_id, default_project_id=self.default_project_id
             )
-            fid = validators.validate_form_id(form_id=form_id)
-            table = validators.validate_table_name(table_name=table_name)
+            fid = pv.validate_form_id(
+                form_id=form_id, default_form_id=self.default_form_id
+            )
+            table = pv.validate_table_name(table_name=table_name)
             params = {
                 k: v
                 for k, v in {

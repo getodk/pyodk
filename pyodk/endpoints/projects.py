@@ -1,42 +1,80 @@
 import logging
-from dataclasses import dataclass, fields
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from pyodk import validators
-from pyodk.endpoints.utils import error_if_not_200
+from pydantic import Field
+
+from pyodk import validators as pv
+from pyodk.endpoints import bases, utils
+from pyodk.endpoints.forms import FormService
 from pyodk.errors import PyODKError
 from pyodk.session import ClientSession
-from pyodk.utils import STRPTIME_FMT_UTC
 
 log = logging.getLogger(__name__)
 
 
-@dataclass
-class ProjectEntity:
+class Project(bases.Model):
+    m: "ProjectManager" = Field(repr=False, exclude=True)
 
     id: int
     name: str
-    description: str
-    keyId: int
-    archived: bool
     createdAt: datetime
-    appUsers: Optional[int] = None
-    forms: Optional[int] = None
-    lastSubmission: Optional[str] = None
-    updatedAt: Optional[datetime] = None
-    deletedAt: Optional[datetime] = None
-
-    def __post_init__(self):
-        # Convert date strings to datetime objects.
-        dt_fields = ["createdAt", "updatedAt", "deletedAt"]
-        for d in dt_fields:
-            dt_value = getattr(self, d)
-            if isinstance(dt_value, str):
-                setattr(self, d, datetime.strptime(dt_value, STRPTIME_FMT_UTC))
+    description: Optional[str]
+    archived: Optional[bool]
+    keyId: Optional[int]
+    appUsers: Optional[int]
+    forms: Optional[int]
+    lastSubmission: Optional[str]
+    updatedAt: Optional[datetime]
+    deletedAt: Optional[datetime]
 
 
-class ProjectService:
+class ProjectManager(bases.Manager):
+    __slots__ = ("session", "project_id", "_projects", "_forms")
+
+    def __init__(
+        self,
+        session: ClientSession,
+        project_id: int,
+    ):
+        self.session: ClientSession = session
+        self.project_id: int = project_id
+        self._projects: Optional[ProjectService] = None
+        self._forms: Optional[FormService] = None
+
+    @property
+    def projects(self) -> "ProjectService":
+        if self._projects is None:
+            self._projects = ProjectService(
+                session=self.session,
+                default_project_id=self.project_id,
+            )
+        return self._projects
+
+    @property
+    def forms(self) -> "FormService":
+        if self._forms is None:
+            self._forms = FormService(
+                session=self.session,
+                default_project_id=self.project_id,
+            )
+        return self._forms
+
+    @classmethod
+    def from_dict(
+        cls,
+        session: ClientSession,
+        project_id: int,
+        data: Dict,
+    ) -> Project:
+        mgr = cls(session=session, project_id=project_id)
+        return Project(m=mgr, **data)
+
+
+Project.update_forward_refs()
+
+
+class ProjectService(bases.Service):
     def __init__(self, session: ClientSession, default_project_id: Optional[int] = None):
         self.session: ClientSession = session
         self.default_project_id: Optional[int] = default_project_id
@@ -45,15 +83,21 @@ class ProjectService:
         response = self.session.s.get(
             url=f"{self.session.base_url}/v1/projects",
         )
-        return error_if_not_200(response=response, log=log, action="project listing")
+        return utils.error_if_not_200(
+            response=response, log=log, action="project listing"
+        )
 
-    def read_all(self) -> List[ProjectEntity]:
+    def read_all(self) -> List[Project]:
         """
         Read the details of all projects.
         """
         raw = self._read_all_request()
         return [
-            ProjectEntity(**{f.name: r.get(f.name) for f in fields(ProjectEntity)})
+            ProjectManager.from_dict(
+                session=self.session,
+                project_id=r["id"],
+                data=r,
+            )
             for r in raw
         ]
 
@@ -61,16 +105,16 @@ class ProjectService:
         response = self.session.s.get(
             url=f"{self.session.base_url}/v1/projects/{project_id}",
         )
-        return error_if_not_200(response=response, log=log, action="project read")
+        return utils.error_if_not_200(response=response, log=log, action="project read")
 
-    def read(self, project_id: Optional[int] = None) -> ProjectEntity:
+    def read(self, project_id: Optional[int] = None) -> Project:
         """
         Read the details of a Project.
 
         :param project_id: The id of the project to read.
         """
         try:
-            pid = validators.validate_project_id(
+            pid = pv.validate_project_id(
                 project_id=project_id, default_project_id=self.default_project_id
             )
         except PyODKError as err:
@@ -78,6 +122,8 @@ class ProjectService:
             raise err
         else:
             raw = self._read_request(project_id=pid)
-            return ProjectEntity(
-                **{f.name: raw.get(f.name) for f in fields(ProjectEntity)}
+            return ProjectManager.from_dict(
+                session=self.session,
+                project_id=raw["id"],
+                data=raw,
             )
