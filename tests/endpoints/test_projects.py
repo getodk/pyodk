@@ -11,7 +11,7 @@ from tests.resources import CONFIG_DATA, projects_data
 @patch("pyodk.client.Client._login", MagicMock())
 @patch("pyodk.config.read_config", MagicMock(return_value=CONFIG_DATA))
 class TestProjects(TestCase):
-    def test_read_all__ok(self):
+    def test_list__ok(self):
         """Should return a list of ProjectType objects."""
         fixture = projects_data.test_projects
         with patch.object(Session, "request") as mock_session:
@@ -24,7 +24,7 @@ class TestProjects(TestCase):
             with self.subTest(i):
                 self.assertIsInstance(o, Project)
 
-    def test_read__ok(self):
+    def test_get__ok(self):
         """Should return a ProjectType object."""
         fixture = projects_data.test_projects
         with patch.object(Session, "request") as mock_session:

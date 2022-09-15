@@ -10,7 +10,7 @@ from tests.resources import CONFIG_DATA, forms_data
 @patch("pyodk.client.Client._login", MagicMock())
 @patch("pyodk.config.read_config", MagicMock(return_value=CONFIG_DATA))
 class TestForms(TestCase):
-    def test_read_all__ok(self):
+    def test_list__ok(self):
         """Should return a list of FormType objects."""
         fixture = forms_data.test_forms
         with patch.object(Session, "request") as mock_session:
@@ -23,7 +23,7 @@ class TestForms(TestCase):
             with self.subTest(i):
                 self.assertIsInstance(o, Form)
 
-    def test_read__ok(self):
+    def test_get__ok(self):
         """Should return a FormType object."""
         fixture = forms_data.test_forms
         with patch.object(Session, "request") as mock_session:

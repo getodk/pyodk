@@ -64,24 +64,14 @@ The session cache file uses the TOML format. The default file name is `.pyodk_ca
 
 ## Example
 
-It's possible to interact with the API using a direct or a fluent style, as shown below.
-
 ```python
 from pyodk.client import Client
 
-# Direct style, using objects from the Client and providing parameters.
 with Client() as client:
     projects = client.projects.list()
     forms = client.forms.list()
     submissions = client.submissions.list(form_id=next(forms).xmlFormId)
     form_data = client.submissions.get_table(form_id="birds", project_id=8)
-
-# Fluent style, using chained methods on the result objects.
-with Client() as client:
-    meta = client.projects.get(8).m.forms.get("birds")
-    # Result is a pydantic model, so you can use `meta.dict()` or `meta.json()`.
-    data = client.projects.get(8).m.forms.get("birds").m.submissions.get_table()
-    # Result is a dict for now, but will be a pydantic model later.
 ```
 
 The `Client` is not specific to a project, but a default `project_id` can be set by:
@@ -111,6 +101,12 @@ Available endpoints on `Client`:
   - get
   - list
   - get_table
+- *for additional requests*
+  - get
+  - post
+  - put
+  - patch
+  - delete
 
 A detailed listing of current and planned endpoint mappings is in `docs/api_index.csv`.
 

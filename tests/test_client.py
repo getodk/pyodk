@@ -12,8 +12,8 @@ class TestUsage(TestCase):
             projects = client.projects.list()
             forms = client.forms.list()
             submissions = client.submissions.list(form_id=forms[3].xmlFormId)
-            form_data = client.submissions.get_data(form_id=forms[3].xmlFormId)
-            form_data_params = client.submissions.get_data(
+            form_data = client.submissions.get_table(form_id=forms[3].xmlFormId)
+            form_data_params = client.submissions.get_table(
                 form_id="range",
                 table_name="Submissions",
                 count=True,
@@ -29,12 +29,3 @@ class TestUsage(TestCase):
                     form_odata_metadata,
                 ]
             )
-
-    def test_fluent(self):
-        with Client() as client:
-            project = client.projects.get(8)
-            form = client.projects.get(8).m.forms.get("range")
-            submission = (
-                client.projects.get(8).m.forms.get("range").m.submissions.list()[0]
-            )
-            print(project.dict(), form.dict(), submission.dict())

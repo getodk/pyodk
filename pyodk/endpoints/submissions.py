@@ -2,8 +2,6 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from pydantic import Field
-
 from pyodk import validators as pv
 from pyodk.endpoints import bases
 from pyodk.errors import PyODKError
@@ -13,8 +11,6 @@ log = logging.getLogger(__name__)
 
 
 class Submission(bases.Model):
-    m: "SubmissionManager" = Field(repr=False, exclude=True)
-
     instanceId: str
     submitterId: int
     createdAt: datetime
@@ -24,42 +20,6 @@ class Submission(bases.Model):
     userAgent: Optional[str]
     instanceName: Optional[str]
     updatedAt: Optional[datetime]
-
-
-class SubmissionManager(bases.Manager):
-    """An instance of a Submission."""
-
-    __slots__ = ("session", "project_id", "form_id", "_forms", "_submissions")
-
-    def __init__(self, session: Session, project_id: int, form_id: str):
-        self.session: Session = session
-        self.project_id: int = project_id
-        self.form_id: str = form_id
-        self._submissions: Optional[SubmissionService] = None
-
-    @property
-    def submissions(self) -> "SubmissionService":
-        if self._submissions is None:
-            self._submissions = SubmissionService(
-                session=self.session,
-                default_project_id=self.project_id,
-                default_form_id=self.form_id,
-            )
-        return self._submissions
-
-    @classmethod
-    def from_dict(
-        cls,
-        session: Session,
-        project_id: int,
-        data: Dict,
-        form_id: str = None,
-    ) -> Submission:
-        mgr = cls(session=session, project_id=project_id, form_id=form_id)
-        return Submission(m=mgr, **data)
-
-
-Submission.update_forward_refs()
 
 
 class URLs(bases.Model):
@@ -111,15 +71,7 @@ class SubmissionService(bases.Service):
                 logger=log,
             )
             data = response.json()
-            return [
-                SubmissionManager.from_dict(
-                    session=self.session,
-                    project_id=pid,
-                    form_id=fid,
-                    data=r,
-                )
-                for r in data
-            ]
+            return [Submission(**r) for r in data]
 
     def get(
         self,
@@ -151,12 +103,7 @@ class SubmissionService(bases.Service):
                 logger=log,
             )
             data = response.json()
-            return SubmissionManager.from_dict(
-                session=self.session,
-                project_id=pid,
-                form_id=fid,
-                data=data,
-            )
+            return Submission(**data)
 
     def get_table(
         self,
