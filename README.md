@@ -69,19 +69,18 @@ It's possible to interact with the API using a direct or a fluent style, as show
 ```python
 from pyodk.client import Client
 
-
 # Direct style, using objects from the Client and providing parameters.
 with Client() as client:
-    projects = client.projects.read_all()
-    forms = client.forms.read_all()
-    submissions = client.submissions.read_all(form_id=next(forms).xmlFormId)
-    form_data = client.submissions.read_all_table(form_id="birds", project_id=8)
+    projects = client.projects.list()
+    forms = client.forms.list()
+    submissions = client.submissions.list(form_id=next(forms).xmlFormId)
+    form_data = client.submissions.get_table(form_id="birds", project_id=8)
 
 # Fluent style, using chained methods on the result objects.
 with Client() as client:
-    meta = client.projects.read(8).m.forms.read("birds")
+    meta = client.projects.get(8).m.forms.get("birds")
     # Result is a pydantic model, so you can use `meta.dict()` or `meta.json()`.
-    data = client.projects.read(8).m.forms.read("birds").m.submissions.read_all_table()
+    data = client.projects.get(8).m.forms.get("birds").m.submissions.get_table()
     # Result is a dict for now, but will be a pydantic model later.
 ```
 
@@ -102,18 +101,22 @@ The `Client` is specific to a configuration and cache file. These approximately 
 Available endpoints on `Client`:
 
 - Projects
-  - read
-  - read_all
+  - get
+  - list
 - Forms
-  - read
-  - read_all
-  - read_odata_metadata
+  - get
+  - list
+  - get_metadata
 - Submissions
-  - read
-  - read_all
-  - read_all_table
+  - get
+  - list
+  - get_table
 
 A detailed listing of current and planned endpoint mappings is in `docs/api_index.csv`.
+
+For interacting with parts of the ODK Central API ([docs](https://odkcentral.docs.apiary.io)) that have not been implemented in pyodk, use the `Client.session`, which is a `requests.Session` object subclass. The `Session` has customised to prefix request URLs with the `base_url` from the pyodk config. For example with a base_url `https://www.example.com`, a call to `client.session.get("projects/8")` gets the details of `project_id=8`, using the full url `https://www.example.com/v1/projects/8`. As a further convenience, HTTP verb methods are exposed on the `Client`, so the example can also be written as `client.get("projects/8")`. Similarly, sending data would look like: `client.post("/projects/7/app-users", data={"displayName": "Lab Tech"})`.
+
+If Session behaviour needs to be customised, for example to set alternative timeouts or retry strategies, etc., then subclass the `pyodk.session.Session` and provide an instance to the `Client` constructor, e.g. `Client(session=my_session)`.
 
 
 ## Logging

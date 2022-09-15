@@ -14,11 +14,11 @@ class TestProjects(TestCase):
     def test_read_all__ok(self):
         """Should return a list of ProjectType objects."""
         fixture = projects_data.test_projects
-        with patch.object(Session, "get") as mock_session:
+        with patch.object(Session, "request") as mock_session:
             mock_session.return_value.status_code = 200
             mock_session.return_value.json.return_value = fixture["response_data"]
             with Client() as client:
-                observed = client.projects.read_all()
+                observed = client.projects.list()
         self.assertEqual(2, len(observed))
         for i, o in enumerate(observed):
             with self.subTest(i):
@@ -27,15 +27,15 @@ class TestProjects(TestCase):
     def test_read__ok(self):
         """Should return a ProjectType object."""
         fixture = projects_data.test_projects
-        with patch.object(Session, "get") as mock_session:
+        with patch.object(Session, "request") as mock_session:
             mock_session.return_value.status_code = 200
             mock_session.return_value.json.return_value = fixture["response_data"][0]
             with Client() as client:
                 # Specify project
-                observed = client.projects.read(
+                observed = client.projects.get(
                     project_id=fixture["response_data"][0]["id"]
                 )
                 self.assertIsInstance(observed, Project)
                 # Use default
-                observed = client.projects.read()
+                observed = client.projects.get()
                 self.assertIsInstance(observed, Project)

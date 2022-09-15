@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 from pydantic import Field
 
 from pyodk import validators as pv
-from pyodk.endpoints import bases, utils
+from pyodk.endpoints import bases
 from pyodk.endpoints.submissions import SubmissionService
 from pyodk.errors import PyODKError
-from pyodk.session import ClientSession
+from pyodk.session import Session
 
 log = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ class Form(bases.Model):
 class FormManager(bases.Manager):
     __slots__ = ("session", "project_id", "form_id", "_forms", "_submissions")
 
-    def __init__(self, session: ClientSession, project_id: int, form_id: str):
-        self.session: ClientSession = session
+    def __init__(self, session: Session, project_id: int, form_id: str):
+        self.session: Session = session
         self.project_id: int = project_id
         self.form_id: str = form_id
         self._forms: Optional[FormService] = None
@@ -65,7 +65,7 @@ class FormManager(bases.Manager):
     @classmethod
     def from_dict(
         cls,
-        session: ClientSession,
+        session: Session,
         project_id: int,
         data: Dict,
         form_id: str = None,
@@ -77,26 +77,31 @@ class FormManager(bases.Manager):
 Form.update_forward_refs()
 
 
+class URLs(bases.Model):
+    class Config:
+        frozen = True
+
+    list: str = "projects/{project_id}/forms"
+    get: str = "projects/{project_id}/forms/{form_id}"
+    get_metadata: str = "projects/{project_id}/forms/{form_id}.svc/$metadata"
+
+
 class FormService(bases.Service):
-    __slots__ = ("session", "default_project_id", "default_form_id")
+    __slots__ = ("urls", "session", "default_project_id", "default_form_id")
 
     def __init__(
         self,
-        session: ClientSession,
+        session: Session,
         default_project_id: Optional[int] = None,
         default_form_id: Optional[str] = None,
+        urls: URLs = None,
     ):
-        self.session: ClientSession = session
+        self.urls: URLs = urls if urls is not None else URLs()
+        self.session: Session = session
         self.default_project_id: Optional[int] = default_project_id
         self.default_form_id: Optional[str] = default_form_id
 
-    def _read_all_request(self, project_id: int) -> List[Dict]:
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/projects/{project_id}/forms",
-        )
-        return utils.error_if_not_200(response=response, log=log, action="form listing")
-
-    def read_all(self, project_id: Optional[int] = None) -> List[Form]:
+    def list(self, project_id: Optional[int] = None) -> List[Form]:
         """
         Read the details of all Forms.
 
@@ -110,7 +115,11 @@ class FormService(bases.Service):
             log.error(err, exc_info=True)
             raise err
         else:
-            raw = self._read_all_request(project_id=pid)
+            response = self.session.get_200_or_error(
+                url=self.urls.list.format(project_id=pid),
+                logger=log,
+            )
+            data = response.json()
             return [
                 FormManager.from_dict(
                     session=self.session,
@@ -118,16 +127,10 @@ class FormService(bases.Service):
                     form_id=r["xmlFormId"],
                     data=r,
                 )
-                for r in raw
+                for r in data
             ]
 
-    def _read_request(self, project_id: int, form_id: str) -> Dict:
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}",
-        )
-        return utils.error_if_not_200(response=response, log=log, action="form read")
-
-    def read(
+    def get(
         self,
         form_id: str,
         project_id: Optional[int] = None,
@@ -149,31 +152,19 @@ class FormService(bases.Service):
             log.error(err, exc_info=True)
             raise err
         else:
-            raw = self._read_request(project_id=pid, form_id=fid)
+            response = self.session.get_200_or_error(
+                url=self.urls.get.format(project_id=pid, form_id=fid),
+                logger=log,
+            )
+            data = response.json()
             return FormManager.from_dict(
                 session=self.session,
                 project_id=pid,
-                form_id=raw["xmlFormId"],
-                data=raw,
+                form_id=data["xmlFormId"],
+                data=data,
             )
 
-    def _read_odata_metadata_request(self, project_id: int, form_id: str) -> str:
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}.svc"
-            f"/$metadata",
-        )
-        if response.status_code == 200:
-            return response.text
-        else:
-            msg = (
-                f"The metadata read request failed."
-                f" Status: {response.status_code}, content: {response.content}"
-            )
-            err = PyODKError(msg)
-            log.error(err, exc_info=True)
-            raise err
-
-    def read_odata_metadata(
+    def get_metadata(
         self,
         form_id: str,
         project_id: Optional[int] = None,
@@ -195,7 +186,8 @@ class FormService(bases.Service):
             log.error(err, exc_info=True)
             raise err
         else:
-            return self._read_odata_metadata_request(
-                project_id=pid,
-                form_id=fid,
+            response = self.session.get_200_or_error(
+                url=self.urls.get_metadata.format(project_id=pid, form_id=fid),
+                logger=log,
             )
+            return response.text

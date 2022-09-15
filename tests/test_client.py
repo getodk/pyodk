@@ -9,16 +9,16 @@ class TestUsage(TestCase):
 
     def test_direct(self):
         with Client() as client:
-            projects = client.projects.read_all()
-            forms = client.forms.read_all()
-            submissions = client.submissions.read_all(form_id=forms[3].xmlFormId)
-            form_data = client.submissions.read_all_table(form_id=forms[3].xmlFormId)
-            form_data_params = client.submissions.read_all_table(
+            projects = client.projects.list()
+            forms = client.forms.list()
+            submissions = client.submissions.list(form_id=forms[3].xmlFormId)
+            form_data = client.submissions.get_data(form_id=forms[3].xmlFormId)
+            form_data_params = client.submissions.get_data(
                 form_id="range",
                 table_name="Submissions",
                 count=True,
             )
-            form_odata_metadata = client.forms.read_odata_metadata(form_id="range")
+            form_odata_metadata = client.forms.get_metadata(form_id="range")
             print(
                 [
                     projects,
@@ -32,9 +32,9 @@ class TestUsage(TestCase):
 
     def test_fluent(self):
         with Client() as client:
-            project = client.projects.read(8)
-            form = client.projects.read(8).m.forms.read("range")
+            project = client.projects.get(8)
+            form = client.projects.get(8).m.forms.get("range")
             submission = (
-                client.projects.read(8).m.forms.read("range").m.submissions.read_all()[0]
+                client.projects.get(8).m.forms.get("range").m.submissions.list()[0]
             )
             print(project.dict(), form.dict(), submission.dict())

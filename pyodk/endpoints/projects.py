@@ -5,10 +5,10 @@ from typing import Dict, List, Optional
 from pydantic import Field
 
 from pyodk import validators as pv
-from pyodk.endpoints import bases, utils
+from pyodk.endpoints import bases
 from pyodk.endpoints.forms import FormService
 from pyodk.errors import PyODKError
-from pyodk.session import ClientSession
+from pyodk.session import Session
 
 log = logging.getLogger(__name__)
 
@@ -34,10 +34,10 @@ class ProjectManager(bases.Manager):
 
     def __init__(
         self,
-        session: ClientSession,
+        session: Session,
         project_id: int,
     ):
-        self.session: ClientSession = session
+        self.session: Session = session
         self.project_id: int = project_id
         self._projects: Optional[ProjectService] = None
         self._forms: Optional[FormService] = None
@@ -63,7 +63,7 @@ class ProjectManager(bases.Manager):
     @classmethod
     def from_dict(
         cls,
-        session: ClientSession,
+        session: Session,
         project_id: int,
         data: Dict,
     ) -> Project:
@@ -74,40 +74,44 @@ class ProjectManager(bases.Manager):
 Project.update_forward_refs()
 
 
+class URLs(bases.Model):
+    class Config:
+        frozen = True
+
+    list: str = "projects"
+    get: str = "projects/{project_id}"
+    get_data: str = "projects/{project_id}/forms/{form_id}.svc/{table_name}"
+
+
 class ProjectService(bases.Service):
-    def __init__(self, session: ClientSession, default_project_id: Optional[int] = None):
-        self.session: ClientSession = session
+    __slots__ = ("urls", "session", "default_project_id")
+
+    def __init__(
+        self,
+        session: Session,
+        default_project_id: Optional[int] = None,
+        urls: URLs = None,
+    ):
+        self.urls: URLs = urls if urls is not None else URLs()
+        self.session: Session = session
         self.default_project_id: Optional[int] = default_project_id
 
-    def _read_all_request(self) -> List[Dict]:
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/projects",
-        )
-        return utils.error_if_not_200(
-            response=response, log=log, action="project listing"
-        )
-
-    def read_all(self) -> List[Project]:
+    def list(self) -> List[Project]:
         """
         Read the details of all projects.
         """
-        raw = self._read_all_request()
+        response = self.session.get_200_or_error(url=self.urls.list, logger=log)
+        data = response.json()
         return [
             ProjectManager.from_dict(
                 session=self.session,
                 project_id=r["id"],
                 data=r,
             )
-            for r in raw
+            for r in data
         ]
 
-    def _read_request(self, project_id: int) -> Dict:
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/projects/{project_id}",
-        )
-        return utils.error_if_not_200(response=response, log=log, action="project read")
-
-    def read(self, project_id: Optional[int] = None) -> Project:
+    def get(self, project_id: Optional[int] = None) -> Project:
         """
         Read the details of a Project.
 
@@ -121,9 +125,13 @@ class ProjectService(bases.Service):
             log.error(err, exc_info=True)
             raise err
         else:
-            raw = self._read_request(project_id=pid)
+            response = self.session.get_200_or_error(
+                url=self.urls.get.format(project_id=pid),
+                logger=log,
+            )
+            data = response.json()
             return ProjectManager.from_dict(
                 session=self.session,
-                project_id=raw["id"],
-                data=raw,
+                project_id=data["id"],
+                data=data,
             )

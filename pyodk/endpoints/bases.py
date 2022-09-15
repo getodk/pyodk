@@ -2,7 +2,7 @@ from typing import Dict
 
 from pydantic import BaseModel
 
-from pyodk.session import ClientSession
+from pyodk.session import Session
 
 
 class Model(BaseModel):
@@ -20,7 +20,7 @@ class Manager:
     pass
 
     @classmethod
-    def from_dict(cls, session: ClientSession, project_id: int, data: Dict) -> Model:
+    def from_dict(cls, session: Session, project_id: int, data: Dict) -> Model:
         raise NotImplementedError()
 
 

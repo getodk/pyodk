@@ -5,9 +5,9 @@ from typing import Dict, List, Optional
 from pydantic import Field
 
 from pyodk import validators as pv
-from pyodk.endpoints import bases, utils
+from pyodk.endpoints import bases
 from pyodk.errors import PyODKError
-from pyodk.session import ClientSession
+from pyodk.session import Session
 
 log = logging.getLogger(__name__)
 
@@ -31,8 +31,8 @@ class SubmissionManager(bases.Manager):
 
     __slots__ = ("session", "project_id", "form_id", "_forms", "_submissions")
 
-    def __init__(self, session: ClientSession, project_id: int, form_id: str):
-        self.session: ClientSession = session
+    def __init__(self, session: Session, project_id: int, form_id: str):
+        self.session: Session = session
         self.project_id: int = project_id
         self.form_id: str = form_id
         self._submissions: Optional[SubmissionService] = None
@@ -50,7 +50,7 @@ class SubmissionManager(bases.Manager):
     @classmethod
     def from_dict(
         cls,
-        session: ClientSession,
+        session: Session,
         project_id: int,
         data: Dict,
         form_id: str = None,
@@ -62,27 +62,31 @@ class SubmissionManager(bases.Manager):
 Submission.update_forward_refs()
 
 
+class URLs(bases.Model):
+    class Config:
+        frozen = True
+
+    list: str = "projects/{project_id}/forms/{form_id}/submissions"
+    get: str = "projects/{project_id}/forms/{form_id}/submissions/{instance_id}"
+    get_table: str = "projects/{project_id}/forms/{form_id}.svc/{table_name}"
+
+
 class SubmissionService(bases.Service):
+    __slots__ = ("urls", "session", "default_project_id", "default_form_id")
+
     def __init__(
         self,
-        session: ClientSession,
+        session: Session,
         default_project_id: Optional[int] = None,
         default_form_id: Optional[str] = None,
+        urls: URLs = None,
     ):
-        self.session: ClientSession = session
+        self.urls: URLs = urls if urls is not None else URLs()
+        self.session: Session = session
         self.default_project_id: Optional[int] = default_project_id
         self.default_form_id: Optional[str] = default_form_id
 
-    def _read_all_request(self, project_id: int, form_id: str) -> List[Dict]:
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}"
-            f"/submissions",
-        )
-        return utils.error_if_not_200(
-            response=response, log=log, action="submission listing"
-        )
-
-    def read_all(
+    def list(
         self, form_id: Optional[str] = None, project_id: Optional[int] = None
     ) -> List[Submission]:
         """
@@ -102,7 +106,11 @@ class SubmissionService(bases.Service):
             log.error(err, exc_info=True)
             raise err
         else:
-            raw = self._read_all_request(project_id=pid, form_id=fid)
+            response = self.session.get_200_or_error(
+                url=self.urls.list.format(project_id=pid, form_id=fid),
+                logger=log,
+            )
+            data = response.json()
             return [
                 SubmissionManager.from_dict(
                     session=self.session,
@@ -110,19 +118,10 @@ class SubmissionService(bases.Service):
                     form_id=fid,
                     data=r,
                 )
-                for r in raw
+                for r in data
             ]
 
-    def _read_request(self, project_id: int, form_id: str, instance_id: str) -> Dict:
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}"
-            f"/submissions/{instance_id}"
-        )
-        return utils.error_if_not_200(
-            response=response, log=log, action="submission read"
-        )
-
-    def read(
+    def get(
         self,
         instance_id: str,
         form_id: Optional[str] = None,
@@ -147,25 +146,19 @@ class SubmissionService(bases.Service):
             log.error(err, exc_info=True)
             raise err
         else:
-            raw = self._read_request(project_id=pid, form_id=fid, instance_id=iid)
+            response = self.session.get_200_or_error(
+                url=self.urls.get.format(project_id=pid, form_id=fid, instance_id=iid),
+                logger=log,
+            )
+            data = response.json()
             return SubmissionManager.from_dict(
                 session=self.session,
                 project_id=pid,
                 form_id=fid,
-                data=raw,
+                data=data,
             )
 
-    def _read_all_table_request(
-        self, project_id: int, form_id: str, table_name: str, params: Dict
-    ) -> Dict:
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/projects/{project_id}/forms/{form_id}.svc"
-            f"/{table_name}",
-            params=params,
-        )
-        return utils.error_if_not_200(response=response, log=log, action="table read")
-
-    def read_all_table(
+    def get_table(
         self,
         form_id: Optional[str] = None,
         project_id: Optional[int] = None,
@@ -220,9 +213,11 @@ class SubmissionService(bases.Service):
             log.error(err, exc_info=True)
             raise err
         else:
-            return self._read_all_table_request(
-                project_id=pid,
-                form_id=fid,
-                table_name=table,
+            response = self.session.get_200_or_error(
+                url=self.urls.get_table.format(
+                    project_id=pid, form_id=fid, table_name=table
+                ),
+                logger=log,
                 params=params,
             )
+            return response.json()

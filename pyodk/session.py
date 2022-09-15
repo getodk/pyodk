@@ -1,7 +1,10 @@
-from typing import Optional
+from urllib.parse import urljoin
 
-from requests import Session
+from requests import Response
+from requests import Session as RequestsSession
 from requests.adapters import HTTPAdapter, Retry
+
+from pyodk.errors import PyODKError
 
 
 class PyODKAdapter(HTTPAdapter):
@@ -25,17 +28,45 @@ class PyODKAdapter(HTTPAdapter):
         return super().send(request, **kwargs)
 
 
-class ClientSession:
-    def __init__(self, base_url: str) -> None:
-        self.base_url: str = base_url
-        self.s: Optional[Session] = None
+class Session(RequestsSession):
+    def __init__(self, base_url: str, api_version: str) -> None:
+        super().__init__()
+        self.base_url: str = self.base_url_validate(
+            base_url=base_url, api_version=api_version
+        )
+        self.mount_pyodk_adapter()
 
-    def __enter__(self) -> Session:
-        self.s = Session()
-        self.s.mount("https://", PyODKAdapter(timeout=30))
-        return self.s
+    @staticmethod
+    def base_url_validate(base_url: str, api_version: str):
+        if not base_url.endswith(f"{api_version}/"):
+            if base_url.endswith(api_version):
+                base_url = base_url + "/"
+            elif not base_url.endswith(api_version):
+                base_url = base_url.rstrip("/") + f"/{api_version}/"
+        return base_url
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.s is not None:
-            self.s.close()
-        self.session = None
+    def mount_pyodk_adapter(self):
+        self.mount("https://", PyODKAdapter(timeout=30))
+
+    def urljoin(self, url: str) -> str:
+        return urljoin(self.base_url, url.lstrip("/"))
+
+    def request(self, method, url, *args, **kwargs):
+        return super().request(method, self.urljoin(url), *args, **kwargs)
+
+    def prepare_request(self, request):
+        request.url = self.urljoin(request.url)
+        return super().prepare_request(request)
+
+    def get_200_or_error(self, url, logger, *args, **kwargs) -> Response:
+        response = self.request("GET", url, *args, **kwargs)
+        if response.status_code == 200:
+            return response
+        else:
+            msg = (
+                f"The request to {url} failed."
+                f" Status: {response.status_code}, content: {response.content}"
+            )
+            err = PyODKError(msg, response)
+            logger.error(err, exc_info=True)
+            raise err

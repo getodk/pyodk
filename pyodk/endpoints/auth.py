@@ -3,14 +3,14 @@ from typing import Optional
 
 from pyodk import config
 from pyodk.errors import PyODKError
-from pyodk.session import ClientSession
+from pyodk.session import Session
 
 log = logging.getLogger(__name__)
 
 
 class AuthService:
-    def __init__(self, session: ClientSession, cache_path: Optional[str] = None) -> None:
-        self.session: ClientSession = session
+    def __init__(self, session: Session, cache_path: Optional[str] = None) -> None:
+        self.session: Session = session
         self.cache_path: str = cache_path
 
     def verify_token(self, token: str) -> str:
@@ -20,8 +20,8 @@ class AuthService:
         :param token: The token to check.
         :return:
         """
-        response = self.session.s.get(
-            url=f"{self.session.base_url}/v1/users/current",
+        response = self.session.get(
+            url="users/current",
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {token}",
@@ -48,8 +48,8 @@ class AuthService:
         :param password: The Web User's password.
         :return: The session token.
         """
-        response = self.session.s.post(
-            url=f"{self.session.base_url}/v1/sessions",
+        response = self.session.post(
+            url="sessions",
             json={"email": username, "password": password},
             headers={"Content-Type": "application/json"},
         )
@@ -67,7 +67,7 @@ class AuthService:
                 f"The login request failed."
                 f" Status: {response.status_code}, content: {response.content}"
             )
-            err = PyODKError(msg)
+            err = PyODKError(msg, response)
             log.error(err, exc_info=True)
             raise err
 
