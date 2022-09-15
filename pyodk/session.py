@@ -4,6 +4,7 @@ from requests import Response
 from requests import Session as RequestsSession
 from requests.adapters import HTTPAdapter, Retry
 
+from pyodk import __version__
 from pyodk.errors import PyODKError
 
 
@@ -34,7 +35,7 @@ class Session(RequestsSession):
         self.base_url: str = self.base_url_validate(
             base_url=base_url, api_version=api_version
         )
-        self.mount_pyodk_adapter()
+        self._post_init()
 
     @staticmethod
     def base_url_validate(base_url: str, api_version: str):
@@ -45,8 +46,10 @@ class Session(RequestsSession):
                 base_url = base_url.rstrip("/") + f"/{api_version}/"
         return base_url
 
-    def mount_pyodk_adapter(self):
+    def _post_init(self):
+        """Extra steps to customise the Session after core init."""
         self.mount("https://", PyODKAdapter(timeout=30))
+        self.headers.update({"User-Agent": f"pyodk v{__version__}"})
 
     def urljoin(self, url: str) -> str:
         return urljoin(self.base_url, url.lstrip("/"))
