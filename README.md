@@ -67,11 +67,11 @@ The session cache file uses the TOML format. The default file name is `.pyodk_ca
 ```python
 from pyodk.client import Client
 
-with Client() as client:
-    projects = client.projects.list()
-    forms = client.forms.list()
-    submissions = client.submissions.list(form_id=next(forms).xmlFormId)
-    form_data = client.submissions.get_table(form_id="birds", project_id=8)
+client = Client()
+projects = client.projects.list()
+forms = client.forms.list()
+submissions = client.submissions.list(form_id=next(forms).xmlFormId)
+form_data = client.submissions.get_table(form_id="birds", project_id=8)
 ```
 
 The `Client` is not specific to a project, but a default `project_id` can be set by:
@@ -85,6 +85,12 @@ The `Client` is specific to a configuration and cache file. These approximately 
 - Setting environment variables `PYODK_CONFIG_FILE` and `PYODK_CACHE_FILE`
 - Init arguments: `Client(config_path="my_config.toml", cache_path="my_cache.toml")`.
 
+**NOTE:** Creating a `Client` opens a session. If you use `pyodk` as part of a long-running program, you should clean up that session. You can explicitly call `client.close` when you are done making requests or use a `with` statement to automatically clean up resources:
+```
+with Client() as client:
+  projects = client.projects.list()
+  ...
+```
 
 ## Endpoints
 

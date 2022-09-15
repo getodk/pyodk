@@ -57,6 +57,9 @@ class Client:
             session=self.session, default_project_id=self.project_id
         )
 
+        self.session.__enter__()
+        self._login()
+
     @property
     def project_id(self) -> Optional[int]:
         if self._project_id is None:
@@ -75,16 +78,11 @@ class Client:
         )
         self.session.headers["Authorization"] = "Bearer " + token
 
-    def open(self) -> "Client":
-        self.session.__enter__()
-        self._login()
-        return self
-
     def close(self, *args):
         self.session.__exit__(*args)
 
     def __enter__(self) -> "Client":
-        return self.open()
+        return self
 
     def __exit__(self, *args):
         return self.close(*args)
