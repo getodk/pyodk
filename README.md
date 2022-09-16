@@ -86,9 +86,9 @@ The `Client` is specific to a configuration and cache file. These approximately 
 - Init arguments: `Client(config_path="my_config.toml", cache_path="my_cache.toml")`.
 
 
-## Endpoints
+## Methods
 
-Available endpoints on `Client`:
+Available methods on `Client`:
 
 - Projects
   - get
@@ -96,7 +96,6 @@ Available endpoints on `Client`:
 - Forms
   - get
   - list
-  - get_metadata
 - Submissions
   - get
   - list
@@ -108,7 +107,7 @@ Available endpoints on `Client`:
   - patch
   - delete
 
-A detailed listing of current and planned endpoint mappings is in `docs/api_index.csv`.
+See issues for additions to `pyodk` that are under consideration. Please file new issues for any functionality you are missing.
 
 For interacting with parts of the ODK Central API ([docs](https://odkcentral.docs.apiary.io)) that have not been implemented in pyodk, use the `Client.session`, which is a `requests.Session` object subclass. The `Session` has customised to prefix request URLs with the `base_url` from the pyodk config. For example with a base_url `https://www.example.com`, a call to `client.session.get("projects/8")` gets the details of `project_id=8`, using the full url `https://www.example.com/v1/projects/8`. As a further convenience, HTTP verb methods are exposed on the `Client`, so the example can also be written as `client.get("projects/8")`. Similarly, sending data would look like: `client.post("/projects/7/app-users", data={"displayName": "Lab Tech"})`.
 

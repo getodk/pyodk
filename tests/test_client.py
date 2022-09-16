@@ -18,14 +18,12 @@ class TestUsage(TestCase):
                 table_name="Submissions",
                 count=True,
             )
-            form_odata_metadata = client.forms.get_metadata(form_id="range")
             print(
                 [
                     projects,
                     forms,
                     submissions,
                     form_data,
-                    form_data_params,
-                    form_odata_metadata,
+                    form_data_params
                 ]
             )
