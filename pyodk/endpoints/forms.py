@@ -33,8 +33,6 @@ class URLs(bases.Model):
 
     list: str = "projects/{project_id}/forms"
     get: str = "projects/{project_id}/forms/{form_id}"
-    get_metadata: str = "projects/{project_id}/forms/{form_id}.svc/$metadata"
-
 
 class FormService(bases.Service):
     __slots__ = ("urls", "session", "default_project_id", "default_form_id")
@@ -100,31 +98,3 @@ class FormService(bases.Service):
             )
             data = response.json()
             return Form(**data)
-
-    def get_metadata(
-        self,
-        form_id: str,
-        project_id: Optional[int] = None,
-    ) -> str:
-        """
-        Read the OData metadata XML.
-
-        :param form_id: The xmlFormId of the Form being referenced.
-        :param project_id: The id of the project this form belongs to.
-        """
-        try:
-            pid = pv.validate_project_id(
-                project_id=project_id, default_project_id=self.default_project_id
-            )
-            fid = pv.validate_form_id(
-                form_id=form_id, default_form_id=self.default_form_id
-            )
-        except PyODKError as err:
-            log.error(err, exc_info=True)
-            raise err
-        else:
-            response = self.session.get_200_or_error(
-                url=self.urls.get_metadata.format(project_id=pid, form_id=fid),
-                logger=log,
-            )
-            return response.text

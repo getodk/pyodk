@@ -96,7 +96,6 @@ Available endpoints on `Client`:
 - Forms
   - get
   - list
-  - get_metadata
 - Submissions
   - get
   - list
