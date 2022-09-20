@@ -1,5 +1,4 @@
 # pyODK
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/getodk/pyodk/HEAD?labpath=examples)
 
 An API client for ODK Central that makes it easier to interact with data in ODK from Python.
 
