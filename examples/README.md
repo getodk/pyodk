@@ -6,7 +6,7 @@ Please help us expand this resource! Contribute an example by [opening a pull re
 
 ## [Using `pyodk` and `pandas` for basic analysis.ipynb](Using%20pyodk%20and%20pandas%20for%20basic%20analysis.ipynb)
 
-A standalone Jupyter notebook intended to introduce `pyodk` and show how it can be used with `pandas` and `geopandas` to perform basic analysis. Shows building a client and fetching data for a form.
+A standalone Jupyter notebook intended to introduce `pyodk` and show how it can be used with `pandas` and `geopandas` to perform basic analysis. Shows building a client and fetching data for a form. You can try this on your server using [this form definition](gis_centre_demo.xlsx).
 
 ## [Using the API docs and HTTP methods.ipynb](Using%the API%docs%and%HTTP%methods.ipynb)
 
