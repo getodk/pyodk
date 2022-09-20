@@ -1,8 +1,8 @@
 # pyODK
 
-An API client for ODK Central that makes it easier to interact with data in ODK from Python.
+An API client for the [ODK Central API](https://odkcentral.docs.apiary.io). Use it to interact with your data and automate common tasks from Python.
 
-More details on the goals and implementation plans [are here](https://docs.google.com/document/d/1AamUcvO4R7VzphToIfeMhCjWEjxjbpVQ_DJR89FlpRc/edit).
+This library aims to make common data analysis and workflow automation tasks as simple as possible by providing clear method names, types, and examples. It also provides convenient access to the full API using [HTTP verb methods](#raw-http-requests).
 
 
 # Install
@@ -73,12 +73,17 @@ with Client() as client:
     submissions = client.submissions.list(form_id=next(forms).xmlFormId)
     form_data = client.submissions.get_table(form_id="birds", project_id=8)
 ```
+Find more examples [here](examples).
+
+## Default project
 
 The `Client` is not specific to a project, but a default `project_id` can be set by:
 
 - A `default_project_id` in the configuration file.
 - An init argument: `Client(project_id=1)`.
 - A property on the client: `client.project_id = 1`.
+
+## Custom configuration file paths
 
 The `Client` is specific to a configuration and cache file. These approximately correspond to the session which the `Client` represents; it also encourages segregating credentials. These paths can be set by:
 
@@ -109,8 +114,18 @@ Available methods on `Client`:
 
 See issues for additions to `pyodk` that are under consideration. Please file new issues for any functionality you are missing.
 
-For interacting with parts of the ODK Central API ([docs](https://odkcentral.docs.apiary.io)) that have not been implemented in pyodk, use the `Client.session`, which is a `requests.Session` object subclass. The `Session` has customised to prefix request URLs with the `base_url` from the pyodk config. For example with a base_url `https://www.example.com`, a call to `client.session.get("projects/8")` gets the details of `project_id=8`, using the full url `https://www.example.com/v1/projects/8`. As a further convenience, HTTP verb methods are exposed on the `Client`, so the example can also be written as `client.get("projects/8")`. Similarly, sending data would look like: `client.post("/projects/7/app-users", data={"displayName": "Lab Tech"})`.
+## Raw HTTP requests
+For interacting with parts of the ODK Central API ([docs](https://odkcentral.docs.apiary.io)) that have not been implemented in `pyodk`, use HTTP verb methods exposed on the `Client`:
 
+```
+client.get("projects/8")
+client.post("projects/7/app-users", json={"displayName": "Lab Tech"})
+```
+You can find a more detailed tutorial [in the examples](examples/).
+
+These methods provide convenient access to `Client.session`, which is a `requests.Session` object subclass. The `Session` has customised to prefix request URLs with the `base_url` from the pyodk config. For example with a base_url `https://www.example.com`, a call to `client.session.get("projects/8")` gets the details of `project_id=8`, using the full url `https://www.example.com/v1/projects/8`.
+
+## Session customization
 If Session behaviour needs to be customised, for example to set alternative timeouts or retry strategies, etc., then subclass the `pyodk.session.Session` and provide an instance to the `Client` constructor, e.g. `Client(session=my_session)`.
 
 
