@@ -8,6 +8,6 @@ Please help us expand this resource! Contribute an example by [opening a pull re
 
 A standalone Jupyter notebook intended to introduce `pyodk` and show how it can be used with `pandas` and `geopandas` to perform basic analysis. Shows building a client and fetching data for a form. You can try this on your server using [this form definition](fav_color.xlsx).
 
-## [Using the API docs and HTTP methods.ipynb](Using%the%20API%docs%and%HTTP%methods.ipynb)
+## [Using the API docs and HTTP methods.ipynb](Using%20the%20API%20docs%20and%20HTTP%20methods.ipynb)
 
 A standalone Jupyter notebook that shows how the raw HTTP method access and the [API docs](https://odkcentral.docs.apiary.io/) can be used together to make use of the full ODK Central API.
