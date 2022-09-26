@@ -76,6 +76,12 @@ jobs:
           pip install wheel
           python bin/clean_for_build.py
           python setup.py sdist bdist_wheel
+
+      # Check.
+      - name: Check dist with twine
+        run: |
+          pip install twine
+          twine check dist/*
       - name: Upload sdist and wheel.
         if: success()
         uses: actions/upload-artifact@v2
