@@ -34,6 +34,7 @@ class URLs(bases.Model):
     list: str = "projects/{project_id}/forms"
     get: str = "projects/{project_id}/forms/{form_id}"
 
+
 class FormService(bases.Service):
     __slots__ = ("urls", "session", "default_project_id", "default_form_id")
 
@@ -51,19 +52,18 @@ class FormService(bases.Service):
 
     def list(self, project_id: Optional[int] = None) -> List[Form]:
         """
-        Read the details of all Forms.
+        Read all Form details.
 
         :param project_id: The id of the project the forms belong to.
         """
         try:
-            pid = pv.validate_project_id(
-                project_id=project_id, default_project_id=self.default_project_id
-            )
+            pid = pv.validate_project_id(project_id, self.default_project_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
             raise err
         else:
-            response = self.session.get_200_or_error(
+            response = self.session.response_or_error(
+                method="GET",
                 url=self.urls.list.format(project_id=pid),
                 logger=log,
             )
@@ -76,23 +76,20 @@ class FormService(bases.Service):
         project_id: Optional[int] = None,
     ) -> Form:
         """
-        Read the details of a Form.
+        Read Form details.
 
         :param form_id: The id of this form as given in its XForms XML definition.
         :param project_id: The id of the project this form belongs to.
         """
         try:
-            pid = pv.validate_project_id(
-                project_id=project_id, default_project_id=self.default_project_id
-            )
-            fid = pv.validate_form_id(
-                form_id=form_id, default_form_id=self.default_form_id
-            )
+            pid = pv.validate_project_id(project_id, self.default_project_id)
+            fid = pv.validate_form_id(form_id, self.default_form_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
             raise err
         else:
-            response = self.session.get_200_or_error(
+            response = self.session.response_or_error(
+                method="GET",
                 url=self.urls.get.format(project_id=pid, form_id=fid),
                 logger=log,
             )

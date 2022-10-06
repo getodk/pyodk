@@ -36,3 +36,12 @@ test_submissions = {
         },
     ],
 }
+test_xml = """
+<data id="my_form" version="v1">
+  <meta>
+    <instanceID>uuid:85cb9aff-005e-4edd-9739-dc9c1a829c44</instanceID>
+  </meta>
+  <name>Alice</name>
+  <age>36</age>
+</data>
+"""
