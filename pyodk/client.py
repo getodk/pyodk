@@ -2,6 +2,7 @@ from typing import Callable, Optional
 
 from pyodk import config
 from pyodk.endpoints.auth import AuthService
+from pyodk.endpoints.comment import CommentService
 from pyodk.endpoints.forms import FormService
 from pyodk.endpoints.projects import ProjectService
 from pyodk.endpoints.submissions import SubmissionService
@@ -54,6 +55,9 @@ class Client:
             session=self.session, default_project_id=self.project_id
         )
         self.submissions: SubmissionService = SubmissionService(
+            session=self.session, default_project_id=self.project_id
+        )
+        self.comments: CommentService = CommentService(
             session=self.session, default_project_id=self.project_id
         )
 
