@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 from pyodk.client import Client
-from pyodk.endpoints.comment import Comment
+from pyodk.endpoints.comments import Comment
 from pyodk.session import Session
 from tests.resources import CONFIG_DATA, comments_data
 
