@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from typing import List, Optional
 
 from pyodk import validators as pv
@@ -12,6 +13,7 @@ log = logging.getLogger(__name__)
 class Comment(bases.Model):
     body: str
     actorId: int
+    createdAt: datetime
 
 
 class URLs(bases.Model):

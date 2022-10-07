@@ -19,8 +19,7 @@ class TestUsage(TestCase):
                 count=True,
             )
             comments = client.comments.list(
-                project_id=51,
                 form_id="range",
-                instance_id="uuid:85cb9aff-005e-4edd-9739-dc9c1a829c47",
+                instance_id="uuid:2c296eae-2708-4a89-bfe7-0f2d440b7fe8",
             )
             print([projects, forms, submissions, form_data, form_data_params, comments])
