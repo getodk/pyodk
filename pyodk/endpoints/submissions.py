@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 from pyodk import validators as pv
 from pyodk.endpoints import bases
-from pyodk.endpoints.comment import CommentService
+from pyodk.endpoints.comments import CommentService
 from pyodk.errors import PyODKError
 from pyodk.session import Session
 
