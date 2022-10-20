@@ -16,6 +16,10 @@ A standalone Jupyter notebook that shows how the raw HTTP method access and the 
 
 A Jupyter notebook demonstrating some options for working with repeats.
 
+## [App User provisioning script](app_user_provisioner.py)
+
+A script that reads names from a CSV and creates an App User for each one that isn't currently used by an active App User on the server. Also creates customized QR codes for each new App User.
+
 ## [October 2022 webinar materials](2022-10-pyodk-webinar.ipynb)
 
 A Jupyter notebook companion to an October 2022 webinar by Hélène Martin introducing `pyodk`. Includes link to the session recording.
