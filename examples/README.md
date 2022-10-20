@@ -15,3 +15,7 @@ A standalone Jupyter notebook that shows how the raw HTTP method access and the 
 ## [Working with repeats](working-with-repeats.ipynb)
 
 A Jupyter notebook demonstrating some options for working with repeats.
+
+## [October 2022 webinar materials](2022-10-pyodk-webinar.ipynb)
+
+A Jupyter notebook companion to an October 2022 webinar by Hélène Martin introducing `pyodk`. Includes link to the session recording.
