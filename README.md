@@ -71,6 +71,7 @@ with Client() as client:
     forms = client.forms.list()
     submissions = client.submissions.list(form_id=next(forms).xmlFormId)
     form_data = client.submissions.get_table(form_id="birds", project_id=8)
+    comments = client.comments.list(form_id=next(forms).xmlFormId, instance_id="uuid:...")
 ```
 
 **👉 Looking for more advanced examples? You can find detailed Jupyter notebooks, scripts, and webinars [here](examples).**
@@ -96,15 +97,22 @@ The `Client` is specific to a configuration and cache file. These approximately 
 Available methods on `Client`:
 
 - Projects
-  - get
-  - list
+  - list: Read all Project details.
+  - get: Read Project details.
 - Forms
-  - get
-  - list
+  - list: Read all Form details.
+  - get: Read Form details.
 - Submissions
-  - get
-  - list
-  - get_table
+  - list: Read all Submission metadata.
+  - get: Read Submission metadata.
+  - get_table: Read Submission data.
+  - post: Create a Submission.
+  - put: Update Submission data.
+  - patch: Update Submission metadata.
+  - edit: Submission.post then Comment.post.
+- Comment
+  - list: Read all Comment details.
+  - post: Create a Comment.
 - *for additional requests*
   - get
   - post
