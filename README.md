@@ -61,8 +61,7 @@ The session cache file uses the TOML format. The default file name is `.pyodk_ca
 
 # Usage
 
-
-## Example
+## Examples
 
 ```python
 from pyodk.client import Client
@@ -73,7 +72,8 @@ with Client() as client:
     submissions = client.submissions.list(form_id=next(forms).xmlFormId)
     form_data = client.submissions.get_table(form_id="birds", project_id=8)
 ```
-Find more examples [here](examples).
+
+**👉 Looking for more advanced examples? You can find detailed Jupyter notebooks, scripts, and webinars [here](examples).**
 
 ## Default project
 
