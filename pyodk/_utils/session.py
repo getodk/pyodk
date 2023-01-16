@@ -6,6 +6,7 @@ from requests import Session as RequestsSession
 from requests.adapters import HTTPAdapter, Retry
 from requests.exceptions import HTTPError
 
+from pyodk.__version__ import __version__
 from pyodk.errors import PyODKError
 
 
@@ -50,8 +51,6 @@ class Session(RequestsSession):
     def _post_init(self):
         """Extra steps to customise the Session after core init."""
         self.mount("https://", PyODKAdapter(timeout=30))
-        from pyodk import __version__
-
         self.headers.update({"User-Agent": f"pyodk v{__version__}"})
 
     def urljoin(self, url: str) -> str:

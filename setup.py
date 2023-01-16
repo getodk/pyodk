@@ -1,10 +1,14 @@
 from setuptools import find_packages, setup
+from pathlib import Path
 
-from pyodk import __version__
+
+about = {}
+exec((Path(__file__).parent / "pyodk" / "__version__.py").read_text(), about)
+
 
 setup(
     name="pyodk",
-    version=__version__,
+    version=about["__version__"],
     author="github.com/getodk",
     author_email="support@getodk.org",
     packages=find_packages(exclude=["tests", "tests.*"]),
