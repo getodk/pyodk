@@ -3,15 +3,15 @@ from unittest.mock import MagicMock, patch
 
 from requests import Session
 
-from pyodk import config
+from pyodk._endpoints.auth import AuthService
+from pyodk._utils import config
 from pyodk.client import Client
-from pyodk.endpoints.auth import AuthService
 from pyodk.errors import PyODKError
 from tests import utils
 from tests.resources import CONFIG_DATA
 
 
-@patch("pyodk.config.read_config", MagicMock(return_value=CONFIG_DATA))
+@patch("pyodk._utils.config.read_config", MagicMock(return_value=CONFIG_DATA))
 class TestAuth(TestCase):
     """Test login."""
 

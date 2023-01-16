@@ -1,9 +1,9 @@
 import logging
 from typing import Optional
 
-from pyodk import config
+from pyodk._utils import config
+from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
-from pyodk.session import Session
 
 log = logging.getLogger(__name__)
 

@@ -2,10 +2,10 @@ import logging
 from datetime import datetime
 from typing import List, Optional
 
-from pyodk import validators as pv
-from pyodk.endpoints import bases
+from pyodk._endpoints import bases
+from pyodk._utils import validators as pv
+from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
-from pyodk.session import Session
 
 log = logging.getLogger(__name__)
 

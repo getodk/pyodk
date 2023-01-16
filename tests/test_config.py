@@ -2,7 +2,7 @@ import os
 from unittest import TestCase
 from unittest.mock import patch
 
-from pyodk import config
+from pyodk._utils import config
 from pyodk.errors import PyODKError
 from tests import resources, utils
 

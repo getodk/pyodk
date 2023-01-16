@@ -2,11 +2,11 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from pyodk import validators as pv
-from pyodk.endpoints import bases
-from pyodk.endpoints.comments import CommentService
+from pyodk._endpoints import bases
+from pyodk._endpoints.comments import Comment, CommentService
+from pyodk._utils import validators as pv
+from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
-from pyodk.session import Session
 
 log = logging.getLogger(__name__)
 
@@ -162,7 +162,7 @@ class SubmissionService(bases.Service):
         )
         return response.json()
 
-    def post(
+    def create(
         self,
         xml: str,
         form_id: Optional[str] = None,
@@ -208,7 +208,7 @@ class SubmissionService(bases.Service):
         data = response.json()
         return Submission(**data)
 
-    def put(
+    def _put(
         self,
         instance_id: str,
         xml: str,
@@ -252,20 +252,20 @@ class SubmissionService(bases.Service):
         data = response.json()
         return Submission(**data)
 
-    def patch(
+    def _patch(
         self,
         instance_id: str,
+        review_state: str,
         form_id: Optional[str] = None,
         project_id: Optional[int] = None,
-        review_state: Optional[str] = None,
     ) -> Submission:
         """
         Update Submission metadata.
 
         :param instance_id: The instanceId of the Submission being referenced.
+        :param review_state: The current review state of the submission.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
-        :param review_state: The current review state of the submission.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -296,7 +296,7 @@ class SubmissionService(bases.Service):
         comment: Optional[str] = None,
     ) -> None:
         """
-        Submission.post then Comment.post.
+        Edit a submission and optionally comment on it.
 
         :param instance_id: The instanceId of the Submission being referenced.
         :param xml: The submission XML.
@@ -304,14 +304,91 @@ class SubmissionService(bases.Service):
         :param project_id: The id of the project this form belongs to.
         :param comment: The text of the comment.
         """
-        self.put(instance_id=instance_id, xml=xml, form_id=form_id, project_id=project_id)
+        self._put(
+            instance_id=instance_id, xml=xml, form_id=form_id, project_id=project_id
+        )
         if comment is not None:
-            comment_svc = CommentService(
-                session=self.session, default_project_id=self.default_project_id
-            )
-            comment_svc.post(
+            self.add_comment(
+                instance_id=instance_id,
                 comment=comment,
                 project_id=project_id,
                 form_id=form_id,
-                instance_id=instance_id,
             )
+
+    def review(
+        self,
+        instance_id: str,
+        review_state: str,
+        form_id: Optional[str] = None,
+        project_id: Optional[int] = None,
+        comment: Optional[str] = None,
+    ) -> None:
+        """
+        Update Submission metadata and optionally comment on it.
+
+        :param instance_id: The instanceId of the Submission being referenced.
+        :param review_state: The current review state of the submission.
+        :param form_id: The xmlFormId of the Form being referenced.
+        :param project_id: The id of the project this form belongs to.
+        :param comment: The text of the comment.
+        """
+        self._patch(
+            instance_id=instance_id,
+            review_state=review_state,
+            form_id=form_id,
+            project_id=project_id,
+        )
+        if comment is not None:
+            self.add_comment(
+                instance_id=instance_id,
+                comment=comment,
+                project_id=project_id,
+                form_id=form_id,
+            )
+
+    def list_comments(
+        self,
+        instance_id: str,
+        form_id: Optional[str] = None,
+        project_id: Optional[int] = None,
+    ) -> List[Comment]:
+        """
+        Read all Comment details.
+
+        :param instance_id: The instanceId of the Submission being referenced.
+        :param form_id: The xmlFormId of the Form being referenced.
+        :param project_id: The id of the project the Submissions belong to.
+        """
+        comment_svc = CommentService(
+            session=self.session, default_project_id=self.default_project_id
+        )
+        return comment_svc.list(
+            project_id=project_id,
+            form_id=form_id,
+            instance_id=instance_id,
+        )
+
+    def add_comment(
+        self,
+        instance_id: str,
+        comment: str,
+        project_id: Optional[int] = None,
+        form_id: Optional[str] = None,
+    ) -> Comment:
+        """
+        Create a Comment.
+
+        :param instance_id: The instanceId of the Submission being referenced.
+        :param comment: The text of the comment.
+        :param project_id: The id of the project this form belongs to.
+        :param form_id: The xmlFormId of the Form being referenced.
+        """
+        comment_svc = CommentService(
+            session=self.session, default_project_id=self.default_project_id
+        )
+        return comment_svc.post(
+            comment=comment,
+            project_id=project_id,
+            form_id=form_id,
+            instance_id=instance_id,
+        )

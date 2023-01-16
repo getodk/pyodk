@@ -18,7 +18,7 @@ class TestUsage(TestCase):
                 table_name="Submissions",
                 count=True,
             )
-            comments = client.comments.list(
+            comments = client.submissions.list_comments(
                 form_id="range",
                 instance_id="uuid:2c296eae-2708-4a89-bfe7-0f2d440b7fe8",
             )

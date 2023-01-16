@@ -3,8 +3,8 @@ from typing import Any, Callable
 from pydantic import validators as v
 from pydantic.errors import StrError
 
+from pyodk._utils.utils import coalesce
 from pyodk.errors import PyODKError
-from pyodk.utils import coalesce
 
 
 def wrap_error(validator: Callable, key: str, value: Any) -> Any:
