@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Callable
 
 from pydantic import validators as v
@@ -61,3 +62,19 @@ def validate_str(*args: str, key: str) -> str:
         key=key,
         value=coalesce(*args),
     )
+
+
+def validate_bool(*args: bool, key: str) -> str:
+    return wrap_error(
+        validator=v.bool_validator,
+        key=key,
+        value=coalesce(*args),
+    )
+
+
+def validate_file_path(*args: str) -> Path:
+    def validate_fp(f):
+        p = v.path_validator(f)
+        return v.path_exists_validator(p)
+
+    return wrap_error(validator=validate_fp, key="file_path", value=coalesce(*args))
