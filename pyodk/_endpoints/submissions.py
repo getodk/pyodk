@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pyodk._endpoints import bases
 from pyodk._endpoints.comments import Comment, CommentService
@@ -27,12 +27,13 @@ class URLs(bases.Model):
     class Config:
         frozen = True
 
-    list: str = "projects/{project_id}/forms/{form_id}/submissions"
-    get: str = "projects/{project_id}/forms/{form_id}/submissions/{instance_id}"
-    get_table: str = "projects/{project_id}/forms/{form_id}.svc/{table_name}"
-    post: str = "projects/{project_id}/forms/{form_id}/submissions"
-    patch: str = "projects/{project_id}/forms/{form_id}/submissions/{instance_id}"
-    put: str = "projects/{project_id}/forms/{form_id}/submissions/{instance_id}"
+    _form: str = "projects/{project_id}/forms/{form_id}"
+    list: str = f"{_form}/submissions"
+    get: str = f"{_form}/submissions/{{instance_id}}"
+    get_table: str = f"{_form}.svc/{{table_name}}"
+    post: str = f"{_form}/submissions"
+    patch: str = f"{_form}/submissions/{{instance_id}}"
+    put: str = f"{_form}/submissions/{{instance_id}}"
 
 
 class SubmissionService(bases.Service):
@@ -49,6 +50,12 @@ class SubmissionService(bases.Service):
         self.session: Session = session
         self.default_project_id: Optional[int] = default_project_id
         self.default_form_id: Optional[str] = default_form_id
+
+    def _default_kw(self) -> Dict[str, Any]:
+        return {
+            "default_project_id": self.default_project_id,
+            "default_form_id": self.default_form_id,
+        }
 
     def list(
         self, form_id: Optional[str] = None, project_id: Optional[int] = None
@@ -192,7 +199,7 @@ class SubmissionService(bases.Service):
             fid = pv.validate_form_id(form_id, self.default_form_id)
             params = {}
             if device_id is not None:
-                params["deviceID"] = device_id
+                params["deviceID"] = pv.validate_str(device_id, key="device_id")
         except PyODKError as err:
             log.error(err, exc_info=True)
             raise err
@@ -304,16 +311,10 @@ class SubmissionService(bases.Service):
         :param project_id: The id of the project this form belongs to.
         :param comment: The text of the comment.
         """
-        self._put(
-            instance_id=instance_id, xml=xml, form_id=form_id, project_id=project_id
-        )
+        fp_ids = {"form_id": form_id, "project_id": project_id}
+        self._put(instance_id=instance_id, xml=xml, **fp_ids)
         if comment is not None:
-            self.add_comment(
-                instance_id=instance_id,
-                comment=comment,
-                project_id=project_id,
-                form_id=form_id,
-            )
+            self.add_comment(instance_id=instance_id, comment=comment, **fp_ids)
 
     def review(
         self,
@@ -332,19 +333,10 @@ class SubmissionService(bases.Service):
         :param project_id: The id of the project this form belongs to.
         :param comment: The text of the comment.
         """
-        self._patch(
-            instance_id=instance_id,
-            review_state=review_state,
-            form_id=form_id,
-            project_id=project_id,
-        )
+        fp_ids = {"form_id": form_id, "project_id": project_id}
+        self._patch(instance_id=instance_id, review_state=review_state, **fp_ids)
         if comment is not None:
-            self.add_comment(
-                instance_id=instance_id,
-                comment=comment,
-                project_id=project_id,
-                form_id=form_id,
-            )
+            self.add_comment(instance_id=instance_id, comment=comment, **fp_ids)
 
     def list_comments(
         self,
@@ -359,14 +351,9 @@ class SubmissionService(bases.Service):
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project the Submissions belong to.
         """
-        comment_svc = CommentService(
-            session=self.session, default_project_id=self.default_project_id
-        )
-        return comment_svc.list(
-            project_id=project_id,
-            form_id=form_id,
-            instance_id=instance_id,
-        )
+        fp_ids = {"form_id": form_id, "project_id": project_id}
+        comment_svc = CommentService(session=self.session, **self._default_kw())
+        return comment_svc.list(instance_id=instance_id, **fp_ids)
 
     def add_comment(
         self,
@@ -383,12 +370,6 @@ class SubmissionService(bases.Service):
         :param project_id: The id of the project this form belongs to.
         :param form_id: The xmlFormId of the Form being referenced.
         """
-        comment_svc = CommentService(
-            session=self.session, default_project_id=self.default_project_id
-        )
-        return comment_svc.post(
-            comment=comment,
-            project_id=project_id,
-            form_id=form_id,
-            instance_id=instance_id,
-        )
+        fp_ids = {"form_id": form_id, "project_id": project_id}
+        comment_svc = CommentService(session=self.session, **self._default_kw())
+        return comment_svc.post(comment=comment, instance_id=instance_id, **fp_ids)
