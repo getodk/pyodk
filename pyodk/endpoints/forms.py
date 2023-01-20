@@ -34,6 +34,7 @@ class URLs(bases.Model):
     list: str = "projects/{project_id}/forms"
     get: str = "projects/{project_id}/forms/{form_id}"
 
+
 class FormService(bases.Service):
     __slots__ = ("urls", "session", "default_project_id", "default_form_id")
 
