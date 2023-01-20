@@ -1,16 +1,18 @@
 from logging import Logger
 from urllib.parse import urljoin
 
-from requests import Response
+from requests import PreparedRequest, Response
 from requests import Session as RequestsSession
 from requests.adapters import HTTPAdapter, Retry
+from requests.auth import AuthBase
 from requests.exceptions import HTTPError
 
 from pyodk.__version__ import __version__
+from pyodk._endpoints.auth import AuthService
 from pyodk.errors import PyODKError
 
 
-class PyODKAdapter(HTTPAdapter):
+class Adapter(HTTPAdapter):
     def __init__(self, *args, **kwargs):
         if "timeout" in kwargs:
             self.timeout = kwargs["timeout"]
@@ -31,13 +33,60 @@ class PyODKAdapter(HTTPAdapter):
         return super().send(request, **kwargs)
 
 
+class Auth(AuthBase):
+    def __init__(self, session: "Session", username: str, password: str, cache_path: str):
+        self.session: "Session" = session
+        self.username: str = username
+        self.password: str = password
+        self.service: AuthService = AuthService(session=session, cache_path=cache_path)
+        self._skip_auth_check: bool = False
+
+    def login(self) -> str:
+        """
+        Log in to Central (create new session or verify existing).
+
+        :return: Bearer <token>
+        """
+        if "Authorization" not in self.session.headers:
+            try:
+                self._skip_auth_check = True  # Avoid loop of death due to the below call.
+                t = self.service.get_token(username=self.username, password=self.password)
+                self.session.headers["Authorization"] = "Bearer " + t
+            finally:
+                self._skip_auth_check = False
+        return self.session.headers["Authorization"]
+
+    def __call__(self, r: PreparedRequest, *args, **kwargs):
+        if "Authorization" not in r.headers and not self._skip_auth_check:
+            r.headers["Authorization"] = self.login()
+        return r
+
+
 class Session(RequestsSession):
-    def __init__(self, base_url: str, api_version: str) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        api_version: str,
+        username: str,
+        password: str,
+        cache_path: str,
+    ) -> None:
+        """
+        :param base_url: Scheme/domain/port parts of the URL e.g. https://www.example.com
+        :param api_version: The Central API version (first part of the URL path).
+        :param username: The Central user name to log in with.
+        :param password: The Central user's password to log in with.
+        :param cache_path: Where to read/write pyodk_cache.toml.
+        """
         super().__init__()
         self.base_url: str = self.base_url_validate(
             base_url=base_url, api_version=api_version
         )
-        self._post_init()
+        self.mount("https://", Adapter(timeout=30))
+        self.headers.update({"User-Agent": f"pyodk v{__version__}"})
+        self.auth: Auth = Auth(
+            session=self, username=username, password=password, cache_path=cache_path
+        )
 
     @staticmethod
     def base_url_validate(base_url: str, api_version: str):
@@ -47,11 +96,6 @@ class Session(RequestsSession):
             elif not base_url.endswith(api_version):
                 base_url = base_url.rstrip("/") + f"/{api_version}/"
         return base_url
-
-    def _post_init(self):
-        """Extra steps to customise the Session after core init."""
-        self.mount("https://", PyODKAdapter(timeout=30))
-        self.headers.update({"User-Agent": f"pyodk v{__version__}"})
 
     def urljoin(self, url: str) -> str:
         return urljoin(self.base_url, url.lstrip("/"))

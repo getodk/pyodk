@@ -22,8 +22,8 @@ class TestAuth(TestCase):
             mock_session.return_value.json.return_value = {"token": "here"}
             conf = config.read_config().central
             client = Client()
-            with client.session:
-                token = client.auth.get_new_token(conf.username, conf.password)
+            with client.session as s:
+                token = s.auth.service.get_new_token(conf.username, conf.password)
         self.assertEqual("here", token)
 
     def test_get_new_token__error__response_status(self):
@@ -32,8 +32,8 @@ class TestAuth(TestCase):
             mock_session.return_value.status_code = 404
             conf = config.read_config().central
             client = Client()
-            with client.session, self.assertRaises(PyODKError) as err:
-                client.auth.get_new_token(conf.username, conf.password)
+            with client.session as s, self.assertRaises(PyODKError) as err:
+                s.auth.service.get_new_token(conf.username, conf.password)
         msg = "The login request failed. Status:"
         self.assertTrue(err.exception.args[0].startswith(msg))
 
@@ -44,8 +44,8 @@ class TestAuth(TestCase):
             mock_session.return_value.json.return_value = {"not": "here"}
             conf = config.read_config().central
             client = Client()
-            with client.session, self.assertRaises(PyODKError) as err:
-                client.auth.get_new_token(conf.username, conf.password)
+            with client.session as s, self.assertRaises(PyODKError) as err:
+                s.auth.service.get_new_token(conf.username, conf.password)
         msg = "The login request was OK but there was no token in the response."
         self.assertTrue(err.exception.args[0].startswith(msg))
 
@@ -54,8 +54,8 @@ class TestAuth(TestCase):
         with patch.object(Session, "get") as mock_session:
             mock_session.return_value.status_code = 200
             client = Client()
-            with client.session:
-                token = client.auth.verify_token(token="123")
+            with client.session as s:
+                token = s.auth.service.verify_token(token="123")
         self.assertEqual("123", token)
 
     def test_verify_token__error__response_status(self):
@@ -63,8 +63,8 @@ class TestAuth(TestCase):
         with patch.object(Session, "get") as mock_session:
             mock_session.return_value.status_code = 401
             client = Client()
-            with client.session, self.assertRaises(PyODKError) as err:
-                client.auth.verify_token(token="123")
+            with client.session as s, self.assertRaises(PyODKError) as err:
+                s.auth.service.verify_token(token="123")
         msg = "The token verification request failed. Status:"
         self.assertTrue(err.exception.args[0].startswith(msg))
 
@@ -76,7 +76,9 @@ class TestAuth(TestCase):
         ), utils.get_temp_dir() as tmp:
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)
-            token = client.auth.get_token(username="user", password="pass")
+            token = client.session.auth.service.get_token(
+                username="user", password="pass"
+            )
             self.assertEqual("123", token)
             cache = config.read_cache_token(cache_path=cache_path)
             self.assertEqual("123", cache)
@@ -94,7 +96,7 @@ class TestAuth(TestCase):
         ), utils.get_temp_dir() as tmp, self.assertRaises(PyODKError) as err:
             cache_path = tmp / "test_cache.toml"
             client = Client(cache_path=cache_path.as_posix())
-            client.auth.get_token(username="user", password="pass")
+            client.session.auth.service.get_token(username="user", password="pass")
             self.assertFalse(cache_path.exists())
         self.assertTrue(err.exception.args[0].startswith("The login request failed."))
 
@@ -107,7 +109,9 @@ class TestAuth(TestCase):
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)
             config.write_cache("token", "123", cache_path=cache_path)
-            token = client.auth.get_token(username="user", password="pass")
+            token = client.session.auth.service.get_token(
+                username="user", password="pass"
+            )
             self.assertEqual("123", token)
             cache = config.read_cache_token(cache_path=cache_path)
             self.assertEqual("123", cache)
@@ -124,7 +128,9 @@ class TestAuth(TestCase):
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)
             config.write_cache("token", "123", cache_path=cache_path)
-            token = client.auth.get_token(username="user", password="pass")
+            token = client.session.auth.service.get_token(
+                username="user", password="pass"
+            )
             self.assertEqual("123", token)
             cache = config.read_cache_token(cache_path=cache_path)
             self.assertEqual("123", cache)
