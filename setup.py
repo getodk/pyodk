@@ -15,7 +15,7 @@ setup(
     url="https://pypi.python.org/pypi/pyodk/",
     description="The official Python library for ODK 🐍",
     long_description=open("README.md", "r").read(),
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     license="Apache License, Version 2.0",
     python_requires=">=3.8",
     install_requires=(

@@ -31,7 +31,10 @@ jobs:
           pip list
 
       # Linters.
-      - run: python bin/pre_commit.py
+      - run: black pyodk tests bin --check --diff
+      - run: isort pyodk tests bin --check-only --diff
+      - run: flake8 pyodk tests bin
+      - run: pycodestyle pyodk tests bin
 
   test:
     runs-on: ${{ matrix.os }}
