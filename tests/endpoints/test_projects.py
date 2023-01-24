@@ -3,13 +3,13 @@ from unittest.mock import MagicMock, patch
 
 from requests import Session
 
+from pyodk._endpoints.projects import Project
 from pyodk.client import Client
-from pyodk.endpoints.projects import Project
 from tests.resources import CONFIG_DATA, projects_data
 
 
 @patch("pyodk.client.Client._login", MagicMock())
-@patch("pyodk.config.read_config", MagicMock(return_value=CONFIG_DATA))
+@patch("pyodk._utils.config.read_config", MagicMock(return_value=CONFIG_DATA))
 class TestProjects(TestCase):
     def test_list__ok(self):
         """Should return a list of ProjectType objects."""

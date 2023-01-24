@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pyodk import config
+from pyodk._utils import config
 from tests.resources import forms_data  # noqa: F401
 from tests.resources import projects_data  # noqa: F401
 

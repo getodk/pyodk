@@ -1,10 +1,12 @@
+from logging import Logger
 from urllib.parse import urljoin
 
 from requests import Response
 from requests import Session as RequestsSession
 from requests.adapters import HTTPAdapter, Retry
+from requests.exceptions import HTTPError
 
-from pyodk import __version__
+from pyodk.__version__ import __version__
 from pyodk.errors import PyODKError
 
 
@@ -61,15 +63,19 @@ class Session(RequestsSession):
         request.url = self.urljoin(request.url)
         return super().prepare_request(request)
 
-    def get_200_or_error(self, url, logger, *args, **kwargs) -> Response:
-        response = self.request("GET", url, *args, **kwargs)
-        if response.status_code == 200:
-            return response
-        else:
+    def response_or_error(
+        self, method: str, url: str, logger: Logger, *args, **kwargs
+    ) -> Response:
+        response = self.request(method=method, url=url, *args, **kwargs)
+        try:
+            response.raise_for_status()
+        except HTTPError as e:
             msg = (
                 f"The request to {url} failed."
-                f" Status: {response.status_code}, content: {response.content}"
+                f" Status: {response.status_code}, content: {response.text}"
             )
             err = PyODKError(msg, response)
             logger.error(err, exc_info=True)
-            raise err
+            raise err from e
+        else:
+            return response

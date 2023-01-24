@@ -1,14 +1,14 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
+from pyodk._endpoints.forms import Form
+from pyodk._utils.session import Session
 from pyodk.client import Client
-from pyodk.endpoints.forms import Form
-from pyodk.session import Session
 from tests.resources import CONFIG_DATA, forms_data
 
 
 @patch("pyodk.client.Client._login", MagicMock())
-@patch("pyodk.config.read_config", MagicMock(return_value=CONFIG_DATA))
+@patch("pyodk._utils.config.read_config", MagicMock(return_value=CONFIG_DATA))
 class TestForms(TestCase):
     def test_list__ok(self):
         """Should return a list of FormType objects."""

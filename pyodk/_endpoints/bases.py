@@ -2,7 +2,7 @@ from typing import Dict
 
 from pydantic import BaseModel
 
-from pyodk.session import Session
+from pyodk._utils.session import Session
 
 
 class Model(BaseModel):
