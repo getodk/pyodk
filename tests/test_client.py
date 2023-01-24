@@ -18,12 +18,4 @@ class TestUsage(TestCase):
                 table_name="Submissions",
                 count=True,
             )
-            print(
-                [
-                    projects,
-                    forms,
-                    submissions,
-                    form_data,
-                    form_data_params
-                ]
-            )
+            print([projects, forms, submissions, form_data, form_data_params])
