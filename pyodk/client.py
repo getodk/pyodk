@@ -1,6 +1,5 @@
 from typing import Callable, Optional
 
-from pyodk._endpoints.auth import AuthService
 from pyodk._endpoints.comments import CommentService
 from pyodk._endpoints.forms import FormService
 from pyodk._endpoints.projects import ProjectService
@@ -34,7 +33,11 @@ class Client:
         self._project_id: Optional[int] = project_id
         if session is None:
             session = Session(
-                base_url=self.config.central.base_url, api_version=api_version
+                base_url=self.config.central.base_url,
+                api_version=api_version,
+                username=self.config.central.username,
+                password=self.config.central.password,
+                cache_path=cache_path,
             )
         self.session: Session = session
 
@@ -46,7 +49,6 @@ class Client:
         self.delete: Callable = self.session.delete
 
         # Endpoints
-        self.auth: AuthService = AuthService(session=self.session, cache_path=cache_path)
         self.projects: ProjectService = ProjectService(
             session=self.session,
             default_project_id=self.project_id,
@@ -72,16 +74,9 @@ class Client:
     def project_id(self, v: str):
         self._project_id = v
 
-    def _login(self):
-        token = self.auth.get_token(
-            username=self.config.central.username,
-            password=self.config.central.password,
-        )
-        self.session.headers["Authorization"] = "Bearer " + token
-
     def open(self) -> "Client":
         self.session.__enter__()
-        self._login()
+        self.session.auth.login()
         return self
 
     def close(self, *args):
@@ -91,4 +86,4 @@ class Client:
         return self.open()
 
     def __exit__(self, *args):
-        return self.close(*args)
+        self.close(*args)

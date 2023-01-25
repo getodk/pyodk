@@ -61,17 +61,27 @@ The session cache file uses the TOML format. The default file name is `.pyodk_ca
 
 # Usage
 
+Authentication is triggered by the first API call on the Client, or by using `Client.open()`. Use `Client.close()` to clean up a client session. Clean up is recommended for long-running scripts, e.g. analysis notebooks, web apps, etc.
+
 ## Examples
 
 ```python
 from pyodk.client import Client
 
+client = Client()
+projects = client.projects.list()
+forms = client.forms.list()
+submissions = client.submissions.list(form_id=next(forms).xmlFormId)
+form_data = client.submissions.get_table(form_id="birds", project_id=8)
+comments = client.submissions.list_comments(form_id=next(forms).xmlFormId, instance_id="uuid:...")
+client.close()
+```
+
+When using the Client as a context manager, authentication occurs at entry and clean up occurs at exit.
+
+```python
 with Client() as client:
-    projects = client.projects.list()
-    forms = client.forms.list()
-    submissions = client.submissions.list(form_id=next(forms).xmlFormId)
-    form_data = client.submissions.get_table(form_id="birds", project_id=8)
-    comments = client.submissions.list_comments(form_id=next(forms).xmlFormId, instance_id="uuid:...")
+    print(client.projects.list())
 ```
 
 **👉 Looking for more advanced examples? You can find detailed Jupyter notebooks, scripts, and webinars [here](examples).**

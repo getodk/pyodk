@@ -7,7 +7,7 @@ from pyodk.client import Client
 from tests.resources import CONFIG_DATA, submissions_data
 
 
-@patch("pyodk.client.Client._login", MagicMock())
+@patch("pyodk._utils.session.Auth.login", MagicMock())
 @patch("pyodk._utils.config.read_config", MagicMock(return_value=CONFIG_DATA))
 class TestSubmissions(TestCase):
     def test_list__ok(self):
