@@ -65,7 +65,7 @@ for user in to_provision:
             print(err)
 
     # Customize the QR code
-    url = f"https://{client.auth.session.base_url}key/{provision_resp.json()['token']}/projects/{PROJECT}"
+    url = f"{client.auth.session.base_url}key/{provision_resp.json()['token']}/projects/{PROJECT}"
     COLLECT_SETTINGS["general"]["server_url"] = url
     COLLECT_SETTINGS["project"]["name"] = f"{PROJECT_NAME}: {user}"
     COLLECT_SETTINGS["general"]["username"] = user
