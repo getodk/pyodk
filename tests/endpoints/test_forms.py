@@ -74,7 +74,10 @@ class TestForms(TestCase):
         mock_draft_service.assert_has_calls(
             [
                 call.create(
-                    file_path="/some/path/file.xlsx", form_id="foo", project_id=None
+                    file_path="/some/path/file.xlsx",
+                    form_id="foo",
+                    project_id=None,
+                    ignore_warnings=True,
                 ),
                 call.publish(form_id="foo", version=None, project_id=None),
             ]
@@ -107,7 +110,9 @@ class TestForms(TestCase):
 
         mock_draft_service.assert_has_calls(
             [
-                call.create(file_path=None, form_id="foo", project_id=None),
+                call.create(
+                    file_path=None, form_id="foo", project_id=None, ignore_warnings=True
+                ),
                 call.publish(
                     form_id="foo", version="2023-01-01T12:00:00", project_id=None
                 ),
@@ -148,6 +153,7 @@ class TestForms(TestCase):
                     file_path="/some/path/form.xlsx",
                     form_id="foo",
                     project_id=None,
+                    ignore_warnings=True,
                 ),
                 call.publish(form_id="foo", version=None, project_id=None),
             ]

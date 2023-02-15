@@ -125,7 +125,7 @@ class FormService(bases.Service):
         # Start a new draft - with a new definition, if provided.
         fp_ids = {"form_id": form_id, "project_id": project_id}
         fd = FormDraftService(session=self.session, **self._default_kw())
-        if not fd.create(file_path=definition, **fp_ids):
+        if not fd.create(file_path=definition, ignore_warnings=True, **fp_ids):
             raise PyODKError("Form update (form draft create) failed.")
 
         # Upload the attachments, if any.
