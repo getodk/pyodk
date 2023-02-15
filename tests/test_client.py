@@ -32,16 +32,6 @@ class TestUsage(TestCase):
         print(projects, forms)
 
     # form_update tests assume project has forms by these names already published.
-    def test_form_update__no_kwargs(self):
-        """Should create a new version same as before except for the version name."""
-        with Client() as client:
-            client.forms.update(form_id="range")
-
-    def test_form_update__with_updater(self):
-        """Should create a new version same as before except for the version name."""
-        with Client() as client:
-            client.forms.update(form_id="range", version_updater=lambda v: v + "_1")
-
     def test_form_update__new_definition(self):
         """Should create a new version with the new definition."""
         with Client() as client:
@@ -56,5 +46,13 @@ class TestUsage(TestCase):
             client.forms.update(
                 form_id="pull_data",
                 definition=(RESOURCES / "forms" / "pull_data.xlsx").as_posix(),
+                attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
+            )
+
+    def test_form_update__attachments(self):
+        """Should create a new version with new attachment."""
+        with Client() as client:
+            client.forms.update(
+                form_id="pull_data",
                 attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
             )

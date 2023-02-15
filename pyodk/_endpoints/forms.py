@@ -110,16 +110,18 @@ class FormService(bases.Service):
         project_id: Optional[int] = None,
         definition: Optional[str] = None,
         attachments: Optional[Sequence[str]] = None
-    ) -> str:
+    ):
         """
-        Update an existing Form
+        Update an existing Form. Must specify definition, attachments or both.
 
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         :param definition: The path to a form definition file to upload.
         :param attachments: The paths of the form attachment file(s) to upload.
-        :return: The new version of the form.
         """
+        if definition is None and attachments is None:
+            raise PyODKError("Must specify a form definition and/or attachments.")
+
         # Start a new draft - with a new definition, if provided.
         fp_ids = {"form_id": form_id, "project_id": project_id}
         fd = FormDraftService(session=self.session, **self._default_kw())
@@ -132,12 +134,9 @@ class FormService(bases.Service):
             for attach in attachments:
                 if not fda.upload(file_path=attach, **fp_ids):
                     raise PyODKError("Form update (attachment upload) failed.")
-
-        # Get a new version
-        new_version = datetime.now().isoformat()
+ 
+        new_version = datetime.now().isoformat() if definition is None else None
 
         # Publish the draft
         if not fd.publish(version=new_version, **fp_ids):
             raise PyODKError("Form update (draft publish) failed.")
-
-        return new_version
