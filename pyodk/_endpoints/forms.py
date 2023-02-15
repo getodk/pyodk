@@ -109,7 +109,7 @@ class FormService(bases.Service):
         form_id: str,
         project_id: Optional[int] = None,
         definition: Optional[str] = None,
-        attachments: Optional[Sequence[str]] = None
+        attachments: Optional[Sequence[str]] = None,
     ):
         """
         Update an existing Form. Must specify definition, attachments or both.
@@ -134,7 +134,7 @@ class FormService(bases.Service):
             for attach in attachments:
                 if not fda.upload(file_path=attach, **fp_ids):
                     raise PyODKError("Form update (attachment upload) failed.")
- 
+
         new_version = datetime.now().isoformat() if definition is None else None
 
         # Publish the draft
