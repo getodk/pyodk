@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 from pyodk._endpoints import bases
 from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
