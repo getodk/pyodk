@@ -109,19 +109,15 @@ class FormService(bases.Service):
         form_id: str,
         project_id: Optional[int] = None,
         definition: Optional[str] = None,
-        attachments: Optional[Sequence[str]] = None,
-        version_updater: Optional[Callable[[str], str]] = None,
+        attachments: Optional[Sequence[str]] = None
     ) -> str:
         """
-        Update an existing Form (add draft, upload attachments, publish).
+        Update an existing Form
 
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         :param definition: The path to a form definition file to upload.
         :param attachments: The paths of the form attachment file(s) to upload.
-        :param version_updater: A function that takes a single string input parameter,
-          and outputs a string. It will be passed the current form version. If not
-          provided then a current timestamp string will be used.
         :return: The new version of the form.
         """
         # Start a new draft - with a new definition, if provided.
@@ -137,12 +133,10 @@ class FormService(bases.Service):
                 if not fda.upload(file_path=attach, **fp_ids):
                     raise PyODKError("Form update (attachment upload) failed.")
 
-        # Get a new version - using either a timestamp or the callback.
+        # Get a new version
         new_version = datetime.now().isoformat()
-        if version_updater is not None:
-            new_version = version_updater(self.get(**fp_ids).version)
 
-        # Publish the draft.
+        # Publish the draft
         if not fd.publish(version=new_version, **fp_ids):
             raise PyODKError("Form update (draft publish) failed.")
 
