@@ -113,6 +113,7 @@ class FormService(bases.Service):
     ):
         """
         Update an existing Form. Must specify definition, attachments or both.
+        If no definition is provided, a form version based on the current datetime will be used.
 
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
