@@ -6,3 +6,6 @@ pip-tools
 flake8
 isort
 black
+mkdocs
+mkdocstrings
+mkdocstrings-python

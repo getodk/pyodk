@@ -12,14 +12,14 @@ The currently supported Python version for `pyodk` is 3.8.
 
 ## From pip
 
-```
+```bash
 pip install pyodk
 ```
 
 
 ## From source
 
-```
+```bash
 # Get a copy of the repository.
 mkdir -P ~/repos/pyodk
 cd ~/repos/pyodk
@@ -61,9 +61,28 @@ The session cache file uses the TOML format. The default file name is `.pyodk_ca
 
 # Usage
 
-Authentication is triggered by the first API call on the Client, or by using `Client.open()`. Use `Client.close()` to clean up a client session. Clean up is recommended for long-running scripts, e.g. analysis notebooks, web apps, etc.
+To get started with `pyODK`, build a `Client`:
+
+```python
+from pyodk.client import Client
+
+client = Client()
+```
+
+Authentication is triggered by the first API call on the `Client`, or by explicitly using `Client.open()`.
+
+Use `Client.close()` to clean up a client session. Clean up is recommended for long-running scripts, e.g. web apps, etc.
+
+You can also use the Client as a context manager to manage authentication and clean up:
+
+```python
+with Client() as client:
+    print(client.projects.list())
+```
 
 ## Examples
+
+**👉 See detailed Jupyter notebooks, scripts, and webinars [here](examples).**
 
 ```python
 from pyodk.client import Client
@@ -81,15 +100,6 @@ client.forms.update(
 )
 client.close()
 ```
-
-When using the Client as a context manager, authentication occurs at entry and clean up occurs at exit.
-
-```python
-with Client() as client:
-    print(client.projects.list())
-```
-
-**👉 Looking for more advanced examples? You can find detailed Jupyter notebooks, scripts, and webinars [here](examples).**
 
 ## Default project
 
