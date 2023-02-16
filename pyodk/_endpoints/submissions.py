@@ -65,6 +65,8 @@ class SubmissionService(bases.Service):
 
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project the Submissions belong to.
+
+        :return: A list of the object representation of all Submissions' metadata.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -93,6 +95,8 @@ class SubmissionService(bases.Service):
         :param instance_id: The instanceId of the Submission being referenced.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
+
+        :return: An object representation of the Submission's metadata.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -140,6 +144,8 @@ class SubmissionService(bases.Service):
           built-in functions now, year, month, day, hour, minute, second.
         :param expand: Repetitions, which should get expanded. Currently, only `*` (star)
           is implemented, which expands all repetitions.
+
+        :return: A dictionary representation of the OData JSON document.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -181,6 +187,7 @@ class SubmissionService(bases.Service):
 
         Example submission XML structure:
 
+        ```
         <data id="my_form" version="v1">
           <meta>
             <instanceID>uuid:85cb9aff-005e-4edd-9739-dc9c1a829c44</instanceID>
@@ -188,6 +195,7 @@ class SubmissionService(bases.Service):
           <name>Alice</name>
           <age>36</age>
         </data>
+        ```
 
         :param xml: The submission XML.
         :param form_id: The xmlFormId of the Form being referenced.
@@ -227,6 +235,7 @@ class SubmissionService(bases.Service):
 
         Example submission XML structure:
 
+        ```
         <data id="my_form" version="v1">
           <meta>
             <deprecatedID>uuid:85cb9aff-005e-4edd-9739-dc9c1a829c44</deprecatedID>
@@ -235,6 +244,7 @@ class SubmissionService(bases.Service):
           <name>Alice</name>
           <age>36</age>
         </data>
+        ```
 
         :param instance_id: The instanceId of the Submission being referenced.
         :param xml: The submission XML.
@@ -350,6 +360,8 @@ class SubmissionService(bases.Service):
         :param instance_id: The instanceId of the Submission being referenced.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project the Submissions belong to.
+
+        :return: A list of all Comments.
         """
         fp_ids = {"form_id": form_id, "project_id": project_id}
         comment_svc = CommentService(session=self.session, **self._default_kw())
@@ -369,6 +381,8 @@ class SubmissionService(bases.Service):
         :param comment: The text of the comment.
         :param project_id: The id of the project this form belongs to.
         :param form_id: The xmlFormId of the Form being referenced.
+
+        :return: An object representation of the newly-created Comment.
         """
         fp_ids = {"form_id": form_id, "project_id": project_id}
         comment_svc = CommentService(session=self.session, **self._default_kw())
