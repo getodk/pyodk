@@ -1,9 +1,17 @@
 site_name: pyODK
 
+nav:
+    - 'README.md'
+
 theme:
   name: material
   features:
     - content.code.copy
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - toc.follow
+    - navigation.top
 
 plugins:
 - search
@@ -22,3 +30,5 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - toc:
+      permalink: true
