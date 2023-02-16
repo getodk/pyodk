@@ -74,6 +74,11 @@ forms = client.forms.list()
 submissions = client.submissions.list(form_id=next(forms).xmlFormId)
 form_data = client.submissions.get_table(form_id="birds", project_id=8)
 comments = client.submissions.list_comments(form_id=next(forms).xmlFormId, instance_id="uuid:...")
+client.forms.update(
+  form_id="my_xlsform",
+  definition="my_xlsform.xlsx",
+  attachments=["fruits.csv", "vegetables.png"],
+)
 client.close()
 ```
 
@@ -112,6 +117,7 @@ Available methods on `Client`:
 - Forms
   - list: Read all Form details.
   - get: Read Form details.
+  - update: Create a new version of an existing Form.
 - Submissions
   - list: Read all Submission metadata.
   - get: Read Submission metadata.

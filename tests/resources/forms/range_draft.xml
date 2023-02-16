@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events"
+        xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa"
+        xmlns:odk="http://www.opendatakit.org/xforms"
+        xmlns:orx="http://openrosa.org/xforms"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <h:head>
+        <h:title>range_draft</h:title>
+        <model odk:xforms-version="1.0.0">
+            <instance>
+                <data id="range_draft" version="2023012001">
+                    <start/>
+                    <end/>
+                    <Enter_a_number_within_a_specified_range/>
+                    <meta>
+                        <instanceID/>
+                    </meta>
+                </data>
+            </instance>
+            <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/data/start"
+                  type="dateTime"/>
+            <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/data/end"
+                  type="dateTime"/>
+            <bind nodeset="/data/Enter_a_number_within_a_specified_range"
+                  required="false()" type="int"/>
+            <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()"
+                  type="string"/>
+        </model>
+    </h:head>
+    <h:body>
+        <range end="10" ref="/data/Enter_a_number_within_a_specified_range" start="0"
+               step="1">
+            <label>Enter a number within a specified range</label>
+        </range>
+    </h:body>
+</h:html>
