@@ -29,7 +29,7 @@ git clone https://github.com/getodk/pyodk.git repo
 /usr/local/bin/python3.8 -m venv venv
 source venv/bin/activate
 
-# Install pyodk and it's production dependencies.
+# Install pyodk and its production dependencies.
 cd ~/repos/pyodk/repo
 pip install -e .
 
@@ -201,9 +201,8 @@ nosetests -v -v --traverse-namespace ./tests
 # Releases
 
 1. Run all linting and tests.
-2. Draft a new GitHub release with the list of merged PRs.
-3. Checkout a release branch from latest upstream master.
-4. Update `CHANGES.md` with the text of the draft release.
-5. Update `pyodk/__init__.py` with the new release version number.
-6. Commit, push the branch, and initiate a pull request. Wait for tests to pass, then merge the PR.
-7. Tag the release and it will automatically be published (see `release.yml` actions file).
+1. Draft a new GitHub release with the list of merged PRs.
+1. Check out a release branch from latest upstream master.
+1. Update `pyodk/__version__.py` with the new release version number.
+1. Commit, push the branch, and initiate a pull request. Wait for tests to pass, then merge the PR.
+1. Tag the release and it will automatically be published (see `release.yml` actions file).
