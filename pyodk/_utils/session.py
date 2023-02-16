@@ -115,7 +115,7 @@ class Session(RequestsSession):
             response.raise_for_status()
         except HTTPError as e:
             msg = (
-                f"The request to {url} failed."
+                f"The request to {self.urljoin(url)} failed."
                 f" Status: {response.status_code}, content: {response.text}"
             )
             err = PyODKError(msg, response)

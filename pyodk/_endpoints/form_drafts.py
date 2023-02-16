@@ -38,7 +38,7 @@ class FormDraftService(bases.Service):
     def create(
         self,
         file_path: Optional[str] = None,
-        ignore_warnings: Optional[bool] = None,
+        ignore_warnings: Optional[bool] = True,
         form_id: Optional[str] = None,
         project_id: Optional[int] = None,
     ) -> bool:
