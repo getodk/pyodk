@@ -5,11 +5,13 @@
 .idea
 *.iml
 .vscode
+venv/*
 
 # Folders created by setuptools.
 build
 dist
 pyodk.egg-info
+pip-wheel-metadata/*
 
 # Pypi manifest.
 MANIFEST
