@@ -63,6 +63,8 @@ class FormService(bases.Service):
         Read all Form details.
 
         :param project_id: The id of the project the forms belong to.
+
+        :return: A list of object representations of all Forms' metadata.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -88,6 +90,8 @@ class FormService(bases.Service):
 
         :param form_id: The id of this form as given in its XForms XML definition.
         :param project_id: The id of the project this form belongs to.
+
+        :return: An object representation of the Form's metadata.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)

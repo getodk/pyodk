@@ -2,6 +2,11 @@ site_name: pyODK
 
 nav:
     - 'README.md'
+    - 'client.md'
+    - 'forms.md'
+    - 'submissions.md'
+    - 'projects.md'
+    - 'http-methods.md'
 
 theme:
   name: material
@@ -23,6 +28,9 @@ plugins:
       python:
         options:
           show_source: false
+          docstring_style: sphinx
+          members_order: "source"
+          show_root_toc_entry: False
 
 markdown_extensions:
   - pymdownx.highlight:

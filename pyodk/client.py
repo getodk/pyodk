@@ -9,6 +9,23 @@ from pyodk._utils.session import Session
 
 
 class Client:
+    """
+    A connection to a specific ODK Central server. Manages authentication and provides
+    access to Central functionality through methods organized by the Central resource
+    they are most related to.
+
+    :param config_path: Where to read the pyodk_config.toml. Defaults to the
+        path in PYODK_CONFIG_FILE, then the user home directory.
+    :param cache_path: Where to read/write pyodk_cache.toml. Defaults to the
+        path in PYODK_CACHE_FILE, then the user home directory.
+    :param project_id: The project ID to use for all client calls. Defaults to the
+        "default_project_id" in pyodk_config.toml, or can be specified per call.
+    :param session: A prepared pyodk.session.Session class instance, or an instance
+        of a customised subclass.
+    :param api_version: The ODK Central API version, which is used in the URL path
+        e.g. 'v1' in 'https://www.example.com/v1/projects'.
+    """
+
     def __init__(
         self,
         config_path: Optional[str] = None,
@@ -17,18 +34,6 @@ class Client:
         session: Optional[Session] = None,
         api_version: Optional[str] = "v1",
     ) -> None:
-        """
-        :param config_path: Where to read the pyodk_config.toml. Defaults to the
-          path in PYODK_CONFIG_FILE, then the user home directory.
-        :param cache_path: Where to read/write pyodk_cache.toml. Defaults to the
-          path in PYODK_CACHE_FILE, then the user home directory.
-        :param project_id: The project ID to use for all client calls. Defaults to the
-          "default_project_id" in pyodk_config.toml, or can be specified per call.
-        :param session: A prepared pyodk.session.Session class instance, or an instance
-          of a customised subclass.
-        :param api_version: The ODK Central API version, which is used in the URL path
-          e.g. 'v1' in 'https://www.example.com/v1/projects'.
-        """
         self.config: config.Config = config.read_config(config_path=config_path)
         self._project_id: Optional[int] = project_id
         if session is None:
