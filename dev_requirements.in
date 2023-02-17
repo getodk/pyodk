@@ -9,3 +9,4 @@ black
 mkdocs
 mkdocstrings
 mkdocstrings-python
+mkdocs-jupyter
