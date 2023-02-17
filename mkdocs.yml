@@ -1,4 +1,5 @@
 site_name: pyODK
+edit_uri: https://github.com/getodk/pyodk/docs
 
 nav:
     - 'README.md'
@@ -18,6 +19,11 @@ theme:
     - navigation.expand
     - toc.follow
     - navigation.top
+    - content.action.edit
+    - content.action.view
+  icon:
+    view: material/file-eye-outline
+    edit: material/file-edit-outline
 
 plugins:
 - search
