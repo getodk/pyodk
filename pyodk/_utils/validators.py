@@ -72,6 +72,14 @@ def validate_bool(*args: bool, key: str) -> str:
     )
 
 
+def validate_int(*args: int, key: str) -> int:
+    return wrap_error(
+        validator=v.int_validator,
+        key=key,
+        value=coalesce(*args),
+    )
+
+
 def validate_file_path(*args: str) -> Path:
     def validate_fp(f):
         p = v.path_validator(f)

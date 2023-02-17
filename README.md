@@ -114,6 +114,7 @@ Available methods on `Client`:
 - Projects
   - list: Read all Project details.
   - get: Read Project details.
+  - create_app_users: Create new project app users, and optionally assign forms to them.
 - Forms
   - list: Read all Form details.
   - get: Read Form details.

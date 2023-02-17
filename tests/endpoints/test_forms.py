@@ -135,7 +135,7 @@ class TestForms(TestCase):
             form_id="foo",
             project_id=None,
         )
-        ctx.fda_upload.call_count = 2
+        self.assertEqual(2, ctx.fda_upload.call_count)
         ctx.fda_upload.assert_any_call(
             file_path="/some/path/a.jpg", form_id="foo", project_id=None
         )
@@ -160,7 +160,7 @@ class TestForms(TestCase):
             form_id="foo",
             project_id=None,
         )
-        ctx.fda_upload.call_count = 2
+        self.assertEqual(2, ctx.fda_upload.call_count)
         ctx.fda_upload.assert_any_call(
             file_path="/some/path/a.jpg", form_id="foo", project_id=None
         )
