@@ -60,15 +60,12 @@ class TestUsage(TestCase):
     def test_project_create_app_users__names_only(self):
         """Should create project app users."""
         client = Client()
-        client.projects.create_app_users(
-            display_names=["test_role", "test_user"], role_name="App User"
-        )
+        client.projects.create_app_users(display_names=["test_role3", "test_user3"])
 
     def test_project_create_app_users__names_and_forms(self):
         """Should create project app users, and assign forms to them."""
         client = Client()
         client.projects.create_app_users(
-            display_names=["test_assign", "test_assign_2"],
-            role_name="App User",
+            display_names=["test_assign3", "test_assign_23"],
             forms=["range", "pull_data"],
         )

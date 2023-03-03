@@ -5,7 +5,6 @@ from typing import Any, Dict, Iterable, List, Optional
 from pyodk._endpoints import bases
 from pyodk._endpoints.form_assignments import FormAssignmentService
 from pyodk._endpoints.project_app_users import ProjectAppUser, ProjectAppUserService
-from pyodk._endpoints.roles import RoleService
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
@@ -90,7 +89,6 @@ class ProjectService(bases.Service):
     def create_app_users(
         self,
         display_names: Iterable[str],
-        role_name: str,
         forms: Optional[Iterable[str]] = None,
         project_id: Optional[int] = None,
     ) -> List[ProjectAppUser]:
@@ -98,17 +96,11 @@ class ProjectService(bases.Service):
         Create new project app users and optionally assign forms to them.
 
         :param display_names: The friendly nicknames of the app users to be created.
-        :param role_name: The name of the role to assign the app users to.
         :param forms: The xmlFormIds of the forms to assign the app users to.
         :param project_id: The id of the project this form belongs to.
         """
-        if display_names is None and role_name is None:
-            raise PyODKError("Must specify display_names and a role_name.")
-
-        role_svc = RoleService(session=self.session)
-        role = role_svc.get_role_by_name(name=role_name)
-        if role is None:
-            raise PyODKError(f"Could not find a role named {role_name}.")
+        if display_names is None:
+            raise PyODKError("Must specify display_names.")
 
         pid = {"project_id": project_id}
         pau = ProjectAppUserService(session=self.session, **self._default_kw())
@@ -117,12 +109,14 @@ class ProjectService(bases.Service):
         current = set(u.displayName for u in pau.list(**pid) if u.token is not None)
         to_create = (user for user in display_names if user not in current)
         users = [pau.create(display_name=n, **pid) for n in to_create]
+        # The "App User" role_id should always be "2", so no need to look it up by name.
+        # Ref: "https://github.com/getodk/central-backend/blob/9db0d792cf4640ec7329722984
+        #   cebdee3687e479/lib/model/migrations/20181212-01-add-roles.js"
+        # See also roles data in `tests/resorces/projects_data.py`.
         if forms is not None:
             for user in users:
                 for form_id in forms:
-                    if not fa.assign(
-                        role_id=role.id, user_id=user.id, form_id=form_id, **pid
-                    ):
+                    if not fa.assign(role_id=2, user_id=user.id, form_id=form_id, **pid):
                         raise PyODKError("Role assignment failed.")
 
         return users

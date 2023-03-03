@@ -9,14 +9,12 @@ from requests import Session
 from pyodk._endpoints.form_assignments import FormAssignmentService
 from pyodk._endpoints.project_app_users import ProjectAppUser, ProjectAppUserService
 from pyodk._endpoints.projects import Project
-from pyodk._endpoints.roles import Role, RoleService
 from pyodk.client import Client
 from tests.resources import CONFIG_DATA, projects_data
 
 PROJECT_APP_USERS = [
     ProjectAppUser(**d) for d in projects_data.project_app_users["response_data"]
 ]
-ROLES = [Role(**d) for d in projects_data.roles["response_data"]]
 
 
 @dataclass
@@ -24,7 +22,6 @@ class MockContext:
     fa_assign: MagicMock
     pau_list: MagicMock
     pau_create: MagicMock
-    role_list: MagicMock
 
 
 def get_mock_context(func) -> Callable:
@@ -42,14 +39,11 @@ def get_mock_context(func) -> Callable:
             ProjectAppUserService, "list", return_value=PROJECT_APP_USERS
         ) as pau_list, patch.object(
             ProjectAppUserService, "create", return_value=True
-        ) as pau_create, patch.object(
-            RoleService, "list", return_value=ROLES
-        ) as role_list:
+        ) as pau_create:
             ctx = MockContext(
                 fa_assign=fa_assign,
                 pau_list=pau_list,
                 pau_create=pau_create,
-                role_list=role_list,
             )
             kwargs.update({"ctx": ctx})
             return func(*args, **kwargs)
@@ -102,7 +96,7 @@ class TestProjectCreateAppUsers(TestCase):
         unames = [u.displayName for u in PROJECT_APP_USERS]
         ctx.pau_list.return_value = []
         ctx.pau_create.return_value = PROJECT_APP_USERS[1]
-        client.projects.create_app_users(display_names=unames, role_name=ROLES[0].name)
+        client.projects.create_app_users(display_names=unames)
         ctx.pau_list.assert_called_once_with(project_id=None)
         self.assertEqual(2, ctx.pau_create.call_count)
         ctx.pau_create.assert_any_call(display_name=unames[0], project_id=None)
@@ -114,7 +108,7 @@ class TestProjectCreateAppUsers(TestCase):
         """Should call pau.create only for the user that doesn't exist."""
         client = Client()
         unames = [u.displayName for u in PROJECT_APP_USERS]
-        client.projects.create_app_users(display_names=unames, role_name=ROLES[0].name)
+        client.projects.create_app_users(display_names=unames)
         ctx.pau_create.assert_called_once_with(display_name=unames[1], project_id=None)
 
     @get_mock_context
@@ -122,63 +116,25 @@ class TestProjectCreateAppUsers(TestCase):
         """Should call pau.list, pau.create, fa.assign."""
         client = Client()
         unames = [u.displayName for u in PROJECT_APP_USERS]
-        role = ROLES[0]
         new_user = PROJECT_APP_USERS[1]
         forms = ["form1", "form2"]
         ctx.pau_create.return_value = new_user
-        client.projects.create_app_users(
-            display_names=unames, role_name=role.name, forms=forms
-        )
+        client.projects.create_app_users(display_names=unames, forms=forms)
         ctx.pau_list.assert_called_once_with(project_id=None)
         ctx.pau_create.assert_called_once_with(display_name=unames[1], project_id=None)
         self.assertEqual(2, ctx.fa_assign.call_count)
         ctx.fa_assign.assert_any_call(
-            role_id=role.id,
+            role_id=2,
             user_id=new_user.id,
             form_id=forms[0],
             project_id=None,
         )
         ctx.fa_assign.assert_any_call(
-            role_id=role.id,
+            role_id=2,
             user_id=new_user.id,
             form_id=forms[1],
             project_id=None,
         )
-
-
-@patch("pyodk._utils.session.Auth.login", MagicMock())
-@patch("pyodk._utils.config.read_config", MagicMock(return_value=CONFIG_DATA))
-class TestRoles(TestCase):
-    def test_list__ok(self):
-        """Should return a list of Role objects."""
-        fixture = projects_data.roles
-        with patch.object(Session, "request") as mock_session:
-            mock_session.return_value.status_code = 200
-            mock_session.return_value.json.return_value = fixture["response_data"]
-            client = Client()
-            observed = RoleService(session=client.session).list()
-        self.assertEqual(8, len(observed))
-        for i, o in enumerate(observed):
-            with self.subTest(i):
-                self.assertIsInstance(o, Role)
-
-    def test_get_role_by_name(self):
-        """Should return a Role object, or None if not found."""
-        fixture = projects_data.roles
-        with patch.object(Session, "request") as mock_session:
-            mock_session.return_value.status_code = 200
-            mock_session.return_value.json.return_value = [fixture["response_data"][0]]
-            client = Client()
-            with self.subTest(msg="Specify a real role name, get the Role."):
-                observed = RoleService(session=client.session).get_role_by_name(
-                    name="Project Viewer"
-                )
-                self.assertIsInstance(observed, Role)
-            with self.subTest(msg="Lookup a non-existent role name, get None."):
-                observed = RoleService(session=client.session).get_role_by_name(
-                    name="NotARealRole"
-                )
-                self.assertIsNone(observed)
 
 
 @patch("pyodk._utils.session.Auth.login", MagicMock())
