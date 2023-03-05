@@ -31,7 +31,7 @@ class TestUsage(TestCase):
             forms = client.forms.list()
         print(projects, forms)
 
-    # form_update tests assume project has forms by these names already published.
+    # Below tests assume project has forms by these names already published.
     def test_form_update__new_definition(self):
         """Should create a new version with the new definition."""
         with Client() as client:
@@ -56,3 +56,16 @@ class TestUsage(TestCase):
                 form_id="pull_data",
                 attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
             )
+
+    def test_project_create_app_users__names_only(self):
+        """Should create project app users."""
+        client = Client()
+        client.projects.create_app_users(display_names=["test_role3", "test_user3"])
+
+    def test_project_create_app_users__names_and_forms(self):
+        """Should create project app users, and assign forms to them."""
+        client = Client()
+        client.projects.create_app_users(
+            display_names=["test_assign3", "test_assign_23"],
+            forms=["range", "pull_data"],
+        )

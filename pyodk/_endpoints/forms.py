@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Optional
 
 from pyodk._endpoints import bases
 from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
@@ -109,7 +109,7 @@ class FormService(bases.Service):
         form_id: str,
         project_id: Optional[int] = None,
         definition: Optional[str] = None,
-        attachments: Optional[Sequence[str]] = None,
+        attachments: Optional[Iterable[str]] = None,
     ) -> None:
         """
         Update an existing Form. Must specify definition, attachments or both.
