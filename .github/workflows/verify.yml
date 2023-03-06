@@ -10,14 +10,14 @@ jobs:
         python: ['3.8']
         os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Python cache with dependencies.
         id: python-cache
         with:
@@ -48,14 +48,14 @@ jobs:
           - os: windows-latest
             windows_nose_args: --traverse-namespace ./tests
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Python cache with dependencies.
         id: python-cache
         with:
@@ -87,7 +87,7 @@ jobs:
           twine check dist/*
       - name: Upload sdist and wheel.
         if: success()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pyodk--on-${{ matrix.os }}--py${{ matrix.python }}
           path: ${{ github.workspace }}/dist/pyodk*
