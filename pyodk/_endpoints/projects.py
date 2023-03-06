@@ -37,6 +37,17 @@ class URLs(bases.Model):
 
 
 class ProjectService(bases.Service):
+    """
+    Project-related functionality is accessed through `client.projects`. For example:
+
+    ```python
+    from pyodk.client import Client
+
+    client = Client()
+    forms = client.projects.list()
+    ```
+    """
+
     __slots__ = ("urls", "session", "default_project_id")
 
     def __init__(

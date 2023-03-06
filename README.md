@@ -80,7 +80,7 @@ with Client() as client:
 
 ### Examples
 
-**👉 See detailed Jupyter notebooks, scripts, and webinars [here](examples).**
+**👉 See detailed tutorials in the Examples library in the pyODK documentation.**
 
 ```python
 from pyodk.client import Client
@@ -122,29 +122,34 @@ The `Client` is specific to a configuration and cache file. These approximately 
 Available methods on `Client`:
 
 - Projects
+<<<<<<< HEAD:docs/README.md
   - list: Read all Project details.
   - get: Read Project details.
   - create_app_users: Create new project app users, and optionally assign forms to them.
+=======
+    - list: Read all Project details.
+    - get: Read Project details.
+>>>>>>> 183b44b (add: various docs improvements/changes):README.md
 - Forms
-  - list: Read all Form details.
-  - get: Read Form details.
-  - update: Create a new version of an existing Form.
+    - list: Read all Form details.
+    - get: Read Form details.
+    - update: Create a new version of an existing Form.
 - Submissions
-  - list: Read all Submission metadata.
-  - get: Read Submission metadata.
-  - get_table: Read Submission data.
-  - create: Create a Submission.
-  - edit: Edit a submission, and optionally comment on it.
-  - review: Update Submission metadata (review state), and optionally comment on it.
-  - list_comments: Read Comment data for a Submission.
-  - add_comment: Create a Comment for a Submission.
+    - list: Read all Submission metadata.
+    - get: Read Submission metadata.
+    - get_table: Read Submission data.
+    - create: Create a Submission.
+    - edit: Edit a submission, and optionally comment on it.
+    - review: Update Submission metadata (review state), and optionally comment on it.
+    - list_comments: Read Comment data for a Submission.
+    - add_comment: Create a Comment for a Submission.
 
 - *for additional requests*
-  - get
-  - post
-  - put
-  - patch
-  - delete
+    - get
+    - post
+    - put
+    - patch
+    - delete
 
 See issues for additions to `pyodk` that are under consideration. Please file new issues for any functionality you are missing.
 
@@ -155,7 +160,7 @@ For interacting with parts of the ODK Central API ([docs](https://odkcentral.doc
 client.get("projects/8")
 client.post("projects/7/app-users", json={"displayName": "Lab Tech"})
 ```
-You can find a more detailed tutorial [in the examples](examples/).
+You can find a more detailed tutorial in the Examples library in the pyODK documentation.
 
 These methods provide convenient access to `Client.session`, which is a `requests.Session` object subclass. The `Session` has customised to prefix request URLs with the `base_url` from the pyodk config. For example with a base_url `https://www.example.com`, a call to `client.session.get("projects/8")` gets the details of `project_id=8`, using the full url `https://www.example.com/v1/projects/8`.
 
@@ -164,8 +169,7 @@ If Session behaviour needs to be customised, for example to set alternative time
 
 
 ### Logging
-
-Errors and other messages are logged to a standard library `logging` logger in the `pyodk` namespace / hierarchy (e.g `pyodk.config`, `pyodk.endpoints.auth`, etc.). The logs can be manipulated from an application as follows.
+Errors raised by pyODK and other messages are logged using the `logging` standard library. The logger is in the `pyodk` namespace / hierarchy (e.g `pyodk.config`, `pyodk.endpoints.auth`, etc.). The logs can be manipulated from your script / app as follows.
 
 ```python
 import logging
@@ -185,6 +189,16 @@ pyodk_log.propagate = True
 pyodk_log.setLevel(logging.FATAL)
 pyodk_log.propagate = False
 ```
+
+### Errors raised by pyODK
+Error types raised by pyODK are found in `errors.py`, which currently is only the `PyODKError`. In general this error is raised when:
+
+- The pyODK configuration is invalid (missing file, missing fields, etc).
+- The client method arguments are invalid (missing, wrong type, etc.).
+- The response from ODK Central indicated and error (HTTP >=400, <600).
+- The data returned from ODK Central does not have the expected fields or types.
+
+Note that pyODK does not attempt to wrap every possible error condition, so if needed, broader exception handling should be included in your script / app.
 
 
 ## Develop

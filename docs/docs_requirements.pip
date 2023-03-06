@@ -4,7 +4,6 @@
 #
 #    pip-compile --annotation-style=line --output-file=docs_requirements.pip docs_requirements.in
 #
--e file:///C:/Users/lindsay/repos/pyodk/repo  # via -r docs_requirements.in
 attrs==22.2.0             # via jsonschema
 beautifulsoup4==4.11.2    # via nbconvert
 bleach==6.0.0             # via nbconvert

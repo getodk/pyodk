@@ -80,11 +80,13 @@ class Client:
         self._project_id = v
 
     def open(self) -> "Client":
+        """Enter the session, and authenticate."""
         self.session.__enter__()
         self.session.auth.login()
         return self
 
     def close(self, *args):
+        """Close the session."""
         self.session.__exit__(*args)
 
     def __enter__(self) -> "Client":

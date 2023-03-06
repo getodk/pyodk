@@ -37,6 +37,17 @@ class URLs(bases.Model):
 
 
 class SubmissionService(bases.Service):
+    """
+    Submission-related functionality is accessed through `client.submissions`. For example:
+
+    ```python
+    from pyodk.client import Client
+
+    client = Client()
+    data = client.forms.get_table()["value"]
+    ```
+    """
+
     __slots__ = ("urls", "session", "default_project_id", "default_form_id")
 
     def __init__(

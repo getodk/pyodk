@@ -4,7 +4,6 @@
 #
 #    pip-compile --annotation-style=line --output-file=dev_requirements.pip dev_requirements.in
 #
--e file:///C:/Users/lindsay/repos/pyodk/repo  # via -r dev_requirements.in
 black==22.6.0             # via -r dev_requirements.in
 build==0.8.0              # via pip-tools
 certifi==2022.6.15        # via requests

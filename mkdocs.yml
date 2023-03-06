@@ -1,29 +1,52 @@
 site_name: pyODK
 edit_uri: https://github.com/getodk/pyodk/docs
+repo_url: https://github.com/getodk/pyodk
+repo_name: getodk/pyodk
+docs_dir: docs
+watch:
+  - ./README.md
+  - ./docs
+  - ./pyodk
 
 nav:
-    - 'README.md'
-    - 'client.md'
-    - 'forms.md'
-    - 'submissions.md'
-    - 'projects.md'
-    - 'http-methods.md'
-    - 'examples/README.md'
+    - Overview: index.md
+    - Client: client.md
+    - .forms: forms.md
+    - .submissions: submissions.md
+    - .projects: projects.md
+    - HTTP methods: http-methods.md
+    - Examples: examples/README.md
 
 theme:
   name: material
+  logo: logo.svg
   features:
-    - content.code.copy
-    - navigation.instant
-    - navigation.tracking
-    - navigation.expand
-    - toc.follow
-    - navigation.top
     - content.action.edit
     - content.action.view
+    - content.code.copy
+    - navigation.expand
+    - navigation.instant
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
   icon:
     view: material/file-eye-outline
     edit: material/file-edit-outline
+  palette:
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: grey
+    accent: light blue
+    toggle:
+      icon: material/weather-sunny
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    accent: light blue
+    toggle:
+      icon: material/weather-night
+      name: Switch to light mode
 
 plugins:
 - search
@@ -34,10 +57,11 @@ plugins:
     handlers:
       python:
         options:
-          show_source: false
           docstring_style: sphinx
-          members_order: "source"
-          show_root_toc_entry: False
+          members_order: alphabetical
+          show_bases: false
+          show_root_toc_entry: false
+          show_source: false
 - mkdocs-jupyter
 
 markdown_extensions:
