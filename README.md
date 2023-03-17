@@ -1,4 +1,5 @@
 # pyODK
+[![pypi](https://img.shields.io/pypi/v/pyodk.svg)](https://pypi.python.org/pypi/pyodk)
 
 An API client for the [ODK Central API](https://odkcentral.docs.apiary.io). Use it to interact with your data and automate common tasks from Python.
 
@@ -12,14 +13,14 @@ The currently supported Python version for `pyodk` is 3.8.
 
 ## From pip
 
-```
+```sh
 pip install pyodk
 ```
 
 
 ## From source
 
-```
+```sh
 # Get a copy of the repository.
 mkdir -P ~/repos/pyodk
 cd ~/repos/pyodk
@@ -182,7 +183,7 @@ pyodk_log.propagate = False
 
 Install the source files as described above, then:
 
-```
+```sh
 pip install -r dev_requirements.pip
 ```
 
