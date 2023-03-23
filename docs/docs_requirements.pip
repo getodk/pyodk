@@ -52,7 +52,6 @@ pygments==2.14.0          # via mkdocs-jupyter, mkdocs-material, nbconvert
 pymdown-extensions==9.10  # via mkdocs-material, mkdocstrings
 pyrsistent==0.19.3        # via jsonschema
 python-dateutil==2.8.2    # via ghp-import, jupyter-client
-pywin32==305              # via jupyter-core
 pyyaml==6.0               # via jupytext, mkdocs, pymdown-extensions, pyyaml-env-tag
 pyyaml-env-tag==0.1       # via mkdocs
 pyzmq==25.0.0             # via jupyter-client
