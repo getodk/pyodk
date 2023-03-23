@@ -1,8 +1,5 @@
 name: Docs 
-on:
-  push:
-    branches:
-      - master 
+on: push
 permissions:
   contents: write
 jobs:
