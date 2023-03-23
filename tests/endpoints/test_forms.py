@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
 from pyodk._endpoints.form_drafts import FormDraftService
-from pyodk._endpoints.forms import Form
+from pyodk._endpoints.forms import Form, FormService
 from pyodk._utils.session import Session
 from pyodk.client import Client
 from pyodk.errors import PyODKError
@@ -16,10 +16,12 @@ from tests.resources import CONFIG_DATA, forms_data
 
 @dataclass
 class MockContext:
+    form_get: MagicMock
     fd_create: MagicMock
     fd_publish: MagicMock
     fda_upload: MagicMock
     dt: MagicMock
+    now: datetime = datetime(2023, 1, 1, 12, 0, 0, 0)
 
 
 def get_mock_context(func) -> Callable:
@@ -32,6 +34,10 @@ def get_mock_context(func) -> Callable:
     @wraps(func)
     def patched(*args, **kwargs):
         with patch.object(
+            FormService,
+            "get",
+            return_value=Form(**forms_data.test_forms["response_data"][0]),
+        ) as form_get, patch.object(
             FormDraftService, "create", return_value=True
         ) as create, patch.object(
             FormDraftService, "publish", return_value=True
@@ -40,9 +46,13 @@ def get_mock_context(func) -> Callable:
         ) as upload, patch(
             "pyodk._endpoints.forms.datetime"
         ) as dt:
-            dt.now.return_value = datetime(2023, 1, 1, 12, 0, 0, 0)
+            dt.now.return_value = MockContext.now
             ctx = MockContext(
-                fd_create=create, fd_publish=publish, fda_upload=upload, dt=dt
+                form_get=form_get,
+                fd_create=create,
+                fd_publish=publish,
+                fda_upload=upload,
+                dt=dt,
             )
             kwargs.update({"ctx": ctx})
             return func(*args, **kwargs)
@@ -96,21 +106,6 @@ class TestForms(TestCase):
         )
 
     @get_mock_context
-    def test_update__def_only__create_publish_no_upload2(self, ctx: MockContext):
-        """Should call fd.create and fd.publish, not fda.upload (nothing to upload)."""
-        client = Client()
-        client.forms.update("foo", definition="/some/path/file.xlsx")
-        ctx.fd_create.assert_called_once_with(
-            file_path="/some/path/file.xlsx",
-            form_id="foo",
-            project_id=None,
-        )
-        ctx.fda_upload.assert_not_called()
-        ctx.fd_publish.assert_called_once_with(
-            form_id="foo", version=None, project_id=None
-        )
-
-    @get_mock_context
     def test_update__def_only__create_publish_no_upload(self, ctx: MockContext):
         """Should call fd.create and fd.publish, not fda.upload (nothing to upload)."""
         client = Client()
@@ -143,7 +138,20 @@ class TestForms(TestCase):
             file_path="/some/path/b.jpg", form_id="foo", project_id=None
         )
         ctx.fd_publish.assert_called_once_with(
-            form_id="foo", version="2023-01-01T12:00:00", project_id=None
+            form_id="foo", version=ctx.now.isoformat(), project_id=None
+        )
+
+    @get_mock_context
+    def test_update__attach_only__version_updater(self, ctx: MockContext):
+        """Should call the version_updater."""
+        client = Client()
+        client.forms.update(
+            "foo",
+            attachments=["/some/path/a.jpg", "/some/path/b.jpg"],
+            version_updater=lambda x: "v2xyz",
+        )
+        ctx.fd_publish.assert_called_once_with(
+            form_id="foo", version="v2xyz", project_id=None
         )
 
     @get_mock_context
@@ -169,4 +177,27 @@ class TestForms(TestCase):
         )
         ctx.fd_publish.assert_called_once_with(
             form_id="foo", version=None, project_id=None
+        )
+
+    def test_update__no_def_no_attach__raises(self):
+        """Should raise an error if there is no definition or attachment."""
+        client = Client()
+        with self.assertRaises(PyODKError) as err:
+            client.forms.update("foo")
+        self.assertEqual(
+            "Must specify a form definition and/or attachments.", err.exception.args[0]
+        )
+
+    def test_update__with_def_with_version_updater__raises(self):
+        """Should raise an error if there is a definition and version_updater."""
+        client = Client()
+        with self.assertRaises(PyODKError) as err:
+            client.forms.update(
+                form_id="foo",
+                definition="/some/path/form.xlsx",
+                version_updater=lambda x: "v2",
+            )
+        self.assertEqual(
+            "Must not specify both a definition and version_updater.",
+            err.exception.args[0],
         )

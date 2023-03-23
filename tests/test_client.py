@@ -57,6 +57,15 @@ class TestUsage(TestCase):
                 attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
             )
 
+    def test_form_update__attachments__with_version_updater(self):
+        """Should create a new version with new attachment and updated version."""
+        with Client() as client:
+            client.forms.update(
+                form_id="pull_data",
+                attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
+                version_updater=lambda v: v + "_1",
+            )
+
     def test_project_create_app_users__names_only(self):
         """Should create project app users."""
         client = Client()
