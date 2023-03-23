@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional
 
 from pyodk._endpoints import bases
 from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
@@ -125,19 +125,37 @@ class FormService(bases.Service):
         project_id: Optional[int] = None,
         definition: Optional[str] = None,
         attachments: Optional[Iterable[str]] = None,
+        version_updater: Optional[Callable[[str], str]] = None,
     ) -> None:
         """
         Update an existing Form. Must specify definition, attachments or both.
 
-        A version based on the current datetime will be used if no definition is provided.
+        Accepted call patterns:
+        - definition +/- attachments
+        - attachments +/- version_updater
+
+        If a definition is provided, the new version name is presumed to be specified in
+        the definition. If no definition is provided, a default version will be set using
+        the current datetime is ISO format.
+
+        The default datetime version can be overridden by providing a version_updater
+        function. The function will be passed the current version name as a string, and
+        must return a string with the new version name. For example the function could
+        parse then increment a version number. Or the function could disregard the input
+        and return a string e.g. `version_updater=lambda x: "v2.0"`.
 
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         :param definition: The path to a form definition file to upload.
         :param attachments: The paths of the form attachment file(s) to upload.
+        :param version_updater: A function that accepts a version name string and returns
+          a version name string, which is used for the new form version.
         """
         if definition is None and attachments is None:
             raise PyODKError("Must specify a form definition and/or attachments.")
+
+        if definition is not None and version_updater is not None:
+            raise PyODKError("Must not specify both a definition and version_updater.")
 
         # Start a new draft - with a new definition, if provided.
         fp_ids = {"form_id": form_id, "project_id": project_id}
@@ -154,7 +172,11 @@ class FormService(bases.Service):
 
         new_version = None
         if definition is None:
-            new_version = datetime.now().isoformat()
+            # Get a new version - using either a timestamp or the callback.
+            if version_updater is None:
+                new_version = datetime.now().isoformat()
+            else:
+                new_version = version_updater(self.get(**fp_ids).version)
 
         # Publish the draft.
         if not fd.publish(version=new_version, **fp_ids):
