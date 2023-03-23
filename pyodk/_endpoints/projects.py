@@ -37,6 +37,17 @@ class URLs(bases.Model):
 
 
 class ProjectService(bases.Service):
+    """
+    Project-related functionality is accessed through `client.projects`. For example:
+
+    ```python
+    from pyodk.client import Client
+
+    client = Client()
+    forms = client.projects.list()
+    ```
+    """
+
     __slots__ = ("urls", "session", "default_project_id")
 
     def __init__(
@@ -57,6 +68,8 @@ class ProjectService(bases.Service):
     def list(self) -> List[Project]:
         """
         Read Project details.
+
+        :return: An list of object representations of the Projects' metadata.
         """
         response = self.session.response_or_error(
             method="GET",
@@ -71,6 +84,8 @@ class ProjectService(bases.Service):
         Read all Project details.
 
         :param project_id: The id of the project to read.
+
+        :return: An object representation of the Project's metadata.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)

@@ -1,0 +1,78 @@
+site_name: pyODK
+edit_uri: https://github.com/getodk/pyodk/docs
+repo_url: https://github.com/getodk/pyodk
+repo_name: getodk/pyodk
+docs_dir: docs
+watch:
+  - ./README.md
+  - ./docs
+  - ./pyodk
+
+nav:
+    - Overview: index.md
+    - Client: client.md
+    - .forms: forms.md
+    - .submissions: submissions.md
+    - .projects: projects.md
+    - HTTP methods: http-methods.md
+    - Examples: examples/README.md
+
+theme:
+  name: material
+  logo: assets/logo.svg
+  favicon: assets/favicon.ico
+  features:
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+    - navigation.expand
+    - navigation.instant
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
+  icon:
+    view: material/file-eye-outline
+    edit: material/file-edit-outline
+  palette:
+  - media: "(prefers-color-scheme: light)"
+    scheme: default
+    primary: white
+    accent: light blue
+    toggle:
+      icon: material/weather-sunny
+      name: Switch to dark mode
+  - media: "(prefers-color-scheme: dark)"
+    scheme: slate
+    primary: black
+    accent: light blue
+    toggle:
+      icon: material/weather-night
+      name: Switch to light mode
+
+extra_css:
+  - assets/extra_css.css
+
+plugins:
+- search
+- mkdocstrings:
+    enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
+    custom_templates: templates
+    default_handler: python
+    handlers:
+      python:
+        options:
+          docstring_style: sphinx
+          members_order: alphabetical
+          show_bases: false
+          show_root_toc_entry: false
+          show_source: false
+- mkdocs-jupyter
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - toc:
+      permalink: true

@@ -38,6 +38,17 @@ class URLs(bases.Model):
 
 
 class FormService(bases.Service):
+    """
+    Form-related functionality is accessed through `client.forms`. For example:
+
+    ```python
+    from pyodk.client import Client
+
+    client = Client()
+    forms = client.forms.list()
+    ```
+    """
+
     __slots__ = ("urls", "session", "default_project_id", "default_form_id")
 
     def __init__(
@@ -63,6 +74,8 @@ class FormService(bases.Service):
         Read all Form details.
 
         :param project_id: The id of the project the forms belong to.
+
+        :return: A list of object representations of all Forms' metadata.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -88,6 +101,8 @@ class FormService(bases.Service):
 
         :param form_id: The id of this form as given in its XForms XML definition.
         :param project_id: The id of the project this form belongs to.
+
+        :return: An object representation of the Form's metadata.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
