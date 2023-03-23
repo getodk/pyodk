@@ -44,7 +44,7 @@ class ProjectService(bases.Service):
     from pyodk.client import Client
 
     client = Client()
-    forms = client.projects.list()
+    projects = client.projects.list()
     ```
     """
 
