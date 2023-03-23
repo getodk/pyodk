@@ -17,3 +17,6 @@ MANIFEST
 # Jupyter
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+
+# Mkdocs
+site/
