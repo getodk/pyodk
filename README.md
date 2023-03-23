@@ -87,9 +87,11 @@ with Client() as client:
     print(client.projects.list())
 ```
 
+Learn more [in the documentation](https://getodk.github.io/pyodk/).
+
 ### Examples
 
-**👉 See detailed tutorials in the Examples library in the pyODK documentation.**
+**👉 See detailed tutorials in [the documentation](https://getodk.github.io/pyodk/examples/).**
 
 ```python
 from pyodk.client import Client
