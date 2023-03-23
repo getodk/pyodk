@@ -30,6 +30,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .
           pip install -r dev_requirements.pip
+          pip install -r docs/docs_requirements.pip
           pip list
 
       # Build.
@@ -48,3 +49,7 @@ jobs:
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+
+      # Publish docs.
+      - name: Publish docs to gh-pages
+        run: mkdocs gh-deploy
