@@ -12,6 +12,11 @@ nav:
 
 theme:
   name: material
+  logo: assets/logo.png
+  favicon: assets/favicon.ico
+  palette:
+    scheme: default
+    primary: white
   features:
     - content.code.copy
     - navigation.instant
@@ -24,6 +29,9 @@ theme:
   icon:
     view: material/file-eye-outline
     edit: material/file-edit-outline
+
+extra_css:
+  - assets/extra_css.css
 
 plugins:
 - search
