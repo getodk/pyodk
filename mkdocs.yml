@@ -19,7 +19,7 @@ nav:
 
 theme:
   name: material
-  logo: assets/logo.png
+  logo: assets/logo.svg
   favicon: assets/favicon.ico
   features:
     - content.action.edit
