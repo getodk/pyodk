@@ -5,18 +5,15 @@ An API client for the [ODK Central API](https://odkcentral.docs.apiary.io). Use 
 
 This library aims to make common data analysis and workflow automation tasks as simple as possible by providing clear method names, types, and examples. It also provides convenient access to the full API using [HTTP verb methods](#raw-http-requests).
 
-
 ## Install
 
 The currently supported Python version for `pyodk` is 3.8.
-
 
 ### From pip
 
 ```bash
 pip install pyodk
 ```
-
 
 ### From source
 
@@ -38,7 +35,6 @@ pip install -e .
 deactivate
 ```
 
-
 ## Configure
 
 The configuration file uses the TOML format. The default file name is `.pyodk_config.toml`, and the default location is the user home directory. The file name and location can be customised by setting the environment variable `PYODK_CONFIG_FILE` to some other file path, or by passing the path at init with `Client(config_path="my_config.toml")`. The expected file structure is as follows:
@@ -51,11 +47,24 @@ password = "my_password"
 default_project_id = 123
 ```
 
+### Custom configuration file paths
+
+The `Client` is specific to a configuration and cache file. These approximately correspond to the session which the `Client` represents; it also encourages segregating credentials. These paths can be set by:
+
+- Setting environment variables `PYODK_CONFIG_FILE` and `PYODK_CACHE_FILE`
+- Init arguments: `Client(config_path="my_config.toml", cache_path="my_cache.toml")`.
+
+### Default project
+
+The `Client` is not specific to a project, but a default `project_id` can be set by:
+
+- A `default_project_id` in the configuration file.
+- An init argument: `Client(project_id=1)`.
+- A property on the client: `client.project_id = 1`.
 
 ### Session cache file
 
 The session cache file uses the TOML format. The default file name is `.pyodk_cache.toml`, and the default location is the user home directory. The file name and location can be customised by setting the environment variable `PYODK_CACHE_FILE` to some other file path, or by passing the path at init with `Client(config_path="my_cache.toml")`. This file should not be pre-created as it is used to store a session token after login.
-
 
 ## Use
 
@@ -98,60 +107,6 @@ client.forms.update(
 )
 client.close()
 ```
-
-
-### Default project
-
-The `Client` is not specific to a project, but a default `project_id` can be set by:
-
-- A `default_project_id` in the configuration file.
-- An init argument: `Client(project_id=1)`.
-- A property on the client: `client.project_id = 1`.
-
-
-### Custom configuration file paths
-
-The `Client` is specific to a configuration and cache file. These approximately correspond to the session which the `Client` represents; it also encourages segregating credentials. These paths can be set by:
-
-- Setting environment variables `PYODK_CONFIG_FILE` and `PYODK_CACHE_FILE`
-- Init arguments: `Client(config_path="my_config.toml", cache_path="my_cache.toml")`.
-
-
-### Methods
-
-Available methods on `Client`:
-
-- Projects
-<<<<<<< HEAD:docs/README.md
-  - list: Read all Project details.
-  - get: Read Project details.
-  - create_app_users: Create new project app users, and optionally assign forms to them.
-=======
-    - list: Read all Project details.
-    - get: Read Project details.
->>>>>>> 183b44b (add: various docs improvements/changes):README.md
-- Forms
-    - list: Read all Form details.
-    - get: Read Form details.
-    - update: Create a new version of an existing Form.
-- Submissions
-    - list: Read all Submission metadata.
-    - get: Read Submission metadata.
-    - get_table: Read Submission data.
-    - create: Create a Submission.
-    - edit: Edit a submission, and optionally comment on it.
-    - review: Update Submission metadata (review state), and optionally comment on it.
-    - list_comments: Read Comment data for a Submission.
-    - add_comment: Create a Comment for a Submission.
-
-- *for additional requests*
-    - get
-    - post
-    - put
-    - patch
-    - delete
-
-See issues for additions to `pyodk` that are under consideration. Please file new issues for any functionality you are missing.
 
 ### Raw HTTP requests
 For interacting with parts of the ODK Central API ([docs](https://odkcentral.docs.apiary.io)) that have not been implemented in `pyodk`, use HTTP verb methods exposed on the `Client`:
@@ -200,6 +155,9 @@ Error types raised by pyODK are found in `errors.py`, which currently is only th
 
 Note that pyODK does not attempt to wrap every possible error condition, so if needed, broader exception handling should be included in your script / app.
 
+## Contribute
+
+See issues for additions to `pyodk` that are under consideration. Please file new issues for any functionality you are missing.
 
 ## Develop
 
@@ -220,7 +178,6 @@ On Windows, use:
 ```bash
 nosetests -v -v --traverse-namespace ./tests
 ```
-
 
 ## Release
 
