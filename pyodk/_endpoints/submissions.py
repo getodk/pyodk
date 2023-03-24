@@ -44,7 +44,7 @@ class SubmissionService(bases.Service):
     from pyodk.client import Client
 
     client = Client()
-    data = client.forms.get_table()["value"]
+    data = client.submissions.get_table(form_id="my-form")["value"]
     ```
     """
 

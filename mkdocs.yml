@@ -1,5 +1,5 @@
 site_name: pyODK
-edit_uri: https://github.com/getodk/pyodk/docs
+edit_uri: https://github.com/getodk/pyodk/tree/master/docs
 repo_url: https://github.com/getodk/pyodk
 repo_name: getodk/pyodk
 docs_dir: docs
