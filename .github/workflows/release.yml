@@ -52,4 +52,4 @@ jobs:
 
       # Publish docs.
       - name: Publish docs to gh-pages
-        run: mkdocs gh-deploy
+        run: mkdocs gh-deploy --force
