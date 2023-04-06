@@ -131,25 +131,31 @@ class FormService(bases.Service):
         Update an existing Form. Must specify definition, attachments or both.
 
         Accepted call patterns:
-        - definition +/- attachments
-        - attachments +/- version_updater
 
-        If a definition is provided, the new version name is presumed to be specified in
-        the definition. If no definition is provided, a default version will be set using
+        * form definition only
+        * form definition with attachments
+        * form attachments only
+        * form attachments with `version_updater`
+
+        If a definition is provided, the new version name must be specified in the definition.
+        If no definition is provided, a default version will be set using
         the current datetime is ISO format.
 
-        The default datetime version can be overridden by providing a version_updater
+        The default datetime version can be overridden by providing a `version_updater`
         function. The function will be passed the current version name as a string, and
-        must return a string with the new version name. For example the function could
-        parse then increment a version number. Or the function could disregard the input
-        and return a string e.g. `version_updater=lambda x: "v2.0"`.
+        must return a string with the new version name. For example:
+
+        * Parse then increment a version number: `version_updater=lambda v: int(v) + 1`
+        * Disregard the input and return a string: `version_updater=lambda v: "v2.0"`.
 
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
-        :param definition: The path to a form definition file to upload.
+        :param definition: The path to a form definition file to upload. The form definition
+          must include an updated version string.
         :param attachments: The paths of the form attachment file(s) to upload.
         :param version_updater: A function that accepts a version name string and returns
-          a version name string, which is used for the new form version.
+          a version name string, which is used for the new form version. Not allowed if a form
+          definition is specified.
         """
         if definition is None and attachments is None:
             raise PyODKError("Must specify a form definition and/or attachments.")
