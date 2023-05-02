@@ -3,7 +3,7 @@
 
 An API client for the [ODK Central API](https://odkcentral.docs.apiary.io). Use it to interact with your data and automate common tasks from Python.
 
-This library aims to make common data analysis and workflow automation tasks as simple as possible by providing clear method names, types, and examples. It also provides convenient access to the full API using [HTTP verb methods](#raw-http-requests).
+This library aims to make common data analysis and workflow automation tasks as simple as possible by providing clear method names, types, and examples. It also provides convenient access to the full API using [HTTP verb methods](https://getodk.github.io/pyodk/http-methods/).
 
 ## Install
 
