@@ -3,10 +3,11 @@ from datetime import datetime
 from functools import wraps
 from typing import Callable
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
 from pyodk._endpoints.form_drafts import FormDraftService
+from pyodk._endpoints.form_drafts import log as form_drafts_log
 from pyodk._endpoints.forms import Form, FormService
 from pyodk._utils.session import Session
 from pyodk.client import Client
@@ -178,6 +179,45 @@ class TestForms(TestCase):
         ctx.fd_publish.assert_called_once_with(
             form_id="foo", version=None, project_id=None
         )
+
+    @staticmethod
+    def update__def_encoding_steps(
+        form_id: str, definition: str, expected_url: str, expected_fallback_id: str
+    ):
+        client = Client()
+
+        def mock_wrap_error(**kwargs):
+            return kwargs["value"]
+
+        with patch.object(Session, "response_or_error") as mock_response, patch(
+            "pyodk._utils.validators.wrap_error", mock_wrap_error
+        ), patch("builtins.open", mock_open(), create=True) as mock_open_patch:
+            client.forms.update(form_id, definition=definition)
+        mock_response.assert_any_call(
+            method="POST",
+            url=expected_url,
+            logger=form_drafts_log,
+            headers={
+                "Content-Type": (
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ),
+                "X-XlsForm-FormId-Fallback": expected_fallback_id,
+            },
+            params={"ignoreWarnings": True},
+            data=mock_open_patch.return_value,
+        )
+
+    def test_update__def_encoding(self):
+        """Should find that the URL and fallback header are url-encoded."""
+        test_cases = (
+            ("foo", "/some/path/foo.xlsx", "projects/1/forms/foo/draft", "foo"),
+            ("foo", "/some/path/✅.xlsx", "projects/1/forms/foo/draft", "%E2%9C%85"),
+            ("✅", "/some/path/✅.xlsx", "projects/1/forms/%E2%9C%85/draft", "%E2%9C%85"),
+            ("✅", "/some/path/foo.xlsx", "projects/1/forms/%E2%9C%85/draft", "foo"),
+        )
+        for case in test_cases:
+            with self.subTest(msg=str(case)):
+                self.update__def_encoding_steps(*case)
 
     def test_update__no_def_no_attach__raises(self):
         """Should raise an error if there is no definition or attachment."""

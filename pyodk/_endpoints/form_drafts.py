@@ -76,7 +76,7 @@ class FormDraftService(bases.Service):
                     )
                 headers = {
                     "Content-Type": content_type,
-                    "X-XlsForm-FormId-Fallback": file_path.stem,
+                    "X-XlsForm-FormId-Fallback": self.session.urlquote(file_path.stem),
                 }
         except PyODKError as err:
             log.error(err, exc_info=True)
@@ -85,7 +85,7 @@ class FormDraftService(bases.Service):
         with open(file_path, "rb") if file_path is not None else nullcontext() as fd:
             response = self.session.response_or_error(
                 method="POST",
-                url=self.urls.post.format(project_id=pid, form_id=fid),
+                url=self.session.urlformat(self.urls.post, project_id=pid, form_id=fid),
                 logger=log,
                 headers=headers,
                 params=params,
@@ -121,7 +121,9 @@ class FormDraftService(bases.Service):
 
         response = self.session.response_or_error(
             method="POST",
-            url=self.urls.post_publish.format(project_id=pid, form_id=fid),
+            url=self.session.urlformat(
+                self.urls.post_publish, project_id=pid, form_id=fid
+            ),
             logger=log,
             params=params,
         )

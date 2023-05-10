@@ -88,7 +88,7 @@ class SubmissionService(bases.Service):
 
         response = self.session.response_or_error(
             method="GET",
-            url=self.urls.list.format(project_id=pid, form_id=fid),
+            url=self.session.urlformat(self.urls.list, project_id=pid, form_id=fid),
             logger=log,
         )
         data = response.json()
@@ -119,7 +119,9 @@ class SubmissionService(bases.Service):
 
         response = self.session.response_or_error(
             method="GET",
-            url=self.urls.get.format(project_id=pid, form_id=fid, instance_id=iid),
+            url=self.session.urlformat(
+                self.urls.get, project_id=pid, form_id=fid, instance_id=iid
+            ),
             logger=log,
         )
         data = response.json()
@@ -180,7 +182,9 @@ class SubmissionService(bases.Service):
 
         response = self.session.response_or_error(
             method="GET",
-            url=self.urls.get_table.format(project_id=pid, form_id=fid, table_name=table),
+            url=self.session.urlformat(
+                self.urls.get_table, project_id=pid, form_id=fid, table_name=table
+            ),
             logger=log,
             params=params,
         )
@@ -225,7 +229,7 @@ class SubmissionService(bases.Service):
 
         response = self.session.response_or_error(
             method="POST",
-            url=self.urls.post.format(project_id=pid, form_id=fid),
+            url=self.session.urlformat(self.urls.post, project_id=pid, form_id=fid),
             logger=log,
             headers={"Content-Type": "application/xml"},
             params=params,
@@ -272,7 +276,9 @@ class SubmissionService(bases.Service):
 
         response = self.session.response_or_error(
             method="PUT",
-            url=self.urls.put.format(project_id=pid, form_id=fid, instance_id=iid),
+            url=self.session.urlformat(
+                self.urls.put, project_id=pid, form_id=fid, instance_id=iid
+            ),
             logger=log,
             headers={"Content-Type": "application/xml"},
             data=xml,
@@ -308,7 +314,9 @@ class SubmissionService(bases.Service):
 
         response = self.session.response_or_error(
             method="PATCH",
-            url=self.urls.patch.format(project_id=pid, form_id=fid, instance_id=iid),
+            url=self.session.urlformat(
+                self.urls.patch, project_id=pid, form_id=fid, instance_id=iid
+            ),
             logger=log,
             json=json,
         )

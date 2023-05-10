@@ -85,7 +85,7 @@ class FormService(bases.Service):
         else:
             response = self.session.response_or_error(
                 method="GET",
-                url=self.urls.list.format(project_id=pid),
+                url=self.session.urlformat(self.urls.list, project_id=pid),
                 logger=log,
             )
             data = response.json()
@@ -113,7 +113,7 @@ class FormService(bases.Service):
         else:
             response = self.session.response_or_error(
                 method="GET",
-                url=self.urls.get.format(project_id=pid, form_id=fid),
+                url=self.session.urlformat(self.urls.get, project_id=pid, form_id=fid),
                 logger=log,
             )
             data = response.json()
