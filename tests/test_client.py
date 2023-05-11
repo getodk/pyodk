@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import TestCase, skip
 
 from pyodk.client import Client
@@ -49,6 +50,26 @@ class TestUsage(TestCase):
                 attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
             )
 
+    def test_form_update__new_definition_and_attachments__non_ascii_dingbat(self):
+        """Should create a new version with new definition and attachment."""
+        with Client() as client:
+            client.forms.update(
+                form_id="✅",
+                definition=(RESOURCES / "forms" / "✅.xlsx").as_posix(),
+                attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
+            )
+            form = client.forms.get("✅")
+            self.assertEqual(form.xmlFormId, "✅")
+
+    def test_form_update__with_version_updater__non_ascii_specials(self):
+        """Should create a new version with new definition and attachment."""
+        with Client() as client:
+            client.forms.update(
+                form_id="'=+/*-451%/%",
+                attachments=[],
+                version_updater=lambda v: datetime.now().isoformat(),
+            )
+
     def test_form_update__attachments(self):
         """Should create a new version with new attachment."""
         with Client() as client:
@@ -77,4 +98,41 @@ class TestUsage(TestCase):
         client.projects.create_app_users(
             display_names=["test_assign3", "test_assign_23"],
             forms=["range", "pull_data"],
+        )
+
+    def test_submission_create__non_ascii(self):
+        """Should create an instance of the form, encoded to utf-8."""
+        client = Client()
+        xml = """
+        <data id="'=+/*-451%/%" version="1">
+          <meta>
+            <instanceID>~!@#$%^&*()_+=-✅✅</instanceID>
+          </meta>
+          <fruit>Banana</fruit>
+          <note_fruit/>
+        </data>
+        """
+        client.submissions.create(xml=xml, form_id="'=+/*-451%/%")
+        submission = client.submissions.get(
+            form_id="'=+/*-451%/%", instance_id="~!@#$%^&*()_+=-✅✅"
+        )
+        self.assertEqual("~!@#$%^&*()_+=-✅✅", submission.instanceId)
+
+    def test_submission_edit__non_ascii(self):
+        """Should edit an existing instance of the form, encoded to utf-8."""
+        client = Client()
+        # The "instance_id" remains the id of the first submission, not the
+        # instanceID/deprecatedID used in the XML.
+        xml = """
+        <data id="'=+/*-451%/%" version="1">
+          <meta>
+            <deprecatedID>~!@#$%^&*()_+=-✘✘</deprecatedID>
+            <instanceID>~!@#$%^&*()_+=-✘✘✘</instanceID>
+          </meta>
+          <fruit>Papaya</fruit>
+          <note_fruit/>
+        </data>
+        """
+        client.submissions.edit(
+            xml=xml, form_id="'=+/*-451%/%", instance_id="~!@#$%^&*()_+=-✅✅"
         )

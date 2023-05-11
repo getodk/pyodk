@@ -196,6 +196,7 @@ class SubmissionService(bases.Service):
         form_id: Optional[str] = None,
         project_id: Optional[int] = None,
         device_id: Optional[str] = None,
+        encoding: str = "utf-8",
     ) -> Submission:
         """
         Create a Submission.
@@ -216,6 +217,7 @@ class SubmissionService(bases.Service):
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         :param device_id: An optional deviceID associated with the submission.
+        :param encoding: The encoding of the submission XML, default "utf-8".
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -233,7 +235,7 @@ class SubmissionService(bases.Service):
             logger=log,
             headers={"Content-Type": "application/xml"},
             params=params,
-            data=xml,
+            data=xml.encode(encoding=encoding),
         )
         data = response.json()
         return Submission(**data)
@@ -244,27 +246,16 @@ class SubmissionService(bases.Service):
         xml: str,
         form_id: Optional[str] = None,
         project_id: Optional[int] = None,
+        encoding: str = "utf-8",
     ) -> Submission:
         """
         Update Submission data.
-
-        Example submission XML structure:
-
-        ```
-        <data id="my_form" version="v1">
-          <meta>
-            <deprecatedID>uuid:85cb9aff-005e-4edd-9739-dc9c1a829c44</deprecatedID>
-            <instanceID>uuid:315c2f74-c8fc-4606-ae3f-22f8983e441e</instanceID>
-          </meta>
-          <name>Alice</name>
-          <age>36</age>
-        </data>
-        ```
 
         :param instance_id: The instanceId of the Submission being referenced.
         :param xml: The submission XML.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
+        :param encoding: The encoding of the submission XML, default "utf-8".
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -281,7 +272,7 @@ class SubmissionService(bases.Service):
             ),
             logger=log,
             headers={"Content-Type": "application/xml"},
-            data=xml,
+            data=xml.encode(encoding=encoding),
         )
         data = response.json()
         return Submission(**data)
@@ -330,18 +321,37 @@ class SubmissionService(bases.Service):
         form_id: Optional[str] = None,
         project_id: Optional[int] = None,
         comment: Optional[str] = None,
+        encoding: str = "utf-8",
     ) -> None:
         """
         Edit a submission and optionally comment on it.
 
-        :param instance_id: The instanceId of the Submission being referenced.
+        Example edited submission XML structure:
+
+        ```
+        <data id="my_form" version="v1">
+          <meta>
+            <deprecatedID>uuid:85cb9aff-005e-4edd-9739-dc9c1a829c44</deprecatedID>
+            <instanceID>uuid:315c2f74-c8fc-4606-ae3f-22f8983e441e</instanceID>
+          </meta>
+          <name>Alice</name>
+          <age>36</age>
+        </data>
+        ```
+
+        :param instance_id: The instanceId of the Submission being referenced. The
+          `instance_id` each Submission is first submitted with will always represent
+          that Submission as a whole. Each version of the Submission, though, has its own
+          `instance_id`. So `instance_id` will not necessarily match the values in
+           the XML elements named `instanceID` and `deprecatedID`.
         :param xml: The submission XML.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         :param comment: The text of the comment.
+        :param encoding: The encoding of the submission XML, default "utf-8".
         """
         fp_ids = {"form_id": form_id, "project_id": project_id}
-        self._put(instance_id=instance_id, xml=xml, **fp_ids)
+        self._put(instance_id=instance_id, xml=xml, encoding=encoding, **fp_ids)
         if comment is not None:
             self.add_comment(instance_id=instance_id, comment=comment, **fp_ids)
 
