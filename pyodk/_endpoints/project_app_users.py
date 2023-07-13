@@ -63,7 +63,7 @@ class ProjectAppUserService(bases.Service):
 
         response = self.session.response_or_error(
             method="GET",
-            url=self.urls.list.format(project_id=pid),
+            url=self.session.urlformat(self.urls.list, project_id=pid),
             logger=log,
         )
         data = response.json()
@@ -92,7 +92,7 @@ class ProjectAppUserService(bases.Service):
 
         response = self.session.response_or_error(
             method="POST",
-            url=self.urls.post.format(project_id=pid),
+            url=self.session.urlformat(self.urls.post, project_id=pid),
             logger=log,
             json=json,
         )

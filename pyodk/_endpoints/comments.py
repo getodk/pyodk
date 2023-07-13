@@ -70,7 +70,9 @@ class CommentService(bases.Service):
 
         response = self.session.response_or_error(
             method="GET",
-            url=self.urls.list.format(project_id=pid, form_id=fid, instance_id=iid),
+            url=self.session.urlformat(
+                self.urls.list, project_id=pid, form_id=fid, instance_id=iid
+            ),
             logger=log,
         )
         data = response.json()
@@ -105,7 +107,9 @@ class CommentService(bases.Service):
 
         response = self.session.response_or_error(
             method="POST",
-            url=self.urls.post.format(project_id=pid, form_id=fid, instance_id=iid),
+            url=self.session.urlformat(
+                self.urls.post, project_id=pid, form_id=fid, instance_id=iid
+            ),
             logger=log,
             json=json,
         )

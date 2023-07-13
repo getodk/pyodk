@@ -61,7 +61,9 @@ class FormDraftAttachmentService(bases.Service):
         with open(file_path, "rb") as fd:
             response = self.session.response_or_error(
                 method="POST",
-                url=self.urls.post.format(project_id=pid, form_id=fid, fname=file_name),
+                url=self.session.urlformat(
+                    self.urls.post, project_id=pid, form_id=fid, fname=file_name
+                ),
                 logger=log,
                 data=fd,
             )

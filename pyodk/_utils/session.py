@@ -1,5 +1,7 @@
 from logging import Logger
-from urllib.parse import urljoin
+from string import Formatter
+from typing import Any
+from urllib.parse import quote_plus, urljoin
 
 from requests import PreparedRequest, Response
 from requests import Session as RequestsSession
@@ -10,6 +12,18 @@ from requests.exceptions import HTTPError
 from pyodk.__version__ import __version__
 from pyodk._endpoints.auth import AuthService
 from pyodk.errors import PyODKError
+
+
+class URLFormatter(Formatter):
+    """
+    Makes a valid URL by sending each format input field through urllib.parse.quote_plus.
+    """
+
+    def format_field(self, value: Any, format_spec: str) -> Any:
+        return format(quote_plus(str(value)), format_spec)
+
+
+_URL_FORMATTER = URLFormatter()
 
 
 class Adapter(HTTPAdapter):
@@ -99,6 +113,14 @@ class Session(RequestsSession):
 
     def urljoin(self, url: str) -> str:
         return urljoin(self.base_url, url.lstrip("/"))
+
+    @staticmethod
+    def urlformat(url: str, *args, **kwargs) -> str:
+        return _URL_FORMATTER.format(url, *args, **kwargs)
+
+    @staticmethod
+    def urlquote(url: str) -> str:
+        return _URL_FORMATTER.format_field(url, format_spec="")
 
     def request(self, method, url, *args, **kwargs):
         return super().request(method, self.urljoin(url), *args, **kwargs)

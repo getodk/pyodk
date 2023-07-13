@@ -58,8 +58,8 @@ class FormAssignmentService(bases.Service):
 
         response = self.session.response_or_error(
             method="POST",
-            url=self.urls.post.format(
-                project_id=pid, form_id=fid, role_id=rid, user_id=uid
+            url=self.session.urlformat(
+                self.urls.post, project_id=pid, form_id=fid, role_id=rid, user_id=uid
             ),
             logger=log,
         )

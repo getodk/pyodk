@@ -95,7 +95,7 @@ class ProjectService(bases.Service):
         else:
             response = self.session.response_or_error(
                 method="GET",
-                url=self.urls.get.format(project_id=pid),
+                url=self.session.urlformat(self.urls.get, project_id=pid),
                 logger=log,
             )
             data = response.json()
