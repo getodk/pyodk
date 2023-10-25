@@ -10,7 +10,7 @@ A standalone Jupyter notebook intended to introduce `pyodk` and show how it can 
 
 ## [Going beyond `pyodk`'s library methods](beyond-library-methods.ipynb)
 
-A standalone Jupyter notebook that shows how the raw HTTP method access and the [API docs](https://odkcentral.docs.apiary.io/) can be used together to make use of the full ODK Central API.
+A standalone Jupyter notebook that shows how the raw HTTP method access and the [API docs](https://docs.getodk.org/central-api) can be used together to make use of the full ODK Central API.
 
 ## [Working with repeats](working-with-repeats.ipynb)
 

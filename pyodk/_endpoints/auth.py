@@ -44,7 +44,7 @@ class AuthService:
         """
         Get a new token from Central by creating a new session.
 
-        https://odkcentral.docs.apiary.io/#reference/authentication/session-authentication/logging-in
+        https://docs.getodk.org/central-api-authentication/#logging-in
 
         :param username: The username of the Web User to auth with.
         :param password: The Web User's password.

@@ -1,6 +1,6 @@
 # HTTP verb methods
 
-For interacting with parts of the ODK Central API ([docs](https://odkcentral.docs.apiary.io)) that have not been implemented in `pyodk`, use HTTP verb methods exposed on the `Client`:
+For interacting with parts of the ODK Central API ([docs](https://docs.getodk.org/central-api)) that have not been implemented in `pyodk`, use HTTP verb methods exposed on the `Client`:
 
 ```python
 client.get("projects/8")

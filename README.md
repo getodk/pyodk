@@ -1,7 +1,7 @@
 # pyODK
 [![pypi](https://img.shields.io/pypi/v/pyodk.svg)](https://pypi.python.org/pypi/pyodk)
 
-An API client for the [ODK Central API](https://odkcentral.docs.apiary.io). Use it to interact with your data and automate common tasks from Python.
+An API client for the [ODK Central API](https://docs.getodk.org/central-api). Use it to interact with your data and automate common tasks from Python.
 
 This library aims to make common data analysis and workflow automation tasks as simple as possible by providing clear method names, types, and examples. It also provides convenient access to the full API using [HTTP verb methods](https://getodk.github.io/pyodk/http-methods/).
 
