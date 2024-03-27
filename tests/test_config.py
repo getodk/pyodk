@@ -76,7 +76,8 @@ class TestConfig(TestCase):
         cfg = {"central": self.section_data}
         with self.assertRaises(TypeError) as err:
             config.objectify_config(config_data=cfg)
-        self.assertEqual(
+        # Py3.8 doesn't prefix the class name to __init__(), but Py3.10 does.
+        self.assertIn(
             "__init__() missing 1 required positional argument: 'password'",
             err.exception.args[0],
         )

@@ -36,7 +36,7 @@ class Adapter(HTTPAdapter):
                 total=3,
                 backoff_factor=2,
                 status_forcelist=(429, 500, 502, 503, 504),
-                method_whitelist=("GET", "PUT", "POST", "DELETE"),
+                allowed_methods=("GET", "PUT", "POST", "DELETE"),
             )
         super().__init__(*args, **kwargs)
 

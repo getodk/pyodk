@@ -15,12 +15,12 @@ class Submission(bases.Model):
     instanceId: str
     submitterId: int
     createdAt: datetime
-    deviceId: Optional[str]
+    deviceId: Optional[str] = None
     # null, edited, hasIssues, rejected, approved
-    reviewState: Optional[str]
-    userAgent: Optional[str]
-    instanceName: Optional[str]
-    updatedAt: Optional[datetime]
+    reviewState: Optional[str] = None
+    userAgent: Optional[str] = None
+    instanceName: Optional[str] = None
+    updatedAt: Optional[datetime] = None
 
 
 class URLs(bases.Model):

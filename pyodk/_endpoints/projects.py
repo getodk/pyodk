@@ -16,14 +16,14 @@ class Project(bases.Model):
     id: int
     name: str
     createdAt: datetime
-    description: Optional[str]
-    archived: Optional[bool]
-    keyId: Optional[int]
-    appUsers: Optional[int]
-    forms: Optional[int]
-    lastSubmission: Optional[str]
-    updatedAt: Optional[datetime]
-    deletedAt: Optional[datetime]
+    description: Optional[str] = None
+    archived: Optional[bool] = None
+    keyId: Optional[int] = None
+    appUsers: Optional[int] = None
+    forms: Optional[int] = None
+    lastSubmission: Optional[str] = None
+    updatedAt: Optional[datetime] = None
+    deletedAt: Optional[datetime] = None
 
 
 class URLs(bases.Model):

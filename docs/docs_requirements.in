@@ -1,5 +1,0 @@
--e .
-mkdocs
-mkdocstrings
-mkdocstrings-python
-mkdocs-jupyter

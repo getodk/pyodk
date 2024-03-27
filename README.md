@@ -7,7 +7,7 @@ This library aims to make common data analysis and workflow automation tasks as 
 
 ## Install
 
-The currently supported Python version for `pyodk` is 3.8.
+The currently supported Python version for `pyodk` is 3.12.
 
 ### From pip
 
@@ -155,19 +155,13 @@ See issues for additions to `pyodk` that are under consideration. Please file ne
 Install the source files as described above, then:
 
 ```bash
-pip install -r dev_requirements.pip
+pip install -e .[dev]
 ```
 
 You can run tests with:
 
 ```bash
-nosetests
-```
-
-On Windows, use:
-
-```bash
-nosetests -v -v --traverse-namespace ./tests
+python -m unittest
 ```
 
 ## Release
@@ -175,6 +169,6 @@ nosetests -v -v --traverse-namespace ./tests
 1. Run all linting and tests.
 1. Draft a new GitHub release with the list of merged PRs.
 1. Check out a release branch from latest upstream master.
-1. Update `pyodk/__version__.py` with the new release version number.
+1. Update `pyproject.toml` and `pyodk/__version__.py` with the new release version number.
 1. Commit, push the branch, and initiate a pull request. Wait for tests to pass, then merge the PR.
 1. Tag the release and it will automatically be published (see `release.yml` actions file).
