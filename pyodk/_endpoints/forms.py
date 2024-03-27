@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Callable, Iterable
 from datetime import datetime
-from typing import Any, Callable, Dict, Iterable, List, Optional
+from typing import Any
 
 from pyodk._endpoints import bases
 from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
@@ -24,9 +25,9 @@ class Form(bases.Model):
     hash: str
     state: str  # open, closing, closed
     createdAt: datetime
-    keyId: Optional[int]
-    updatedAt: Optional[datetime]
-    publishedAt: Optional[datetime]
+    keyId: int | None
+    updatedAt: datetime | None
+    publishedAt: datetime | None
 
 
 class URLs(bases.Model):
@@ -54,22 +55,22 @@ class FormService(bases.Service):
     def __init__(
         self,
         session: Session,
-        default_project_id: Optional[int] = None,
-        default_form_id: Optional[str] = None,
+        default_project_id: int | None = None,
+        default_form_id: str | None = None,
         urls: URLs = None,
     ):
         self.urls: URLs = urls if urls is not None else URLs()
         self.session: Session = session
-        self.default_project_id: Optional[int] = default_project_id
-        self.default_form_id: Optional[str] = default_form_id
+        self.default_project_id: int | None = default_project_id
+        self.default_form_id: str | None = default_form_id
 
-    def _default_kw(self) -> Dict[str, Any]:
+    def _default_kw(self) -> dict[str, Any]:
         return {
             "default_project_id": self.default_project_id,
             "default_form_id": self.default_form_id,
         }
 
-    def list(self, project_id: Optional[int] = None) -> List[Form]:
+    def list(self, project_id: int | None = None) -> list[Form]:
         """
         Read all Form details.
 
@@ -81,7 +82,7 @@ class FormService(bases.Service):
             pid = pv.validate_project_id(project_id, self.default_project_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
         else:
             response = self.session.response_or_error(
                 method="GET",
@@ -94,7 +95,7 @@ class FormService(bases.Service):
     def get(
         self,
         form_id: str,
-        project_id: Optional[int] = None,
+        project_id: int | None = None,
     ) -> Form:
         """
         Read Form details.
@@ -109,7 +110,7 @@ class FormService(bases.Service):
             fid = pv.validate_form_id(form_id, self.default_form_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
         else:
             response = self.session.response_or_error(
                 method="GET",
@@ -122,10 +123,10 @@ class FormService(bases.Service):
     def update(
         self,
         form_id: str,
-        project_id: Optional[int] = None,
-        definition: Optional[str] = None,
-        attachments: Optional[Iterable[str]] = None,
-        version_updater: Optional[Callable[[str], str]] = None,
+        project_id: int | None = None,
+        definition: str | None = None,
+        attachments: Iterable[str] | None = None,
+        version_updater: Callable[[str], str] | None = None,
     ) -> None:
         """
         Update an existing Form. Must specify definition, attachments or both.

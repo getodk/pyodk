@@ -1,12 +1,12 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from requests import Session
-
 from pyodk._endpoints.auth import AuthService
 from pyodk._utils import config
 from pyodk.client import Client
 from pyodk.errors import PyODKError
+from requests import Session
+
 from tests import utils
 from tests.resources import CONFIG_DATA
 
@@ -55,7 +55,7 @@ class TestAuth(TestCase):
             mock_session.return_value.status_code = 200
             client = Client()
             with client.session as s:
-                token = s.auth.service.verify_token(token="123")
+                token = s.auth.service.verify_token(token="123")  # noqa: S106
         self.assertEqual("123", token)
 
     def test_verify_token__error__response_status(self):
@@ -64,20 +64,24 @@ class TestAuth(TestCase):
             mock_session.return_value.status_code = 401
             client = Client()
             with client.session as s, self.assertRaises(PyODKError) as err:
-                s.auth.service.verify_token(token="123")
+                s.auth.service.verify_token(token="123")  # noqa: S106
         msg = "The token verification request failed. Status:"
         self.assertTrue(err.exception.args[0].startswith(msg))
 
     def test_get_token__ok__new_cache(self):
         """Should return the token, and write it to the cache file."""
-        with patch.multiple(
-            AuthService,
-            get_new_token=MagicMock(return_value="123"),
-        ), utils.get_temp_dir() as tmp:
+        with (
+            patch.multiple(
+                AuthService,
+                get_new_token=MagicMock(return_value="123"),
+            ),
+            utils.get_temp_dir() as tmp,
+        ):
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)
             token = client.session.auth.service.get_token(
-                username="user", password="pass"
+                username="user",
+                password="pass",  # noqa: S106
             )
             self.assertEqual("123", token)
             cache = config.read_cache_token(cache_path=cache_path)
@@ -89,28 +93,36 @@ class TestAuth(TestCase):
         verify_mock.side_effect = PyODKError("The token verification request failed.")
         get_new_mock = MagicMock()
         get_new_mock.side_effect = PyODKError("The login request failed.")
-        with patch.multiple(
-            AuthService,
-            verify_token=verify_mock,
-            get_new_token=get_new_mock,
-        ), utils.get_temp_dir() as tmp, self.assertRaises(PyODKError) as err:
+        with (
+            patch.multiple(
+                AuthService,
+                verify_token=verify_mock,
+                get_new_token=get_new_mock,
+            ),
+            utils.get_temp_dir() as tmp,
+            self.assertRaises(PyODKError) as err,
+        ):
             cache_path = tmp / "test_cache.toml"
             client = Client(cache_path=cache_path.as_posix())
-            client.session.auth.service.get_token(username="user", password="pass")
+            client.session.auth.service.get_token(username="user", password="pass")  # noqa: S106
             self.assertFalse(cache_path.exists())
         self.assertTrue(err.exception.args[0].startswith("The login request failed."))
 
     def test_get_token__ok__existing_cache(self):
         """Should return the token from the cache file."""
-        with patch.multiple(
-            AuthService,
-            verify_token=MagicMock(return_value="123"),
-        ), utils.get_temp_dir() as tmp:
+        with (
+            patch.multiple(
+                AuthService,
+                verify_token=MagicMock(return_value="123"),
+            ),
+            utils.get_temp_dir() as tmp,
+        ):
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)
             config.write_cache("token", "123", cache_path=cache_path)
             token = client.session.auth.service.get_token(
-                username="user", password="pass"
+                username="user",
+                password="pass",  # noqa: S106
             )
             self.assertEqual("123", token)
             cache = config.read_cache_token(cache_path=cache_path)
@@ -120,16 +132,20 @@ class TestAuth(TestCase):
         """Should get a new token, when verification of an existing token fails."""
         verify_mock = MagicMock()
         verify_mock.side_effect = PyODKError("The token verification request failed.")
-        with patch.multiple(
-            AuthService,
-            verify_token=verify_mock,
-            get_new_token=MagicMock(return_value="123"),
-        ), utils.get_temp_dir() as tmp:
+        with (
+            patch.multiple(
+                AuthService,
+                verify_token=verify_mock,
+                get_new_token=MagicMock(return_value="123"),
+            ),
+            utils.get_temp_dir() as tmp,
+        ):
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)
             config.write_cache("token", "123", cache_path=cache_path)
             token = client.session.auth.service.get_token(
-                username="user", password="pass"
+                username="user",
+                password="pass",  # noqa: S106
             )
             self.assertEqual("123", token)
             cache = config.read_cache_token(cache_path=cache_path)

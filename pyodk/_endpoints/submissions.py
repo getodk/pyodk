@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pyodk._endpoints import bases
 from pyodk._endpoints.comments import Comment, CommentService
@@ -15,12 +16,12 @@ class Submission(bases.Model):
     instanceId: str
     submitterId: int
     createdAt: datetime
-    deviceId: Optional[str]
+    deviceId: str | None = None
     # null, edited, hasIssues, rejected, approved
-    reviewState: Optional[str]
-    userAgent: Optional[str]
-    instanceName: Optional[str]
-    updatedAt: Optional[datetime]
+    reviewState: str | None = None
+    userAgent: str | None = None
+    instanceName: str | None = None
+    updatedAt: datetime | None = None
 
 
 class URLs(bases.Model):
@@ -53,24 +54,24 @@ class SubmissionService(bases.Service):
     def __init__(
         self,
         session: Session,
-        default_project_id: Optional[int] = None,
-        default_form_id: Optional[str] = None,
+        default_project_id: int | None = None,
+        default_form_id: str | None = None,
         urls: URLs = None,
     ):
         self.urls: URLs = urls if urls is not None else URLs()
         self.session: Session = session
-        self.default_project_id: Optional[int] = default_project_id
-        self.default_form_id: Optional[str] = default_form_id
+        self.default_project_id: int | None = default_project_id
+        self.default_form_id: str | None = default_form_id
 
-    def _default_kw(self) -> Dict[str, Any]:
+    def _default_kw(self) -> dict[str, Any]:
         return {
             "default_project_id": self.default_project_id,
             "default_form_id": self.default_form_id,
         }
 
     def list(
-        self, form_id: Optional[str] = None, project_id: Optional[int] = None
-    ) -> List[Submission]:
+        self, form_id: str | None = None, project_id: int | None = None
+    ) -> list[Submission]:
         """
         Read all Submission metadata.
 
@@ -84,7 +85,7 @@ class SubmissionService(bases.Service):
             fid = pv.validate_form_id(form_id, self.default_form_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="GET",
@@ -97,8 +98,8 @@ class SubmissionService(bases.Service):
     def get(
         self,
         instance_id: str,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
+        form_id: str | None = None,
+        project_id: int | None = None,
     ) -> Submission:
         """
         Read Submission metadata.
@@ -115,7 +116,7 @@ class SubmissionService(bases.Service):
             iid = pv.validate_instance_id(instance_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="GET",
@@ -129,16 +130,16 @@ class SubmissionService(bases.Service):
 
     def get_table(
         self,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
-        table_name: Optional[str] = "Submissions",
-        skip: Optional[int] = None,
-        top: Optional[int] = None,
-        count: Optional[bool] = None,
-        wkt: Optional[bool] = None,
-        filter: Optional[str] = None,
-        expand: Optional[str] = None,
-    ) -> Dict:
+        form_id: str | None = None,
+        project_id: int | None = None,
+        table_name: str | None = "Submissions",
+        skip: int | None = None,
+        top: int | None = None,
+        count: bool | None = None,
+        wkt: bool | None = None,
+        filter: str | None = None,
+        expand: str | None = None,
+    ) -> dict:
         """
         Read Submission data.
 
@@ -178,7 +179,7 @@ class SubmissionService(bases.Service):
             }
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="GET",
@@ -193,9 +194,9 @@ class SubmissionService(bases.Service):
     def create(
         self,
         xml: str,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
-        device_id: Optional[str] = None,
+        form_id: str | None = None,
+        project_id: int | None = None,
+        device_id: str | None = None,
         encoding: str = "utf-8",
     ) -> Submission:
         """
@@ -227,7 +228,7 @@ class SubmissionService(bases.Service):
                 params["deviceID"] = pv.validate_str(device_id, key="device_id")
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="POST",
@@ -244,8 +245,8 @@ class SubmissionService(bases.Service):
         self,
         instance_id: str,
         xml: str,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
+        form_id: str | None = None,
+        project_id: int | None = None,
         encoding: str = "utf-8",
     ) -> Submission:
         """
@@ -263,7 +264,7 @@ class SubmissionService(bases.Service):
             iid = pv.validate_instance_id(instance_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="PUT",
@@ -281,8 +282,8 @@ class SubmissionService(bases.Service):
         self,
         instance_id: str,
         review_state: str,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
+        form_id: str | None = None,
+        project_id: int | None = None,
     ) -> Submission:
         """
         Update Submission metadata.
@@ -301,7 +302,7 @@ class SubmissionService(bases.Service):
                 json["reviewState"] = review_state
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="PATCH",
@@ -318,9 +319,9 @@ class SubmissionService(bases.Service):
         self,
         instance_id: str,
         xml: str,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
-        comment: Optional[str] = None,
+        form_id: str | None = None,
+        project_id: int | None = None,
+        comment: str | None = None,
         encoding: str = "utf-8",
     ) -> None:
         """
@@ -359,9 +360,9 @@ class SubmissionService(bases.Service):
         self,
         instance_id: str,
         review_state: str,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
-        comment: Optional[str] = None,
+        form_id: str | None = None,
+        project_id: int | None = None,
+        comment: str | None = None,
     ) -> None:
         """
         Update Submission metadata and optionally comment on it.
@@ -380,9 +381,9 @@ class SubmissionService(bases.Service):
     def list_comments(
         self,
         instance_id: str,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
-    ) -> List[Comment]:
+        form_id: str | None = None,
+        project_id: int | None = None,
+    ) -> Iterable[Comment]:
         """
         Read all Comment details.
 
@@ -400,8 +401,8 @@ class SubmissionService(bases.Service):
         self,
         instance_id: str,
         comment: str,
-        project_id: Optional[int] = None,
-        form_id: Optional[str] = None,
+        project_id: int | None = None,
+        form_id: str | None = None,
     ) -> Comment:
         """
         Create a Comment.

@@ -1,6 +1,7 @@
 import logging
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any
 
 from pyodk._endpoints import bases
 from pyodk._endpoints.form_assignments import FormAssignmentService
@@ -16,14 +17,14 @@ class Project(bases.Model):
     id: int
     name: str
     createdAt: datetime
-    description: Optional[str]
-    archived: Optional[bool]
-    keyId: Optional[int]
-    appUsers: Optional[int]
-    forms: Optional[int]
-    lastSubmission: Optional[str]
-    updatedAt: Optional[datetime]
-    deletedAt: Optional[datetime]
+    description: str | None = None
+    archived: bool | None = None
+    keyId: int | None = None
+    appUsers: int | None = None
+    forms: int | None = None
+    lastSubmission: str | None = None
+    updatedAt: datetime | None = None
+    deletedAt: datetime | None = None
 
 
 class URLs(bases.Model):
@@ -53,19 +54,19 @@ class ProjectService(bases.Service):
     def __init__(
         self,
         session: Session,
-        default_project_id: Optional[int] = None,
+        default_project_id: int | None = None,
         urls: URLs = None,
     ):
         self.urls: URLs = urls if urls is not None else URLs()
         self.session: Session = session
-        self.default_project_id: Optional[int] = default_project_id
+        self.default_project_id: int | None = default_project_id
 
-    def _default_kw(self) -> Dict[str, Any]:
+    def _default_kw(self) -> dict[str, Any]:
         return {
             "default_project_id": self.default_project_id,
         }
 
-    def list(self) -> List[Project]:
+    def list(self) -> list[Project]:
         """
         Read Project details.
 
@@ -79,7 +80,7 @@ class ProjectService(bases.Service):
         data = response.json()
         return [Project(**r) for r in data]
 
-    def get(self, project_id: Optional[int] = None) -> Project:
+    def get(self, project_id: int | None = None) -> Project:
         """
         Read all Project details.
 
@@ -91,7 +92,7 @@ class ProjectService(bases.Service):
             pid = pv.validate_project_id(project_id, self.default_project_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
         else:
             response = self.session.response_or_error(
                 method="GET",
@@ -104,9 +105,9 @@ class ProjectService(bases.Service):
     def create_app_users(
         self,
         display_names: Iterable[str],
-        forms: Optional[Iterable[str]] = None,
-        project_id: Optional[int] = None,
-    ) -> List[ProjectAppUser]:
+        forms: Iterable[str] | None = None,
+        project_id: int | None = None,
+    ) -> Iterable[ProjectAppUser]:
         """
         Create new project app users and optionally assign forms to them.
 
@@ -121,7 +122,7 @@ class ProjectService(bases.Service):
         pau = ProjectAppUserService(session=self.session, **self._default_kw())
         fa = FormAssignmentService(session=self.session, **self._default_kw())
 
-        current = set(u.displayName for u in pau.list(**pid) if u.token is not None)
+        current = {u.displayName for u in pau.list(**pid) if u.token is not None}
         to_create = (user for user in display_names if user not in current)
         users = [pau.create(display_name=n, **pid) for n in to_create]
         # The "App User" role_id should always be "2", so no need to look it up by name.

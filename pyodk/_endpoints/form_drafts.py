@@ -1,7 +1,6 @@
 import logging
 from contextlib import nullcontext
 from pathlib import Path
-from typing import Optional
 
 from pyodk._endpoints import bases
 from pyodk._utils import validators as pv
@@ -26,21 +25,21 @@ class FormDraftService(bases.Service):
     def __init__(
         self,
         session: Session,
-        default_project_id: Optional[int] = None,
-        default_form_id: Optional[str] = None,
+        default_project_id: int | None = None,
+        default_form_id: str | None = None,
         urls: URLs = None,
     ):
         self.urls: URLs = urls if urls is not None else URLs()
         self.session: Session = session
-        self.default_project_id: Optional[int] = default_project_id
-        self.default_form_id: Optional[str] = default_form_id
+        self.default_project_id: int | None = default_project_id
+        self.default_form_id: str | None = default_form_id
 
     def create(
         self,
-        file_path: Optional[str] = None,
-        ignore_warnings: Optional[bool] = True,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
+        file_path: str | None = None,
+        ignore_warnings: bool | None = True,
+        form_id: str | None = None,
+        project_id: int | None = None,
     ) -> bool:
         """
         Create a Form Draft.
@@ -70,7 +69,7 @@ class FormDraftService(bases.Service):
                 elif file_path.suffix == ".xml":
                     content_type = "application/xml"
                 else:
-                    raise PyODKError(
+                    raise PyODKError(  # noqa: TRY301
                         "Parameter 'file_path' file name has an unexpected extension, "
                         "expected one of '.xlsx', '.xls', '.xml'."
                     )
@@ -80,7 +79,7 @@ class FormDraftService(bases.Service):
                 }
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         with open(file_path, "rb") if file_path is not None else nullcontext() as fd:
             response = self.session.response_or_error(
@@ -97,9 +96,9 @@ class FormDraftService(bases.Service):
 
     def publish(
         self,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
-        version: Optional[str] = None,
+        form_id: str | None = None,
+        project_id: int | None = None,
+        version: str | None = None,
     ) -> bool:
         """
         Publish a Form Draft.
@@ -117,7 +116,7 @@ class FormDraftService(bases.Service):
                 params[key] = pv.validate_str(version, key=key)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="POST",

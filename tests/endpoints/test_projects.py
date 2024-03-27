@@ -1,15 +1,15 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
-from typing import Callable
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
-
-from requests import Session
 
 from pyodk._endpoints.form_assignments import FormAssignmentService
 from pyodk._endpoints.project_app_users import ProjectAppUser, ProjectAppUserService
 from pyodk._endpoints.projects import Project
 from pyodk.client import Client
+from requests import Session
+
 from tests.resources import CONFIG_DATA, projects_data
 
 PROJECT_APP_USERS = [
@@ -33,13 +33,15 @@ def get_mock_context(func) -> Callable:
 
     @wraps(func)
     def patched(*args, **kwargs):
-        with patch.object(
-            FormAssignmentService, "assign", return_value=True
-        ) as fa_assign, patch.object(
-            ProjectAppUserService, "list", return_value=PROJECT_APP_USERS
-        ) as pau_list, patch.object(
-            ProjectAppUserService, "create", return_value=True
-        ) as pau_create:
+        with (
+            patch.object(FormAssignmentService, "assign", return_value=True) as fa_assign,
+            patch.object(
+                ProjectAppUserService, "list", return_value=PROJECT_APP_USERS
+            ) as pau_list,
+            patch.object(
+                ProjectAppUserService, "create", return_value=True
+            ) as pau_create,
+        ):
             ctx = MockContext(
                 fa_assign=fa_assign,
                 pau_list=pau_list,
