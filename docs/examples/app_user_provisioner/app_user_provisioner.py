@@ -12,25 +12,25 @@ more recent versions. Install these with `pip install -r requirements.txt`.
 
 To run the script, use `python app_user_provisioner.py`.
 """
+
 import base64
 import glob
 import json
 import zlib
-from typing import Any, Dict
+from typing import Any
 
 import segno
 from PIL import Image, ImageDraw, ImageFont, ImageOps
-
 from pyodk.client import Client
 
 # Customise these settings to your environment.
 PROJECT_ID = 149
 PROJECT_NAME = "My Cool Project"
 FORMS_TO_ACCESS = ["all-widgets", "afp-knowledge"]
-ADMIN_PASSWORD = "s00p3rs3cr3t"
+ADMIN_PASSWORD = "s00p3rs3cr3t"  # noqa: S105
 
 
-def get_settings(server_url: str, project_name: str, username: str) -> Dict[str, Any]:
+def get_settings(server_url: str, project_name: str, username: str) -> dict[str, Any]:
     """Template for the settings to encode in the QR image. Customise as needed."""
     return {
         "general": {

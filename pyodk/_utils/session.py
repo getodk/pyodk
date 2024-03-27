@@ -132,7 +132,7 @@ class Session(RequestsSession):
     def response_or_error(
         self, method: str, url: str, logger: Logger, *args, **kwargs
     ) -> Response:
-        response = self.request(method=method, url=url, *args, **kwargs)
+        response = self.request(*args, method=method, url=url, **kwargs)
         try:
             response.raise_for_status()
         except HTTPError as e:

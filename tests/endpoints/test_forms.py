@@ -1,7 +1,7 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from functools import wraps
-from typing import Callable
 from unittest import TestCase
 from unittest.mock import MagicMock, mock_open, patch
 
@@ -12,6 +12,7 @@ from pyodk._endpoints.forms import Form, FormService
 from pyodk._utils.session import Session
 from pyodk.client import Client
 from pyodk.errors import PyODKError
+
 from tests.resources import CONFIG_DATA, forms_data
 
 
@@ -34,19 +35,19 @@ def get_mock_context(func) -> Callable:
 
     @wraps(func)
     def patched(*args, **kwargs):
-        with patch.object(
-            FormService,
-            "get",
-            return_value=Form(**forms_data.test_forms["response_data"][0]),
-        ) as form_get, patch.object(
-            FormDraftService, "create", return_value=True
-        ) as create, patch.object(
-            FormDraftService, "publish", return_value=True
-        ) as publish, patch.object(
-            FormDraftAttachmentService, "upload", return_value=True
-        ) as upload, patch(
-            "pyodk._endpoints.forms.datetime"
-        ) as dt:
+        with (
+            patch.object(
+                FormService,
+                "get",
+                return_value=Form(**forms_data.test_forms["response_data"][0]),
+            ) as form_get,
+            patch.object(FormDraftService, "create", return_value=True) as create,
+            patch.object(FormDraftService, "publish", return_value=True) as publish,
+            patch.object(
+                FormDraftAttachmentService, "upload", return_value=True
+            ) as upload,
+            patch("pyodk._endpoints.forms.datetime") as dt,
+        ):
             dt.now.return_value = MockContext.now
             ctx = MockContext(
                 form_get=form_get,
@@ -189,9 +190,11 @@ class TestForms(TestCase):
         def mock_wrap_error(**kwargs):
             return kwargs["value"]
 
-        with patch.object(Session, "response_or_error") as mock_response, patch(
-            "pyodk._utils.validators.wrap_error", mock_wrap_error
-        ), patch("builtins.open", mock_open(), create=True) as mock_open_patch:
+        with (
+            patch.object(Session, "response_or_error") as mock_response,
+            patch("pyodk._utils.validators.wrap_error", mock_wrap_error),
+            patch("builtins.open", mock_open(), create=True) as mock_open_patch,
+        ):
             client.forms.update(form_id, definition=definition)
         mock_response.assert_any_call(
             method="POST",

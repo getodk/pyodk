@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from typing import List, Optional
 
 from pyodk._endpoints import bases
 from pyodk._utils import validators as pv
@@ -15,10 +14,10 @@ class ProjectAppUser(bases.Model):
     id: int
     displayName: str
     createdAt: datetime
-    type: Optional[str]  # user, field_key, public_link, singleUse
-    token: Optional[str]
-    updatedAt: Optional[datetime]
-    deletedAt: Optional[datetime]
+    type: str | None  # user, field_key, public_link, singleUse
+    token: str | None
+    updatedAt: datetime | None
+    deletedAt: datetime | None
 
 
 class URLs(bases.Model):
@@ -39,17 +38,17 @@ class ProjectAppUserService(bases.Service):
     def __init__(
         self,
         session: Session,
-        default_project_id: Optional[int] = None,
+        default_project_id: int | None = None,
         urls: URLs = None,
     ):
         self.urls: URLs = urls if urls is not None else URLs()
         self.session: Session = session
-        self.default_project_id: Optional[int] = default_project_id
+        self.default_project_id: int | None = default_project_id
 
     def list(
         self,
-        project_id: Optional[int] = None,
-    ) -> List[ProjectAppUser]:
+        project_id: int | None = None,
+    ) -> list[ProjectAppUser]:
         """
         Read all ProjectAppUser details.
 
@@ -59,7 +58,7 @@ class ProjectAppUserService(bases.Service):
             pid = pv.validate_project_id(project_id, self.default_project_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="GET",
@@ -72,7 +71,7 @@ class ProjectAppUserService(bases.Service):
     def create(
         self,
         display_name: str,
-        project_id: Optional[int] = None,
+        project_id: int | None = None,
     ) -> ProjectAppUser:
         """
         Create a ProjectAppUser.
@@ -88,7 +87,7 @@ class ProjectAppUserService(bases.Service):
             json = {"displayName": display_name}
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="POST",

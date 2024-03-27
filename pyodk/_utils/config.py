@@ -2,7 +2,6 @@ import logging
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional
 
 import toml
 
@@ -18,11 +17,10 @@ defaults = {
 
 @dataclass
 class CentralConfig:
-
     base_url: str
     username: str
     password: str = field(repr=False)
-    default_project_id: Optional[int] = None
+    default_project_id: int | None = None
 
     def validate(self):
         for key in ["base_url", "username", "password"]:  # Mandatory keys.
@@ -40,7 +38,7 @@ class Config:
     central: CentralConfig
 
 
-def objectify_config(config_data: Dict) -> Config:
+def objectify_config(config_data: dict) -> Config:
     """
     Convert a config dict into objects to validate the data.
     """
@@ -61,28 +59,28 @@ def get_path(path: str, env_key: str) -> Path:
     return defaults[env_key]
 
 
-def get_config_path(config_path: Optional[str] = None) -> Path:
+def get_config_path(config_path: str | None = None) -> Path:
     return get_path(path=config_path, env_key="PYODK_CONFIG_FILE")
 
 
-def get_cache_path(cache_path: Optional[str] = None) -> Path:
+def get_cache_path(cache_path: str | None = None) -> Path:
     return get_path(path=cache_path, env_key="PYODK_CACHE_FILE")
 
 
-def read_toml(path: Path) -> Dict:
+def read_toml(path: Path) -> dict:
     """
     Read a toml file.
     """
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             return toml.load(f)
     except (FileNotFoundError, PermissionError) as err:
-        err = PyODKError(f"Could not read file at: {path}. {repr(err)}.")
-        log.error(err, exc_info=True)
-        raise err
+        pyodk_err = PyODKError(f"Could not read file at: {path}. {err!r}.")
+        log.error(pyodk_err, exc_info=True)
+        raise pyodk_err from err
 
 
-def read_config(config_path: Optional[str] = None) -> Config:
+def read_config(config_path: str | None = None) -> Config:
     """
     Read the config file.
     """
@@ -91,7 +89,7 @@ def read_config(config_path: Optional[str] = None) -> Config:
     return objectify_config(config_data=file_data)
 
 
-def read_cache_token(cache_path: Optional[str] = None) -> str:
+def read_cache_token(cache_path: str | None = None) -> str:
     """
     Read the "token" key from the cache file.
     """
@@ -104,7 +102,7 @@ def read_cache_token(cache_path: Optional[str] = None) -> str:
     return file_data["token"]
 
 
-def write_cache(key: str, value: str, cache_path: Optional[str] = None) -> None:
+def write_cache(key: str, value: str, cache_path: str | None = None) -> None:
     """
     Append or overwrite the given key/value pair to the cache file.
     """
@@ -118,7 +116,7 @@ def write_cache(key: str, value: str, cache_path: Optional[str] = None) -> None:
         toml.dump(file_data, outfile)
 
 
-def delete_cache(cache_path: Optional[str] = None) -> None:
+def delete_cache(cache_path: str | None = None) -> None:
     """
     Delete the cache file, if it exists.
     """

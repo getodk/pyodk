@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from typing import List, Optional
 
 from pyodk._endpoints import bases
 from pyodk._utils import validators as pv
@@ -36,23 +35,23 @@ class CommentService(bases.Service):
     def __init__(
         self,
         session: Session,
-        default_project_id: Optional[int] = None,
-        default_form_id: Optional[str] = None,
-        default_instance_id: Optional[str] = None,
+        default_project_id: int | None = None,
+        default_form_id: str | None = None,
+        default_instance_id: str | None = None,
         urls: URLs = None,
     ):
         self.urls: URLs = urls if urls is not None else URLs()
         self.session: Session = session
-        self.default_project_id: Optional[int] = default_project_id
-        self.default_form_id: Optional[str] = default_form_id
-        self.default_instance_id: Optional[str] = default_instance_id
+        self.default_project_id: int | None = default_project_id
+        self.default_form_id: str | None = default_form_id
+        self.default_instance_id: str | None = default_instance_id
 
     def list(
         self,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
-        instance_id: Optional[str] = None,
-    ) -> List[Comment]:
+        form_id: str | None = None,
+        project_id: int | None = None,
+        instance_id: str | None = None,
+    ) -> list[Comment]:
         """
         Read all Comment details.
 
@@ -66,7 +65,7 @@ class CommentService(bases.Service):
             iid = pv.validate_instance_id(instance_id, self.default_instance_id)
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="GET",
@@ -81,9 +80,9 @@ class CommentService(bases.Service):
     def post(
         self,
         comment: str,
-        project_id: Optional[int] = None,
-        form_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
+        project_id: int | None = None,
+        form_id: str | None = None,
+        instance_id: str | None = None,
     ) -> Comment:
         """
         Create a Comment.
@@ -103,7 +102,7 @@ class CommentService(bases.Service):
             json = {"body": comment}
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         response = self.session.response_or_error(
             method="POST",

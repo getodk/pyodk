@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import Optional
 
 from pyodk._endpoints import bases
 from pyodk._utils import validators as pv
@@ -24,21 +23,21 @@ class FormDraftAttachmentService(bases.Service):
     def __init__(
         self,
         session: Session,
-        default_project_id: Optional[int] = None,
-        default_form_id: Optional[str] = None,
+        default_project_id: int | None = None,
+        default_form_id: str | None = None,
         urls: URLs = None,
     ):
         self.urls: URLs = urls if urls is not None else URLs()
         self.session: Session = session
-        self.default_project_id: Optional[int] = default_project_id
-        self.default_form_id: Optional[str] = default_form_id
+        self.default_project_id: int | None = default_project_id
+        self.default_form_id: str | None = default_form_id
 
     def upload(
         self,
         file_path: str,
-        file_name: Optional[str] = None,
-        form_id: Optional[str] = None,
-        project_id: Optional[int] = None,
+        file_name: str | None = None,
+        form_id: str | None = None,
+        project_id: int | None = None,
     ) -> bool:
         """
         Upload a Form Draft Attachment.
@@ -56,7 +55,7 @@ class FormDraftAttachmentService(bases.Service):
                 file_name = pv.validate_str(file_path.name, key="file_name")
         except PyODKError as err:
             log.error(err, exc_info=True)
-            raise err
+            raise
 
         with open(file_path, "rb") as fd:
             response = self.session.response_or_error(

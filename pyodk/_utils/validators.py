@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from pydantic.v1 import validators as v
 from pydantic_core._pydantic_core import ValidationError
@@ -20,7 +21,7 @@ def wrap_error(validator: Callable, key: str, value: Any) -> Any:
     try:
         return validator(value)
     except ValidationError as err:
-        msg = f"{key}: {str(err)}"
+        msg = f"{key}: {err!s}"
         raise PyODKError(msg) from err
 
 

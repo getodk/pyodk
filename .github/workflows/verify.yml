@@ -30,8 +30,8 @@ jobs:
           pip list
 
       # Linter.
-      - run: ruff check pyodk tests --no-fix
-      - run: ruff format pyodk tests --diff
+      - run: ruff check pyodk tests docs --no-fix
+      - run: ruff format pyodk tests docs --diff
 
   test:
     runs-on: ${{ matrix.os }}

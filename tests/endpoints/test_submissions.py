@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from pyodk._endpoints.submissions import Submission
 from pyodk._utils.session import Session
 from pyodk.client import Client
+
 from tests.resources import CONFIG_DATA, submissions_data
 
 

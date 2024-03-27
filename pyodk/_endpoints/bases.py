@@ -1,5 +1,3 @@
-from typing import Dict
-
 from pydantic import BaseModel
 
 from pyodk._utils.session import Session
@@ -17,10 +15,9 @@ class Manager:
     """Base for managers of data model classes."""
 
     __slots__ = ("__weakref__",)
-    pass
 
     @classmethod
-    def from_dict(cls, session: Session, project_id: int, data: Dict) -> Model:
+    def from_dict(cls, session: Session, project_id: int, data: dict) -> Model:
         raise NotImplementedError()
 
 
@@ -28,4 +25,3 @@ class Service:
     """Base for services interacting with the ODK Central API over HTTP."""
 
     __slots__ = ("__weakref__",)
-    pass

@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pyodk._utils import config
 from pyodk.errors import PyODKError
@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 class AuthService:
-    def __init__(self, session: "Session", cache_path: Optional[str] = None) -> None:
+    def __init__(self, session: "Session", cache_path: str | None = None) -> None:
         self.session: "Session" = session
         self.cache_path: str = cache_path
 
