@@ -19,6 +19,6 @@ https://github.com/getodk/pyodk/blob/master/CONTRIBUTING.md
 
 #### Before submitting this PR, please make sure you have:
 - [ ] included test cases for core behavior and edge cases in `tests`
-- [ ] run `nosetests` and verified all tests pass
-- [ ] run `python bin/pre_commit.py` to format / lint code
+- [ ] run `python -m unittest` and verified all tests pass
+- [ ] run `ruff format pyxform tests` and `ruff check pyxform tests` to lint code
 - [ ] verified that any code or assets from external sources are properly credited in comments
