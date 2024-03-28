@@ -139,6 +139,7 @@ class SubmissionService(bases.Service):
         wkt: bool | None = None,
         filter: str | None = None,
         expand: str | None = None,
+        select: str | None = None,
     ) -> dict:
         """
         Read Submission data.
@@ -158,6 +159,7 @@ class SubmissionService(bases.Service):
           built-in functions now, year, month, day, hour, minute, second.
         :param expand: Repetitions, which should get expanded. Currently, only `*` (star)
           is implemented, which expands all repetitions.
+        :param select: If provided, will return only the selected fields.
 
         :return: A dictionary representation of the OData JSON document.
         """
@@ -174,6 +176,7 @@ class SubmissionService(bases.Service):
                     "$wkt": wkt,
                     "$filter": filter,
                     "$expand": expand,
+                    "$select": select,
                 }.items()
                 if v is not None
             }
