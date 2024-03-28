@@ -1,6 +1,8 @@
 from collections.abc import Callable
 
 from pyodk._endpoints.comments import CommentService
+from pyodk._endpoints.entities import EntityService
+from pyodk._endpoints.entity_lists import EntityListService
 from pyodk._endpoints.forms import FormService
 from pyodk._endpoints.projects import ProjectService
 from pyodk._endpoints.submissions import SubmissionService
@@ -65,6 +67,12 @@ class Client:
             session=self.session, default_project_id=self.project_id
         )
         self._comments: CommentService = CommentService(
+            session=self.session, default_project_id=self.project_id
+        )
+        self.entities: EntityService = EntityService(
+            session=self.session, default_project_id=self.project_id
+        )
+        self.entity_lists: EntityListService = EntityListService(
             session=self.session, default_project_id=self.project_id
         )
 
