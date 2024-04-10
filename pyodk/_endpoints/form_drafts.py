@@ -34,20 +34,21 @@ class FormDraftService(bases.Service):
         self.default_project_id: int | None = default_project_id
         self.default_form_id: str | None = default_form_id
 
-    def create(
+    def _prep_form_post(
         self,
-        file_path: str | None = None,
+        file_path: Path | str | None = None,
         ignore_warnings: bool | None = True,
         form_id: str | None = None,
         project_id: int | None = None,
-    ) -> bool:
+    ) -> (str, str, dict, dict):
         """
-        Create a Form Draft.
+        Prepare / validate input arguments for POSTing a new form definition or version.
 
         :param file_path: The path to the file to upload.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         :param ignore_warnings: If True, create the form if there are XLSForm warnings.
+        :return: project_id, form_id, headers, params
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -80,6 +81,30 @@ class FormDraftService(bases.Service):
         except PyODKError as err:
             log.error(err, exc_info=True)
             raise
+
+        return pid, fid, headers, params
+
+    def create(
+        self,
+        file_path: Path | str | None = None,
+        ignore_warnings: bool | None = True,
+        form_id: str | None = None,
+        project_id: int | None = None,
+    ) -> bool:
+        """
+        Create a Form Draft.
+
+        :param file_path: The path to the file to upload.
+        :param form_id: The xmlFormId of the Form being referenced.
+        :param project_id: The id of the project this form belongs to.
+        :param ignore_warnings: If True, create the form if there are XLSForm warnings.
+        """
+        pid, fid, headers, params = self._prep_form_post(
+            file_path=file_path,
+            ignore_warnings=ignore_warnings,
+            form_id=form_id,
+            project_id=project_id,
+        )
 
         with open(file_path, "rb") if file_path is not None else nullcontext() as fd:
             response = self.session.response_or_error(

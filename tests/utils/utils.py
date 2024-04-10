@@ -5,8 +5,14 @@ from pathlib import Path
 
 
 @contextmanager
-def get_temp_file() -> Path:
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
+def get_temp_file(**kwargs) -> Path:
+    """
+    Create a temporary file.
+
+    :param kwargs: File handling options passed through to NamedTemporaryFile.
+    :return: The path of the temporary file.
+    """
+    temp_file = tempfile.NamedTemporaryFile(delete=False, **kwargs)
     temp_file.close()
     temp_path = Path(temp_file.name)
     try:

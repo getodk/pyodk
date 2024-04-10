@@ -45,3 +45,34 @@ test_xml = """
   <age>36</age>
 </data>
 """
+
+
+def get_xml__fruits(
+    form_id: str,
+    version: str,
+    instance_id: str,
+    deprecated_instance_id: str | None = None,
+    selected_fruit: str = "Papaya",
+) -> str:
+    """
+    Get Submission XML for the "fruits" form that uses an external data list.
+
+    :param form_id: The xmlFormId of the Form being referenced.
+    :param version: The version of the form that the submission is for.
+    :param instance_id: The instanceId of the Submission being referenced.
+    :param deprecated_instance_id: If the submission is an edit, then the instance_id of
+      the submission being replaced must be provided.
+    :param selected_fruit: Which delicious tropical fruit do you like?
+    """
+    iidd = ""
+    if deprecated_instance_id is not None:
+        iidd = f"<deprecatedID>{deprecated_instance_id}</deprecatedID>"
+    return f"""
+    <data id="{form_id}" version="{version}">
+      <meta>{iidd}
+        <instanceID>{instance_id}</instanceID>
+      </meta>
+      <fruit>{selected_fruit}</fruit>
+      <note_fruit/>
+    </data>
+    """

@@ -7,8 +7,8 @@ from pyodk.client import Client
 from pyodk.errors import PyODKError
 from requests import Session
 
-from tests import utils
 from tests.resources import CONFIG_DATA
+from tests.utils.utils import get_temp_dir
 
 
 @patch("pyodk._utils.config.read_config", MagicMock(return_value=CONFIG_DATA))
@@ -75,7 +75,7 @@ class TestAuth(TestCase):
                 AuthService,
                 get_new_token=MagicMock(return_value="123"),
             ),
-            utils.get_temp_dir() as tmp,
+            get_temp_dir() as tmp,
         ):
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)
@@ -99,7 +99,7 @@ class TestAuth(TestCase):
                 verify_token=verify_mock,
                 get_new_token=get_new_mock,
             ),
-            utils.get_temp_dir() as tmp,
+            get_temp_dir() as tmp,
             self.assertRaises(PyODKError) as err,
         ):
             cache_path = tmp / "test_cache.toml"
@@ -115,7 +115,7 @@ class TestAuth(TestCase):
                 AuthService,
                 verify_token=MagicMock(return_value="123"),
             ),
-            utils.get_temp_dir() as tmp,
+            get_temp_dir() as tmp,
         ):
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)
@@ -138,7 +138,7 @@ class TestAuth(TestCase):
                 verify_token=verify_mock,
                 get_new_token=MagicMock(return_value="123"),
             ),
-            utils.get_temp_dir() as tmp,
+            get_temp_dir() as tmp,
         ):
             cache_path = (tmp / "test_cache.toml").as_posix()
             client = Client(cache_path=cache_path)

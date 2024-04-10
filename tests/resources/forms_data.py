@@ -1,3 +1,6 @@
+from datetime import datetime
+from pathlib import Path
+
 test_forms = {
     "project_id": 8,
     "response_data": [
@@ -71,3 +74,44 @@ test_forms = {
         },
     ],
 }
+
+
+def get_xml__range_draft(version: str | None = None) -> str:
+    if version is None:
+        version = datetime.now().isoformat()
+    with open(Path(__file__).parent / "forms" / "range_draft.xml") as fd:
+        return fd.read().format(version=version)
+
+
+def get_md__pull_data(version: str | None = None) -> str:
+    if version is None:
+        version = datetime.now().isoformat()
+    return f"""
+    | settings |
+    |          | version   |
+    |          | {version} |
+    | survey |           |            |           |             |
+    |        | type      | name       | label     | calculation |
+    |        | calculate | fruit      |           | pulldata('fruits', 'name', 'name_key', 'mango') |
+    |        | note      | note_fruit | The fruit ${{fruit}} pulled from csv |                      |
+    """
+
+
+md__symbols = """
+| settings |
+|          | form_title          | form_id       | version |
+|          | a non_ascii_form_id | ''=+/*-451%/% | 1       |
+| survey |           |            |           |             |
+|        | type      | name       | label     | calculation |
+|        | calculate | fruit      |           | pulldata('fruits', 'name', 'name_key', 'mango') |
+|        | note      | note_fruit | The fruit ${{fruit}} pulled from csv |                      |
+"""
+md__dingbat = """
+| settings |
+|          | form_title  | form_id | version |
+|          | ✅          | ✅     | 1       |
+| survey |           |            |           |             |
+|        | type      | name       | label     | calculation |
+|        | calculate | fruit      |           | pulldata('fruits', 'name', 'name_key', 'mango') |
+|        | note      | note_fruit | The fruit ${{fruit}} pulled from csv |                      |
+"""

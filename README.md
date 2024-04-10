@@ -164,6 +164,18 @@ You can run tests with:
 python -m unittest
 ```
 
+### Testing
+
+When adding or updating pyODK functionality, at a minimum add or update corresponding unit tests. The unit tests are filed in `tests/endpoints` or `tests`. These tests focus on pyODK functionality, such as ensuring that data de/serialisation works as expected, and that method logic results in the expected call patterns. The unit tests use mocks and static data, which are stored in `tests/resources`. These data are obtained by making an API call and saving the Python dict returned by `response.json()` as text.
+
+For interactive testing, debugging, or sanity checking workflows, end-to-end tests are stored in `tests/test_client.py`. These tests are not run by default because they require access to a live Central server. The ODK team use the Central staging instance https://staging.getodk.cloud/ which is already configured for testing. Below are the steps to set up a new project in Central to be able to run these tests.
+
+1. Create a test project in Central.
+2. Create a test user in Central. It can be a site-wide Administrator. If it is not an Administrator, assign the user to the project with "Project Manager" privileges, so that forms and submissions in the test project can be uploaded and modified.
+3. Save the user's credentials and the project ID in a `.pyodk_config.toml` (or equivalent) as described in the above section titled "Configure".
+4. When the tests in `test_client.py` are run, the test setup method should automatically create a few forms and submissions for testing with. At a minimum these allow the tests to pass, but can also be used to interactively test or debug.
+
+
 ## Release
 
 1. Run all linting and tests.
