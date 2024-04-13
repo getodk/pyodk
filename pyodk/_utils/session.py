@@ -1,7 +1,7 @@
 from logging import Logger
 from string import Formatter
 from typing import Any
-from urllib.parse import quote_plus, urljoin
+from urllib.parse import quote, urljoin
 
 from requests import PreparedRequest, Response
 from requests import Session as RequestsSession
@@ -16,11 +16,25 @@ from pyodk.errors import PyODKError
 
 class URLFormatter(Formatter):
     """
-    Makes a valid URL by sending each format input field through urllib.parse.quote_plus.
+    Makes a valid URL by sending each format input field through urllib.parse.quote.
+
+    To parse/un-parse URLs, currently (v2023.5) Central uses JS default functions
+    encodeURIComponent and decodeURIComponent, which comply with RFC2396. The more recent
+    RFC3986 reserves hex characters 2A (asterisk), 27 (single quote), 28 (left
+    parenthesis), and 29 (right parenthesis). Python 3.7+ urllib.parse complies with
+    RFC3986 so in order for pyODK to behave as Central expects, these additional 4
+    characters are specified as "safe" in `format_field()` to not percent-encode them.
+
+    Currently (v2023.5) Central primarily supports the default submission instanceID
+    format per the XForm spec, namely "uuid:" followed by the 36 character UUID string.
+    In many endpoints, custom UUIDs (including non-ASCII/UTF-8 chars) will work, but in
+    some places they won't. For example the Central page for viewing submission details
+    fails on the Submissions OData call, because the OData function to filter by ID
+    (`Submission('instanceId')`) only works for the default instanceID format.
     """
 
     def format_field(self, value: Any, format_spec: str) -> Any:
-        return format(quote_plus(str(value)), format_spec)
+        return format(quote(str(value), safe="*'()"), format_spec)
 
 
 _URL_FORMATTER = URLFormatter()

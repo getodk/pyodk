@@ -29,7 +29,7 @@ class TestSession(TestCase):
             # integer
             ({"project_id": 1, "form_id": 1}, "projects/1/forms/1"),
             # latin symbols
-            ({"project_id": 1, "form_id": "+-_*%*"}, "projects/1/forms/%2B-_%2A%25%2A"),
+            ({"project_id": 1, "form_id": "+-_*%*"}, "projects/1/forms/%2B-_*%25*"),
             # lower case e, with combining acute accent (2 symbols)
             ({"project_id": 1, "form_id": "tést"}, "projects/1/forms/te%CC%81st"),
             # lower case e with acute (1 symbol)
@@ -49,7 +49,9 @@ class TestSession(TestCase):
             # integer
             ("1.xls", "1"),
             # latin symbols
-            ("+-_*%*.xls", "%2B-_%2A%25%2A"),
+            ("+-_*%*.xls", "%2B-_*%25*"),
+            # spaces
+            ("my form.xlsx", "my%20form"),
             # lower case e, with combining acute accent (2 symbols)
             ("tést.xlsx", "te%CC%81st"),
             # lower case e with acute (1 symbol)

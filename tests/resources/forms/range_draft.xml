@@ -8,7 +8,7 @@
         <h:title>range_draft</h:title>
         <model odk:xforms-version="1.0.0">
             <instance>
-                <data id="range_draft" version="2023012001">
+                <data id="range_draft" version="{version}">
                     <start/>
                     <end/>
                     <Enter_a_number_within_a_specified_range/>

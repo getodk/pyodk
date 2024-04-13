@@ -3,27 +3,100 @@ from unittest import TestCase, skip
 
 from pyodk.client import Client
 
-from tests.resources import RESOURCES
+from tests.resources import RESOURCES, forms_data, submissions_data
+from tests.utils import utils
+from tests.utils.forms import (
+    create_new_form__md,
+    create_new_form__xml,
+    get_latest_form_version,
+)
+from tests.utils.md_table import md_table_to_temp_dir
+from tests.utils.submissions import (
+    create_new_or_get_last_submission,
+    create_or_update_submission_with_comment,
+)
+
+
+def create_test_forms(client: Client | None = None) -> Client:
+    """
+    Create test forms if they don't already exist.
+
+    :param client: Client instance to use for API calls.
+    :return: The original client instance, or a new one if none was provided.
+    """
+    if client is None:
+        client = Client()
+    create_new_form__xml(
+        client=client,
+        form_id="range_draft",
+        form_def=forms_data.get_xml__range_draft(),
+    )
+    create_new_form__md(
+        client=client,
+        form_id="pull_data",
+        form_def=forms_data.get_md__pull_data(),
+    )
+    create_new_form__md(
+        client=client,
+        form_id="non_ascii_form_id",
+        form_def=forms_data.md__symbols,
+    )
+    create_new_form__md(
+        client=client,
+        form_id="✅",
+        form_def=forms_data.md__dingbat,
+    )
+    return client
+
+
+def create_test_submissions(client: Client | None = None) -> Client:
+    """
+    Create test submissions, if they don't already exist.
+
+    :param client: Client instance to use for API calls.
+    :return: The original client instance, or a new one if none was provided.
+    """
+    if client is None:
+        client = Client()
+    create_or_update_submission_with_comment(
+        client=client,
+        form_id="pull_data",
+        instance_id="uuid:07ee9b2f-2271-474c-b9f3-c92ffba80c79",
+    )
+    create_or_update_submission_with_comment(
+        client=client,
+        form_id="pull_data",
+        instance_id="uuid:4e2d1f60-aa3a-4065-bb97-af69b0cc8187",
+    )
+    return client
 
 
 @skip
 class TestUsage(TestCase):
     """Tests for experimenting with usage scenarios / general debugging / integration."""
 
+    client: Client | None = None
+
+    @classmethod
+    def setUpClass(cls):
+        cls.client = Client()
+        create_test_forms(client=cls.client)
+        create_test_submissions(client=cls.client)
+
     def test_direct(self):
-        client = Client()
-        projects = client.projects.list()
-        forms = client.forms.list()
-        submissions = client.submissions.list(form_id=forms[3].xmlFormId)
-        form_data = client.submissions.get_table(form_id=forms[3].xmlFormId)
-        form_data_params = client.submissions.get_table(
-            form_id="range",
+        projects = self.client.projects.list()
+        forms = self.client.forms.list()
+        submissions = self.client.submissions.list(form_id="pull_data")
+        form_data = self.client.submissions.get_table(form_id="pull_data")
+        form_data_params = self.client.submissions.get_table(
+            form_id="pull_data",
             table_name="Submissions",
             count=True,
+            select="__id,meta/instanceID,__system/formVersion,fruit",
         )
-        comments = client.submissions.list_comments(
-            form_id="range",
-            instance_id="uuid:2c296eae-2708-4a89-bfe7-0f2d440b7fe8",
+        comments = self.client.submissions.list_comments(
+            form_id="pull_data",
+            instance_id=next(s.instanceId for s in submissions),
         )
         print([projects, forms, submissions, form_data, form_data_params, comments])
 
@@ -36,104 +109,110 @@ class TestUsage(TestCase):
     # Below tests assume project has forms by these names already published.
     def test_form_update__new_definition(self):
         """Should create a new version with the new definition."""
-        with Client() as client:
-            client.forms.update(
+        with utils.get_temp_file(suffix=".xml") as fp:
+            fp.write_text(forms_data.get_xml__range_draft())
+            self.client.forms.update(
                 form_id="range_draft",
-                definition=(RESOURCES / "forms" / "range_draft.xml").as_posix(),
+                definition=fp.as_posix(),
             )
 
     def test_form_update__new_definition_and_attachments(self):
         """Should create a new version with new definition and attachment."""
-        with Client() as client:
-            client.forms.update(
+        # To test the API without a version_updater, a timestamped version is created.
+        with md_table_to_temp_dir(
+            form_id="pull_data", mdstr=forms_data.get_md__pull_data()
+        ) as fp:
+            self.client.forms.update(
                 form_id="pull_data",
-                definition=(RESOURCES / "forms" / "pull_data.xlsx").as_posix(),
+                definition=fp.as_posix(),
                 attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
             )
 
     def test_form_update__new_definition_and_attachments__non_ascii_dingbat(self):
         """Should create a new version with new definition and attachment."""
-        with Client() as client:
-            client.forms.update(
+        with md_table_to_temp_dir(
+            form_id="✅", mdstr=forms_data.get_md__pull_data()
+        ) as fp:
+            self.client.forms.update(
                 form_id="✅",
-                definition=(RESOURCES / "forms" / "✅.xlsx").as_posix(),
+                definition=fp.as_posix(),
                 attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
             )
-            form = client.forms.get("✅")
+            form = self.client.forms.get("✅")
             self.assertEqual(form.xmlFormId, "✅")
 
     def test_form_update__with_version_updater__non_ascii_specials(self):
         """Should create a new version with new definition and attachment."""
-        with Client() as client:
-            client.forms.update(
-                form_id="'=+/*-451%/%",
-                attachments=[],
-                version_updater=lambda v: datetime.now().isoformat(),
-            )
+        self.client.forms.update(
+            form_id="'=+/*-451%/%",
+            attachments=[],
+            version_updater=lambda v: datetime.now().isoformat(),
+        )
 
     def test_form_update__attachments(self):
         """Should create a new version with new attachment."""
-        with Client() as client:
-            client.forms.update(
-                form_id="pull_data",
-                attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
-            )
+        self.client.forms.update(
+            form_id="pull_data",
+            attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
+        )
 
     def test_form_update__attachments__with_version_updater(self):
         """Should create a new version with new attachment and updated version."""
-        with Client() as client:
-            client.forms.update(
-                form_id="pull_data",
-                attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
-                version_updater=lambda v: v + "_1",
-            )
+        self.client.forms.update(
+            form_id="pull_data",
+            attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
+            version_updater=lambda v: v + "_1",
+        )
 
     def test_project_create_app_users__names_only(self):
         """Should create project app users."""
-        client = Client()
-        client.projects.create_app_users(display_names=["test_role3", "test_user3"])
+        self.client.projects.create_app_users(display_names=["test_role3", "test_user3"])
 
     def test_project_create_app_users__names_and_forms(self):
         """Should create project app users, and assign forms to them."""
-        client = Client()
-        client.projects.create_app_users(
+        self.client.projects.create_app_users(
             display_names=["test_assign3", "test_assign_23"],
-            forms=["range", "pull_data"],
+            forms=["range_draft", "pull_data"],
         )
 
     def test_submission_create__non_ascii(self):
         """Should create an instance of the form, encoded to utf-8."""
-        client = Client()
-        xml = """
-        <data id="'=+/*-451%/%" version="1">
-          <meta>
-            <instanceID>~!@#$%^&*()_+=-✅✅</instanceID>
-          </meta>
-          <fruit>Banana</fruit>
-          <note_fruit/>
-        </data>
-        """
-        client.submissions.create(xml=xml, form_id="'=+/*-451%/%")
-        submission = client.submissions.get(
-            form_id="'=+/*-451%/%", instance_id="~!@#$%^&*()_+=-✅✅"
+        form_id = "'=+/*-451%/%"
+        iid = f"""scna+~!@#$%^&*()_+=-✅✅+{datetime.now().isoformat()}"""
+
+        self.client.submissions.create(
+            xml=submissions_data.get_xml__fruits(
+                form_id=form_id,
+                version=get_latest_form_version(client=self.client, form_id=form_id),
+                instance_id=iid,
+            ),
+            form_id=form_id,
         )
-        self.assertEqual("~!@#$%^&*()_+=-✅✅", submission.instanceId)
+        submission = self.client.submissions.get(form_id=form_id, instance_id=iid)
+        self.assertEqual(iid, submission.instanceId)
 
     def test_submission_edit__non_ascii(self):
         """Should edit an existing instance of the form, encoded to utf-8."""
-        client = Client()
         # The "instance_id" remains the id of the first submission, not the
         # instanceID/deprecatedID used in the XML.
-        xml = """
-        <data id="'=+/*-451%/%" version="1">
-          <meta>
-            <deprecatedID>~!@#$%^&*()_+=-✘✘</deprecatedID>
-            <instanceID>~!@#$%^&*()_+=-✘✘✘</instanceID>
-          </meta>
-          <fruit>Papaya</fruit>
-          <note_fruit/>
-        </data>
-        """
-        client.submissions.edit(
-            xml=xml, form_id="'=+/*-451%/%", instance_id="~!@#$%^&*()_+=-✅✅"
+        form_id = "'=+/*-451%/%"
+        iid = """sena_~~!@#$%^&*()_+=-✅✅"""
+
+        # So we have a submission to edit, create one or find the most recent prior edit.
+        old_iid = create_new_or_get_last_submission(
+            client=self.client,
+            form_id=form_id,
+            instance_id=iid,
+        )
+        now = datetime.now().isoformat()
+        self.client.submissions.edit(
+            xml=submissions_data.get_xml__fruits(
+                form_id=form_id,
+                version=get_latest_form_version(client=self.client, form_id=form_id),
+                instance_id=iid + now,
+                deprecated_instance_id=old_iid,
+            ),
+            form_id=form_id,
+            instance_id=iid,
+            comment=f"pyODK edit {now}",
         )

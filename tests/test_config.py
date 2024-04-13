@@ -5,7 +5,8 @@ from unittest.mock import patch
 from pyodk._utils import config
 from pyodk.errors import PyODKError
 
-from tests import resources, utils
+from tests import resources
+from tests.utils.utils import get_temp_dir
 
 
 class TestConfig(TestCase):
@@ -51,7 +52,7 @@ class TestConfig(TestCase):
 
     def test_write_cache__ok(self):
         """Should write the cache data when no path is specified."""
-        with utils.get_temp_dir() as tmp:
+        with get_temp_dir() as tmp:
             path = tmp / "my_cache.toml"
             with patch.dict(os.environ, {"PYODK_CACHE_FILE": path.as_posix()}):
                 self.assertFalse(path.exists())
@@ -60,7 +61,7 @@ class TestConfig(TestCase):
 
     def test_write_cache__with_path(self):
         """Should write the cache data when a path is specified."""
-        with utils.get_temp_dir() as tmp:
+        with get_temp_dir() as tmp:
             path = tmp / "my_cache.toml"
             self.assertFalse(path.exists())
             config.write_cache(key="token", value="1234abcd", cache_path=path.as_posix())
