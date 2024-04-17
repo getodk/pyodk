@@ -22,3 +22,6 @@ MANIFEST
 
 # Mkdocs
 site/*
+
+# MS Office temp files
+~$*
