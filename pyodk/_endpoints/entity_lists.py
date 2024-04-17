@@ -36,12 +36,8 @@ class EntityListService(bases.Service):
     data = client.entity_lists.list()
     ```
 
-    The structure this class works with is conceptually a list of lists, e.g.
-
-    ```
-    EntityList = list[Entity]
-    self.list() = list[EntityList]
-    ```
+    Conceptually, an EntityList's parent object is a Project. Each Project may have
+    multiple EntityLists.
     """
 
     __slots__ = ("urls", "session", "default_project_id")

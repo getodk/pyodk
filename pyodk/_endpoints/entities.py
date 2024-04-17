@@ -50,7 +50,9 @@ class EntityService(bases.Service):
     data = client.entities.list()
     ```
 
-    An EntityList is a list of Entities, e.g. `list[Entity]`.
+    Conceptually, an Entity's parent object is an EntityList. Each EntityList may
+    have multiple Entities. In Python parlance, EntityLists are like classes, while
+    Entities are like instances.
     """
 
     __slots__ = ("urls", "session", "default_project_id", "default_entity_list_name")
