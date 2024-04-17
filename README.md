@@ -173,7 +173,7 @@ For interactive testing, debugging, or sanity checking workflows, end-to-end tes
 1. Create a test project in Central.
 2. Create a test user in Central. It can be a site-wide Administrator. If it is not an Administrator, assign the user to the project with "Project Manager" privileges, so that forms and submissions in the test project can be uploaded and modified.
 3. Save the user's credentials and the project ID in a `.pyodk_config.toml` (or equivalent) as described in the above section titled "Configure".
-4. When the tests in `test_client.py` are run, the test setup method should automatically create a few forms and submissions for testing with. At a minimum these allow the tests to pass, but can also be used to interactively test or debug.
+4. When the tests in `test_client.py` are run, the test setup method should automatically create a few fixtures for testing with. At a minimum these allow the tests to pass, but can also be used to interactively test or debug.
 
 
 ## Release

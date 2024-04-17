@@ -131,7 +131,7 @@ class EntityService(bases.Service):
             method="POST",
             url=self.session.urlformat(self.urls.post, project_id=pid, el_name=eln),
             logger=log,
-            data=req_data,
+            json=req_data,
         )
         data = response.json()
         return Entity(**data)
