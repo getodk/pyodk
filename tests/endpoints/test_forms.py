@@ -14,6 +14,7 @@ from pyodk.client import Client
 from pyodk.errors import PyODKError
 
 from tests.resources import CONFIG_DATA, forms_data
+from tests.utils import utils
 
 
 @dataclass
@@ -94,6 +95,27 @@ class TestForms(TestCase):
                 # Use default
                 observed = client.forms.get(
                     form_id=fixture["response_data"][0]["xmlFormId"]
+                )
+                self.assertIsInstance(observed, Form)
+
+    def test_create__ok(self):
+        """Should return a FormType object."""
+        fixture = forms_data.test_forms
+        with patch.object(Session, "request") as mock_session:
+            mock_session.return_value.status_code = 200
+            mock_session.return_value.json.return_value = fixture["response_data"][1]
+            with Client() as client, utils.get_temp_file(suffix=".xml") as fp:
+                fp.write_text(forms_data.get_xml__range_draft())
+                # Specify project
+                observed = client.forms.create(
+                    definition=fp,
+                    project_id=fixture["project_id"],
+                    form_id=fixture["response_data"][1]["xmlFormId"],
+                )
+                self.assertIsInstance(observed, Form)
+                # Use default
+                observed = client.forms.create(
+                    definition=fp, form_id=fixture["response_data"][1]["xmlFormId"]
                 )
                 self.assertIsInstance(observed, Form)
 
@@ -214,9 +236,16 @@ class TestForms(TestCase):
         """Should find that the URL and fallback header are url-encoded."""
         test_cases = (
             ("foo", "/some/path/foo.xlsx", "projects/1/forms/foo/draft", "foo"),
-            ("foo", "/some/path/✅.xlsx", "projects/1/forms/foo/draft", "%E2%9C%85"),
+            ("foo", "/some/path/✅.xlsx", "projects/1/forms/foo/draft", "foo"),
+            (None, "/some/path/✅.xlsx", "projects/1/forms/%E2%9C%85/draft", "%E2%9C%85"),
             ("✅", "/some/path/✅.xlsx", "projects/1/forms/%E2%9C%85/draft", "%E2%9C%85"),
-            ("✅", "/some/path/foo.xlsx", "projects/1/forms/%E2%9C%85/draft", "foo"),
+            (
+                "✅",
+                "/some/path/foo.xlsx",
+                "projects/1/forms/%E2%9C%85/draft",
+                "%E2%9C%85",
+            ),
+            (None, "/some/path/foo.xlsx", "projects/1/forms/foo/draft", "foo"),
         )
         for case in test_cases:
             with self.subTest(msg=str(case)):

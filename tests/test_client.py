@@ -124,6 +124,24 @@ class TestUsage(TestCase):
             forms = client.forms.list()
         print(projects, forms)
 
+    def test_form_create__new_definition_xml(self):
+        """Should create a new form with the new definition."""
+        form_id = self.client.session.get_xform_uuid()
+        with utils.get_temp_file(suffix=".xml") as fp:
+            fp.write_text(forms_data.get_xml__range_draft(form_id=form_id))
+            self.client.forms.create(
+                form_id=form_id,
+                definition=fp.as_posix(),
+            )
+
+    def test_form_create__new_definition_xlsx(self):
+        """Should create a new form with the new definition."""
+        form_id = "no_form_id"
+        form_def = forms_data.get_md__pull_data()
+        with md_table_to_temp_dir(form_id=form_id, mdstr=form_def) as fp:
+            form = self.client.forms.create(definition=fp.as_posix())
+        self.assertTrue(form.xmlFormId.startswith("uuid:"))
+
     # Below tests assume project has forms by these names already published.
     def test_form_update__new_definition(self):
         """Should create a new version with the new definition."""

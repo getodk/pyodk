@@ -2,6 +2,7 @@ from logging import Logger
 from string import Formatter
 from typing import Any
 from urllib.parse import quote, urljoin
+from uuid import uuid4
 
 from requests import PreparedRequest, Response
 from requests import Session as RequestsSession
@@ -159,3 +160,10 @@ class Session(RequestsSession):
             raise err from e
         else:
             return response
+
+    @staticmethod
+    def get_xform_uuid() -> str:
+        """
+        Get XForm UUID, which is "uuid:" followed by a random uuid v4.
+        """
+        return f"uuid:{uuid4()}"

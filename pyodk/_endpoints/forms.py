@@ -34,8 +34,8 @@ class URLs(bases.Model):
     class Config:
         frozen = True
 
-    list: str = "projects/{project_id}/forms"
-    get: str = "projects/{project_id}/forms/{form_id}"
+    forms: str = "projects/{project_id}/forms"
+    get: str = f"{forms}/{{form_id}}"
 
 
 class FormService(bases.Service):
@@ -86,7 +86,7 @@ class FormService(bases.Service):
         else:
             response = self.session.response_or_error(
                 method="GET",
-                url=self.session.urlformat(self.urls.list, project_id=pid),
+                url=self.session.urlformat(self.urls.forms, project_id=pid),
                 logger=log,
             )
             data = response.json()
@@ -119,6 +119,42 @@ class FormService(bases.Service):
             )
             data = response.json()
             return Form(**data)
+
+    def create(
+        self,
+        definition: str,
+        ignore_warnings: bool | None = True,
+        form_id: str | None = None,
+        project_id: int | None = None,
+    ) -> Form:
+        """
+        Create a form.
+
+        :param definition: The path to a form definition file to upload.
+        :param ignore_warnings: If True, create the form if there are XLSForm warnings.
+        :param form_id: The xmlFormId of the Form being referenced.
+        :param project_id: The id of the project this form belongs to.
+        :return: An object representation of the Form's metadata.
+        """
+        fd = FormDraftService(session=self.session, **self._default_kw())
+        pid, fid, headers, params = fd._prep_form_post(
+            file_path=definition,
+            ignore_warnings=ignore_warnings,
+            form_id=form_id,
+            project_id=project_id,
+        )
+        params["publish"] = True
+        with open(definition, "rb") as fd:
+            response = self.session.response_or_error(
+                method="POST",
+                url=self.session.urlformat(self.urls.forms, project_id=pid),
+                logger=log,
+                headers=headers,
+                params=params,
+                data=fd,
+            )
+        data = response.json()
+        return Form(**data)
 
     def update(
         self,

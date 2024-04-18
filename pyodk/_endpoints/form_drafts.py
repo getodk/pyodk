@@ -52,14 +52,22 @@ class FormDraftService(bases.Service):
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
-            fid = pv.validate_form_id(form_id, self.default_form_id)
             headers = {}
             params = {}
+            file_path_stem = None
+            if file_path is not None:
+                file_path = Path(pv.validate_file_path(file_path))
+                file_path_stem = file_path.stem
+            fid = pv.validate_form_id(
+                form_id,
+                self.default_form_id,
+                file_path_stem,
+                self.session.get_xform_uuid(),
+            )
             if file_path is not None:
                 if ignore_warnings is not None:
                     key = "ignore_warnings"
                     params["ignoreWarnings"] = pv.validate_bool(ignore_warnings, key=key)
-                file_path = Path(pv.validate_file_path(file_path))
                 if file_path.suffix == ".xlsx":
                     content_type = (
                         "application/vnd.openxmlformats-"
@@ -76,7 +84,7 @@ class FormDraftService(bases.Service):
                     )
                 headers = {
                     "Content-Type": content_type,
-                    "X-XlsForm-FormId-Fallback": self.session.urlquote(file_path.stem),
+                    "X-XlsForm-FormId-Fallback": self.session.urlquote(fid),
                 }
         except PyODKError as err:
             log.error(err, exc_info=True)
