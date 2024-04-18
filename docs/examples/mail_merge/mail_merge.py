@@ -34,7 +34,7 @@ OUTPUT_FOLDER = "merged"
 with Client(project_id=PROJECT_ID) as client:
     submissions = client.submissions.get_table(form_id=FORM_ID)
     for submission in submissions["value"]:
-        # only include approved submisisons
+        # only include approved submissions
         if submission["__system"]["reviewState"] == "approved":
             with MailMerge(TEMPLATE_DOCUMENT) as document:
                 coordinates = submission["age_location"]["location"]["coordinates"]
