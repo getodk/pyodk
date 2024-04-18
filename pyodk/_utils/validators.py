@@ -57,6 +57,14 @@ def validate_instance_id(*args: str) -> str:
     )
 
 
+def validate_entity_list_name(*args: str) -> str:
+    return wrap_error(
+        validator=v.str_validator,
+        key="entity_list_name",
+        value=coalesce(*args),
+    )
+
+
 def validate_str(*args: str, key: str) -> str:
     return wrap_error(
         validator=v.str_validator,
@@ -76,6 +84,14 @@ def validate_bool(*args: bool, key: str) -> str:
 def validate_int(*args: int, key: str) -> int:
     return wrap_error(
         validator=v.int_validator,
+        key=key,
+        value=coalesce(*args),
+    )
+
+
+def validate_dict(*args: dict, key: str) -> int:
+    return wrap_error(
+        validator=v.dict_validator,
         key=key,
         value=coalesce(*args),
     )

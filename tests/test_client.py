@@ -5,6 +5,7 @@ from pyodk.client import Client
 
 from tests.resources import RESOURCES, forms_data, submissions_data
 from tests.utils import utils
+from tests.utils.entity_lists import create_new_or_get_entity_list
 from tests.utils.forms import (
     create_new_form__md,
     create_new_form__xml,
@@ -71,6 +72,22 @@ def create_test_submissions(client: Client | None = None) -> Client:
     return client
 
 
+def create_test_entity_lists(client: Client | None = None) -> Client:
+    """
+    Create test entity lists, if they don't already exist.
+    :param client: Client instance to use for API calls.
+    :return: The original client instance, or a new one if none was provided.
+    """
+    if client is None:
+        client = Client()
+    create_new_or_get_entity_list(
+        client=client,
+        entity_list_name="pyodk_test_eln",
+        entity_props=["test_label", "another_prop"],
+    )
+    return client
+
+
 @skip
 class TestUsage(TestCase):
     """Tests for experimenting with usage scenarios / general debugging / integration."""
@@ -82,6 +99,7 @@ class TestUsage(TestCase):
         cls.client = Client()
         create_test_forms(client=cls.client)
         create_test_submissions(client=cls.client)
+        create_test_entity_lists(client=cls.client)
 
     def test_direct(self):
         projects = self.client.projects.list()
@@ -216,3 +234,20 @@ class TestUsage(TestCase):
             instance_id=iid,
             comment=f"pyODK edit {now}",
         )
+
+    def test_entities__create_and_query(self):
+        """Should create a new entity, and query it afterwards via list() or get_table()."""
+        self.client.entities.default_entity_list_name = "pyodk_test_eln"
+        entity = self.client.entities.create(
+            label="test_label",
+            data={"test_label": "test_value", "another_prop": "another_value"},
+        )
+        entity_list = self.client.entities.list()
+        self.assertIn(entity, entity_list)
+        entity_data = self.client.entities.get_table(select="__id")
+        self.assertIn(entity.uuid, [d["__id"] for d in entity_data["value"]])
+
+    def test_entity_lists__list(self):
+        """Should return a list of entities"""
+        observed = self.client.entity_lists.list()
+        self.assertGreater(len(observed), 0)

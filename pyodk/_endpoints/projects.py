@@ -128,7 +128,7 @@ class ProjectService(bases.Service):
         # The "App User" role_id should always be "2", so no need to look it up by name.
         # Ref: "https://github.com/getodk/central-backend/blob/9db0d792cf4640ec7329722984
         #   cebdee3687e479/lib/model/migrations/20181212-01-add-roles.js"
-        # See also roles data in `tests/resorces/projects_data.py`.
+        # See also roles data in `tests/resources/projects_data.py`.
         if forms is not None:
             for user in users:
                 for form_id in forms:

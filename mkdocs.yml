@@ -11,9 +11,11 @@ watch:
 nav:
     - Overview: index.md
     - Client: client.md
+    - .entities: entities.md
+    - .entity_lists: entity_lists.md
     - .forms: forms.md
-    - .submissions: submissions.md
     - .projects: projects.md
+    - .submissions: submissions.md
     - HTTP methods: http-methods.md
     - Examples: examples/README.md
 
