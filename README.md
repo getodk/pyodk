@@ -7,7 +7,7 @@ This library aims to make common data analysis and workflow automation tasks as 
 
 ## Install
 
-The currently supported Python version for `pyodk` is 3.12.
+The currently supported Python version for `pyodk` is 3.12. We recommend using [`pyenv`](https://github.com/pyenv/pyenv) to manage multiple versions of Python.
 
 ### From pip
 
@@ -24,7 +24,7 @@ cd ~/repos/pyodk
 git clone https://github.com/getodk/pyodk.git repo
 
 # Create and activate a virtual environment for the install.
-/usr/local/bin/python3.8 -m venv venv
+python -m venv venv
 source venv/bin/activate
 
 # Install pyodk and its production dependencies.
