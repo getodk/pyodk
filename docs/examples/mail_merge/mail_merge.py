@@ -28,15 +28,15 @@ from pyodk.client import Client
 # customize these settings to your environment
 PROJECT_ID = 1
 FORM_ID = "my_form"
-INPUT_DOCUMENT = "input.docx"
-OUTPUT_FOLDER = "output"
+TEMPLATE_DOCUMENT = "template.docx"
+OUTPUT_FOLDER = "merged"
 
 with Client(project_id=PROJECT_ID) as client:
     submissions = client.submissions.get_table(form_id=FORM_ID)
     for submission in submissions["value"]:
         # only include approved submisisons
         if submission["__system"]["reviewState"] == "approved":
-            with MailMerge(INPUT_DOCUMENT) as document:
+            with MailMerge(TEMPLATE_DOCUMENT) as document:
                 coordinates = submission["age_location"]["location"]["coordinates"]
                 location = f"{coordinates[1]}, {coordinates[0]}"
                 generation_date = datetime.now().strftime("%m-%d-%Y %H:%M:%S.%f")
