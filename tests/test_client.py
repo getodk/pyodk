@@ -11,7 +11,7 @@ from tests.utils.forms import (
     create_new_form__xml,
     get_latest_form_version,
 )
-from tests.utils.md_table import md_table_to_temp_dir
+from tests.utils.md_table import md_table_to_bytes, md_table_to_temp_dir
 from tests.utils.submissions import (
     create_new_or_get_last_submission,
     create_or_update_submission_with_comment,
@@ -127,19 +127,16 @@ class TestUsage(TestCase):
     def test_form_create__new_definition_xml(self):
         """Should create a new form with the new definition."""
         form_id = self.client.session.get_xform_uuid()
-        with utils.get_temp_file(suffix=".xml") as fp:
-            fp.write_text(forms_data.get_xml__range_draft(form_id=form_id))
-            self.client.forms.create(
-                form_id=form_id,
-                definition=fp.as_posix(),
-            )
+        self.client.forms.create(
+            form_id=form_id,
+            definition=forms_data.get_xml__range_draft(form_id=form_id),
+        )
 
     def test_form_create__new_definition_xlsx(self):
         """Should create a new form with the new definition."""
-        form_id = "no_form_id"
         form_def = forms_data.get_md__pull_data()
-        with md_table_to_temp_dir(form_id=form_id, mdstr=form_def) as fp:
-            form = self.client.forms.create(definition=fp.as_posix())
+        wb = md_table_to_bytes(mdstr=form_def)
+        form = self.client.forms.create(definition=wb)
         self.assertTrue(form.xmlFormId.startswith("uuid:"))
 
     # Below tests assume project has forms by these names already published.

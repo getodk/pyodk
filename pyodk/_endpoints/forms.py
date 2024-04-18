@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Callable, Iterable
 from datetime import datetime
+from os import PathLike
 from typing import Any
 
 from pyodk._endpoints import bases
@@ -122,7 +123,7 @@ class FormService(bases.Service):
 
     def create(
         self,
-        definition: str,
+        definition: PathLike | str | bytes,
         ignore_warnings: bool | None = True,
         form_id: str | None = None,
         project_id: int | None = None,
@@ -130,29 +131,29 @@ class FormService(bases.Service):
         """
         Create a form.
 
-        :param definition: The path to a form definition file to upload.
+        :param definition: The path to the file to upload (string or PathLike), or the
+          form definition in memory (string (XML) or bytes (XLS/XLSX)).
         :param ignore_warnings: If True, create the form if there are XLSForm warnings.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         :return: An object representation of the Form's metadata.
         """
         fd = FormDraftService(session=self.session, **self._default_kw())
-        pid, fid, headers, params = fd._prep_form_post(
-            file_path=definition,
+        pid, fid, headers, params, form_def = fd._prep_form_post(
+            definition=definition,
             ignore_warnings=ignore_warnings,
             form_id=form_id,
             project_id=project_id,
         )
         params["publish"] = True
-        with open(definition, "rb") as fd:
-            response = self.session.response_or_error(
-                method="POST",
-                url=self.session.urlformat(self.urls.forms, project_id=pid),
-                logger=log,
-                headers=headers,
-                params=params,
-                data=fd,
-            )
+        response = self.session.response_or_error(
+            method="POST",
+            url=self.session.urlformat(self.urls.forms, project_id=pid),
+            logger=log,
+            headers=headers,
+            params=params,
+            data=form_def,
+        )
         data = response.json()
         return Form(**data)
 
@@ -160,8 +161,8 @@ class FormService(bases.Service):
         self,
         form_id: str,
         project_id: int | None = None,
-        definition: str | None = None,
-        attachments: Iterable[str] | None = None,
+        definition: PathLike | str | bytes | None = None,
+        attachments: Iterable[PathLike | str] | None = None,
         version_updater: Callable[[str], str] | None = None,
     ) -> None:
         """
@@ -187,7 +188,8 @@ class FormService(bases.Service):
 
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
-        :param definition: The path to a form definition file to upload. The form
+        :param definition: The path to the file to upload (string or PathLike), or the
+          form definition in memory (string (XML) or bytes (XLS/XLSX)). The form
           definition must include an updated version string.
         :param attachments: The paths of the form attachment file(s) to upload.
         :param version_updater: A function that accepts a version name string and returns
@@ -203,7 +205,7 @@ class FormService(bases.Service):
         # Start a new draft - with a new definition, if provided.
         fp_ids = {"form_id": form_id, "project_id": project_id}
         fd = FormDraftService(session=self.session, **self._default_kw())
-        if not fd.create(file_path=definition, **fp_ids):
+        if not fd.create(definition=definition, **fp_ids):
             raise PyODKError("Form update (form draft create) failed.")
 
         # Upload the attachments, if any.
