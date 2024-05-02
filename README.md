@@ -146,6 +146,21 @@ Error types raised by pyODK are found in `errors.py`, which currently is only th
 
 Note that pyODK does not attempt to wrap every possible error condition, so if needed, broader exception handling should be included in your script / app.
 
+## Design considerations
+Our goal with pyODK is to support the most common Central API functionality in an easy-to-use, high-level way. Because we expose [HTTP verb methods](https://getodk.github.io/pyodk/http-methods/), we don't feel the need to add explicit support for the whole Central API.
+
+Here are some points to think about when considering adding new methods to pyODK:
+
+* Is it common enough to warrant a designed method or can we show examples using the HTTP methods if needed?
+  * For example, we currently consider manipulating form drafts directly out of scope but `client.forms.update` implicitly creates and publishes a draft
+* Do people take this action independently or is it always part of reaching some broader goal?
+* What pyODK class does it best fit in?
+  * For example, form versions are subresources on Central backend but in this library, methods that deal with form versions can be in the `forms` class directly since we’re not going to expose many of them
+* How do people talk about the action that’s being performed? How do ODK docs and Central frontend talk about it?
+  * For example, documentation has the concept of "submission edits" so use `client.submissions.edit` rather than update
+* Value expressiveness and consistency with ODK concepts over pyODK internal consistency
+  * What actually needs to be commonly configured? Starting by exposing a subset of parameters and naming/typing them carefully is ideal.
+
 ## Contribute
 
 See issues for additions to `pyodk` that are under consideration. Please file new issues for any functionality you are missing.
