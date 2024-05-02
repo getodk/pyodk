@@ -4,9 +4,11 @@ Markdown table utility functions.
 
 import re
 from contextlib import contextmanager
+from io import BytesIO
 from pathlib import Path
 
 from openpyxl import Workbook
+from xlwt import Workbook as XLSWorkbook
 
 from tests.utils.utils import get_temp_dir
 
@@ -88,3 +90,35 @@ def md_table_to_temp_dir(form_id: str, mdstr: str) -> Path:
         fp = Path(td) / f"{form_id}.xlsx"
         md_table_to_workbook(mdstr).save(fp.as_posix())
         yield fp
+
+
+def md_table_to_bytes(mdstr: str) -> bytes:
+    """
+    Convert MarkDown table string to XLSX Workbook bytes.
+
+    :param mdstr: The MarkDown table string.
+    """
+    wb = md_table_to_workbook(mdstr=mdstr)
+    fd = BytesIO()
+    wb.save(fd)
+    fd.seek(0)
+    return fd.getvalue()
+
+
+def md_table_to_bytes_xls(mdstr: str) -> bytes:
+    """
+    Convert MarkDown table string to XLS Workbook bytes.
+
+    :param mdstr: The MarkDown table string.
+    """
+    md_data = md_table_to_ss_structure(mdstr=mdstr)
+    wb = XLSWorkbook()
+    for key, rows in md_data:
+        sheet = wb.add_sheet(sheetname=key)
+        for ir, row in enumerate(rows):
+            for ic, cell in enumerate(row):
+                sheet.write(ir, ic, cell)
+    fd = BytesIO()
+    wb.save(fd)
+    fd.seek(0)
+    return fd.getvalue()

@@ -1,5 +1,5 @@
 import logging
-from pathlib import Path
+from os import PathLike
 
 from pyodk._endpoints import bases
 from pyodk._utils import validators as pv
@@ -34,7 +34,7 @@ class FormDraftAttachmentService(bases.Service):
 
     def upload(
         self,
-        file_path: str,
+        file_path: PathLike | str,
         file_name: str | None = None,
         form_id: str | None = None,
         project_id: int | None = None,
@@ -50,7 +50,7 @@ class FormDraftAttachmentService(bases.Service):
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
             fid = pv.validate_form_id(form_id, self.default_form_id)
-            file_path = Path(pv.validate_file_path(file_path))
+            file_path = pv.validate_file_path(file_path)
             if file_name is None:
                 file_name = pv.validate_str(file_path.name, key="file_name")
         except PyODKError as err:

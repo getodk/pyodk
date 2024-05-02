@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from uuid import uuid4
 
 from pyodk._endpoints import bases
 from pyodk._utils import validators as pv
@@ -121,7 +120,7 @@ class EntityService(bases.Service):
                 entity_list_name, self.default_entity_list_name
             )
             req_data = {
-                "uuid": pv.validate_str(uuid, str(uuid4()), key="uuid"),
+                "uuid": pv.validate_str(uuid, self.session.get_xform_uuid(), key="uuid"),
                 "label": pv.validate_str(label, key="label"),
                 "data": pv.validate_dict(data, key="data"),
             }

@@ -3,17 +3,25 @@ from dataclasses import dataclass
 from datetime import datetime
 from functools import wraps
 from unittest import TestCase
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
-from pyodk._endpoints.form_drafts import FormDraftService
-from pyodk._endpoints.form_drafts import log as form_drafts_log
+from pyodk._endpoints.form_drafts import (
+    CONTENT_TYPES,
+    FormDraftService,
+    get_definition_data,
+)
+from pyodk._endpoints.form_drafts import (
+    log as form_drafts_log,
+)
 from pyodk._endpoints.forms import Form, FormService
 from pyodk._utils.session import Session
 from pyodk.client import Client
 from pyodk.errors import PyODKError
 
 from tests.resources import CONFIG_DATA, forms_data
+from tests.utils import utils
+from tests.utils.md_table import md_table_to_bytes, md_table_to_bytes_xls
 
 
 @dataclass
@@ -97,6 +105,27 @@ class TestForms(TestCase):
                 )
                 self.assertIsInstance(observed, Form)
 
+    def test_create__ok(self):
+        """Should return a FormType object."""
+        fixture = forms_data.test_forms
+        with patch.object(Session, "request") as mock_session:
+            mock_session.return_value.status_code = 200
+            mock_session.return_value.json.return_value = fixture["response_data"][1]
+            with Client() as client, utils.get_temp_file(suffix=".xml") as fp:
+                fp.write_text(forms_data.get_xml__range_draft())
+                # Specify project
+                observed = client.forms.create(
+                    definition=fp,
+                    project_id=fixture["project_id"],
+                    form_id=fixture["response_data"][1]["xmlFormId"],
+                )
+                self.assertIsInstance(observed, Form)
+                # Use default
+                observed = client.forms.create(
+                    definition=fp, form_id=fixture["response_data"][1]["xmlFormId"]
+                )
+                self.assertIsInstance(observed, Form)
+
     def test_update__def_or_attach_required(self):
         """Should raise an error if both 'definition' and 'attachments' are None."""
         with self.assertRaises(PyODKError) as err:
@@ -113,7 +142,7 @@ class TestForms(TestCase):
         client = Client()
         client.forms.update("foo", definition="/some/path/file.xlsx")
         ctx.fd_create.assert_called_once_with(
-            file_path="/some/path/file.xlsx",
+            definition="/some/path/file.xlsx",
             form_id="foo",
             project_id=None,
         )
@@ -128,7 +157,7 @@ class TestForms(TestCase):
         client = Client()
         client.forms.update("foo", attachments=["/some/path/a.jpg", "/some/path/b.jpg"])
         ctx.fd_create.assert_called_once_with(
-            file_path=None,
+            definition=None,
             form_id="foo",
             project_id=None,
         )
@@ -166,7 +195,7 @@ class TestForms(TestCase):
             attachments=["/some/path/a.jpg", "/some/path/b.jpg"],
         )
         ctx.fd_create.assert_called_once_with(
-            file_path="/some/path/form.xlsx",
+            definition="/some/path/form.xlsx",
             form_id="foo",
             project_id=None,
         )
@@ -187,13 +216,12 @@ class TestForms(TestCase):
     ):
         client = Client()
 
-        def mock_wrap_error(**kwargs):
-            return kwargs["value"]
+        def mock_get_def_data(*args, **kwargs):
+            return "", CONTENT_TYPES[".xlsx"], ""
 
         with (
             patch.object(Session, "response_or_error") as mock_response,
-            patch("pyodk._utils.validators.wrap_error", mock_wrap_error),
-            patch("builtins.open", mock_open(), create=True) as mock_open_patch,
+            patch("pyodk._endpoints.form_drafts.get_definition_data", mock_get_def_data),
         ):
             client.forms.update(form_id, definition=definition)
         mock_response.assert_any_call(
@@ -207,16 +235,21 @@ class TestForms(TestCase):
                 "X-XlsForm-FormId-Fallback": expected_fallback_id,
             },
             params={"ignoreWarnings": True},
-            data=mock_open_patch.return_value,
+            data="",
         )
 
     def test_update__def_encoding(self):
         """Should find that the URL and fallback header are url-encoded."""
         test_cases = (
             ("foo", "/some/path/foo.xlsx", "projects/1/forms/foo/draft", "foo"),
-            ("foo", "/some/path/✅.xlsx", "projects/1/forms/foo/draft", "%E2%9C%85"),
+            ("foo", "/some/path/✅.xlsx", "projects/1/forms/foo/draft", "foo"),
             ("✅", "/some/path/✅.xlsx", "projects/1/forms/%E2%9C%85/draft", "%E2%9C%85"),
-            ("✅", "/some/path/foo.xlsx", "projects/1/forms/%E2%9C%85/draft", "foo"),
+            (
+                "✅",
+                "/some/path/foo.xlsx",
+                "projects/1/forms/%E2%9C%85/draft",
+                "%E2%9C%85",
+            ),
         )
         for case in test_cases:
             with self.subTest(msg=str(case)):
@@ -244,3 +277,89 @@ class TestForms(TestCase):
             "Must not specify both a definition and version_updater.",
             err.exception.args[0],
         )
+
+
+class TestGetDefinitionData(TestCase):
+    def test_get_definition_data__xml_file(self):
+        """Should get the expected definition data and content type."""
+        form_data = forms_data.get_xml__range_draft()
+        with utils.get_temp_file(suffix=".xml") as fp:
+            fp.write_text(form_data, newline="\n")
+            expected_stem = fp.stem
+            definition_data, content_type, file_path_stem = get_definition_data(
+                definition=fp
+            )
+        self.assertEqual(form_data, definition_data.decode("utf-8"))
+        self.assertEqual(CONTENT_TYPES[".xml"], content_type)
+        self.assertEqual(expected_stem, file_path_stem)
+
+    def test_get_definition_data__xml_str(self):
+        """Should get the expected definition data and content type."""
+        form_data = forms_data.get_xml__range_draft()
+        definition_data, content_type, file_path_stem = get_definition_data(
+            definition=form_data
+        )
+        self.assertEqual(form_data, definition_data.decode("utf-8"))
+        self.assertEqual(CONTENT_TYPES[".xml"], content_type)
+        self.assertEqual(None, file_path_stem)
+
+    def test_get_definition_data__xls_file(self):
+        """Should get the expected definition data and content type."""
+        form_data = md_table_to_bytes_xls(forms_data.get_md__pull_data())
+        with utils.get_temp_file(suffix=".xls") as fp:
+            fp.write_bytes(form_data)
+            expected_stem = fp.stem
+            definition_data, content_type, file_path_stem = get_definition_data(
+                definition=fp
+            )
+        self.assertEqual(form_data, definition_data)
+        self.assertEqual(CONTENT_TYPES[".xls"], content_type)
+        self.assertEqual(expected_stem, file_path_stem)
+
+    def test_get_definition_data__xls_bytes(self):
+        """Should get the expected definition data and content type."""
+        form_data = md_table_to_bytes_xls(forms_data.get_md__pull_data())
+        definition_data, content_type, file_path_stem = get_definition_data(
+            definition=form_data
+        )
+        self.assertEqual(form_data, definition_data)
+        self.assertEqual(CONTENT_TYPES[".xls"], content_type)
+        self.assertEqual(None, file_path_stem)
+
+    def test_get_definition_data__xlsx_file(self):
+        """Should get the expected definition data and content type."""
+        form_data = md_table_to_bytes(forms_data.get_md__pull_data())
+        with utils.get_temp_file(suffix=".xlsx") as fp:
+            fp.write_bytes(form_data)
+            expected_stem = fp.stem
+            definition_data, content_type, file_path_stem = get_definition_data(
+                definition=fp
+            )
+        self.assertEqual(form_data, definition_data)
+        self.assertEqual(CONTENT_TYPES[".xlsx"], content_type)
+        self.assertEqual(expected_stem, file_path_stem)
+
+    def test_get_definition_data__xlsx_bytes(self):
+        """Should get the expected definition data and content type."""
+        form_data = md_table_to_bytes(forms_data.get_md__pull_data())
+        definition_data, content_type, file_path_stem = get_definition_data(
+            definition=form_data
+        )
+        self.assertEqual(form_data, definition_data)
+        self.assertEqual(CONTENT_TYPES[".xlsx"], content_type)
+        self.assertEqual(None, file_path_stem)
+
+    def test_get_definition_data__unknown_file(self):
+        """Should throw an error if an unknown file extension is specified."""
+        form_data = forms_data.get_xml__range_draft()
+        with utils.get_temp_file(suffix=".docx") as fp:
+            fp.write_text(form_data, newline="\n")
+            with self.assertRaises(PyODKError) as err:
+                get_definition_data(definition=fp)
+            self.assertIn("unexpected file extension", err.exception.args[0])
+
+    def test_get_definition_data__unknown_bytes(self):
+        """Should throw an error if an unknown file type is provided."""
+        with self.assertRaises(PyODKError) as err:
+            get_definition_data(definition=b"hello world")
+        self.assertIn("unexpected file type", err.exception.args[0])
