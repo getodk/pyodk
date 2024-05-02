@@ -7,7 +7,9 @@ This library aims to make common data analysis and workflow automation tasks as 
 
 ## Install
 
-The currently supported Python version for `pyodk` is 3.12. We recommend using [`pyenv`](https://github.com/pyenv/pyenv) to manage multiple versions of Python.
+The currently supported Python version is 3.12. We recommend using [`pyenv`](https://github.com/pyenv/pyenv) to manage multiple versions of Python.
+
+The currently supported Central version is v2024.1.0. Newer or older Central versions will likely work too, but convenience (non-HTTP) methods assume this version.
 
 ### From pip
 
