@@ -7,9 +7,9 @@ This library aims to make common data analysis and workflow automation tasks as 
 
 ## Install
 
-The currently supported Python version is 3.12. We recommend using [`pyenv`](https://github.com/pyenv/pyenv) to manage multiple versions of Python.
+The currently supported Python version for `pyodk` is 3.12. If this is different from the version you use for other projects, consider using [`pyenv`](https://github.com/pyenv/pyenv) to manage multiple versions of Python.
 
-The currently supported Central version is v2024.1.0. Newer or older Central versions will likely work too, but convenience (non-HTTP) methods assume this version.
+The currently supported Central version is v2024.1.0. Newer or older Central versions will likely work too, but convenience (non-HTTP) methods assume this version. If you see a 404 error or another server error, please verify the version of your Central server.
 
 ### From pip
 
@@ -199,5 +199,6 @@ For interactive testing, debugging, or sanity checking workflows, end-to-end tes
 1. Draft a new GitHub release with the list of merged PRs.
 1. Check out a release branch from latest upstream master.
 1. Update `pyproject.toml` and `pyodk/__version__.py` with the new release version number.
+1. Update the Central version in the README to reflect the version we test against.
 1. Commit, push the branch, and initiate a pull request. Wait for tests to pass, then merge the PR.
 1. Tag the release and it will automatically be published (see `release.yml` actions file).
