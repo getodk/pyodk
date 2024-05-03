@@ -27,3 +27,7 @@ A script that uses mail merge to create personalized Word documents with data fr
 ## [October 2022 webinar materials](2022-10-pyodk-webinar.ipynb)
 
 A Jupyter notebook companion to an October 2022 webinar by Hélène Martin introducing `pyodk`. Includes link to the session recording.
+
+## [Create or Update Form script](create_or_update_form/create_or_update_form.py)
+
+A script to create or update a form, optionally with attachments.

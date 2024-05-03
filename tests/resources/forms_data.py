@@ -87,7 +87,7 @@ def get_xml__range_draft(
 
 def get_md__pull_data(version: str | None = None) -> str:
     if version is None:
-        version = datetime.now().isoformat()
+        version = datetime.now(UTC).isoformat()
     return f"""
     | settings |
     |          | version   |
@@ -106,7 +106,7 @@ md__symbols = """
 | survey |           |            |           |             |
 |        | type      | name       | label     | calculation |
 |        | calculate | fruit      |           | pulldata('fruits', 'name', 'name_key', 'mango') |
-|        | note      | note_fruit | The fruit ${{fruit}} pulled from csv |                      |
+|        | note      | note_fruit | The fruit ${fruit} pulled from csv |                      |
 """
 md__dingbat = """
 | settings |
@@ -115,5 +115,5 @@ md__dingbat = """
 | survey |           |            |           |             |
 |        | type      | name       | label     | calculation |
 |        | calculate | fruit      |           | pulldata('fruits', 'name', 'name_key', 'mango') |
-|        | note      | note_fruit | The fruit ${{fruit}} pulled from csv |                      |
+|        | note      | note_fruit | The fruit ${fruit} pulled from csv |                      |
 """
