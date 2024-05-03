@@ -14,6 +14,7 @@ test_entities = [
             "version": 1,
             "baseVersion": None,
             "conflictingProperties": None,
+            "data": {"firstName": "John", "age": "88"},
         },
     },
     {
@@ -29,9 +30,10 @@ test_entities = [
             "createdAt": "2018-03-21T12:45:02.312Z",
             "creatorId": 1,
             "userAgent": "Enketo/3.0.4",
-            "version": 1,
-            "baseVersion": None,
+            "version": 2,
+            "baseVersion": 1,
             "conflictingProperties": None,
+            "data": {"firstName": "John", "age": "88"},
         },
     },
 ]

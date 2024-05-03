@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from uuid import uuid4
 
 from pyodk._endpoints import bases
 from pyodk._utils import validators as pv
@@ -12,9 +13,11 @@ log = logging.getLogger(__name__)
 class CurrentVersion(bases.Model):
     label: str
     current: bool
+    createdAt: datetime
     creatorId: int
     userAgent: str
     version: int
+    data: dict | None = None
     baseVersion: int | None = None
     conflictingProperties: list[str] | None = None
 
@@ -24,6 +27,7 @@ class Entity(bases.Model):
     creatorId: int
     createdAt: datetime
     currentVersion: CurrentVersion
+    conflict: str | None = None  # null, soft, hard
     updatedAt: datetime | None = None
     deletedAt: datetime | None = None
 
@@ -33,8 +37,10 @@ class URLs(bases.Model):
         frozen = True
 
     _entity_name: str = "projects/{project_id}/datasets/{el_name}"
-    list: str = f"{_entity_name}/entities"
-    post: str = f"{_entity_name}/entities"
+    _entities: str = f"{_entity_name}/entities"
+    list: str = _entities
+    post: str = _entities
+    patch: str = f"{_entities}/{{entity_id}}"
     get_table: str = f"{_entity_name}.svc/Entities"
 
 
@@ -120,7 +126,8 @@ class EntityService(bases.Service):
                 entity_list_name, self.default_entity_list_name
             )
             req_data = {
-                "uuid": pv.validate_str(uuid, self.session.get_xform_uuid(), key="uuid"),
+                # For entities, Central creates a literal uuid, not an XForm uuid:uuid4()
+                "uuid": pv.validate_str(uuid, str(uuid4()), key="uuid"),
                 "label": pv.validate_str(label, key="label"),
                 "data": pv.validate_dict(data, key="data"),
             }
@@ -132,6 +139,63 @@ class EntityService(bases.Service):
             method="POST",
             url=self.session.urlformat(self.urls.post, project_id=pid, el_name=eln),
             logger=log,
+            json=req_data,
+        )
+        data = response.json()
+        return Entity(**data)
+
+    def update(
+        self,
+        label: str,
+        data: dict,
+        uuid: str,
+        force: bool | None = None,
+        base_version: int | None = None,
+        entity_list_name: str | None = None,
+        project_id: int | None = None,
+    ) -> Entity:
+        """
+        Update an Entity.
+
+        :param label: Label of the Entity.
+        :param data: Data to store for the Entity.
+        :param uuid: The unique identifier for the Entity.
+        :param force: If True, update an Entity regardless of its current state. If
+          `base_version` is not specified, then `force` must be True.
+        :param base_version: The expected current version of the Entity on the server. If
+          `force` is not True, then `base_version` must be specified.
+        :param entity_list_name: The name of the Entity List (Dataset) being referenced.
+        :param project_id: The id of the project this form belongs to.
+        """
+        try:
+            pid = pv.validate_project_id(project_id, self.default_project_id)
+            eln = pv.validate_entity_list_name(
+                entity_list_name, self.default_entity_list_name
+            )
+            params = {
+                "uuid": pv.validate_str(uuid, key="uuid"),
+            }
+            if force is not None:
+                params["force"] = pv.validate_bool(force, key="force")
+            if base_version is not None:
+                params["baseVersion"] = pv.validate_int(base_version, key="base_version")
+            if len([i for i in (force, base_version) if i is not None]) != 1:
+                raise PyODKError("Must specify one of 'force' or 'base_version'.")  # noqa: TRY301
+            req_data = {
+                "label": pv.validate_str(label, key="label"),
+                "data": pv.validate_dict(data, key="data"),
+            }
+        except PyODKError as err:
+            log.error(err, exc_info=True)
+            raise
+
+        response = self.session.response_or_error(
+            method="PATCH",
+            url=self.session.urlformat(
+                self.urls.patch, project_id=pid, el_name=eln, entity_id=uuid
+            ),
+            logger=log,
+            params=params,
             json=req_data,
         )
         data = response.json()

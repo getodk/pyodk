@@ -258,9 +258,32 @@ class TestUsage(TestCase):
             data={"test_label": "test_value", "another_prop": "another_value"},
         )
         entity_list = self.client.entities.list()
-        self.assertIn(entity, entity_list)
+        # entities.create() has entities.currentVersion.data, entities.list() doesn't.
+        self.assertIn(entity.uuid, [e.uuid for e in entity_list])
         entity_data = self.client.entities.get_table(select="__id")
         self.assertIn(entity.uuid, [d["__id"] for d in entity_data["value"]])
+
+    def test_entities__update(self):
+        """Should update the entity, via either base_version or force."""
+        self.client.entities.default_entity_list_name = "pyodk_test_eln"
+        entity = self.client.entities.create(
+            label="test_label",
+            data={"test_label": "test_value", "another_prop": "another_value"},
+        )
+        updated = self.client.entities.update(
+            label="test_label",
+            data={"test_label": "test_value2", "another_prop": "another_value2"},
+            uuid=entity.uuid,
+            base_version=entity.currentVersion.version,
+        )
+        self.assertEqual("test_value2", updated.currentVersion.data["test_label"])
+        forced = self.client.entities.update(
+            label="test_label",
+            data={"test_label": "test_value3", "another_prop": "another_value3"},
+            uuid=entity.uuid,
+            force=True,
+        )
+        self.assertEqual("test_value3", forced.currentVersion.data["test_label"])
 
     def test_entity_lists__list(self):
         """Should return a list of entities"""
