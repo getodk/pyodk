@@ -146,20 +146,20 @@ class EntityService(bases.Service):
 
     def update(
         self,
-        label: str,
-        data: dict,
         uuid: str,
-        force: bool | None = None,
-        base_version: int | None = None,
         entity_list_name: str | None = None,
         project_id: int | None = None,
+        label: str | None = None,
+        data: dict | None = None,
+        force: bool | None = None,
+        base_version: int | None = None,
     ) -> Entity:
         """
         Update an Entity.
 
+        :param uuid: The unique identifier for the Entity.
         :param label: Label of the Entity.
         :param data: Data to store for the Entity.
-        :param uuid: The unique identifier for the Entity.
         :param force: If True, update an Entity regardless of its current state. If
           `base_version` is not specified, then `force` must be True.
         :param base_version: The expected current version of the Entity on the server. If
@@ -181,10 +181,11 @@ class EntityService(bases.Service):
                 params["baseVersion"] = pv.validate_int(base_version, key="base_version")
             if len([i for i in (force, base_version) if i is not None]) != 1:
                 raise PyODKError("Must specify one of 'force' or 'base_version'.")  # noqa: TRY301
-            req_data = {
-                "label": pv.validate_str(label, key="label"),
-                "data": pv.validate_dict(data, key="data"),
-            }
+            req_data = {}
+            if label is not None:
+                req_data["label"] = pv.validate_str(label, key="label")
+            if data is not None:
+                req_data["data"] = pv.validate_dict(data, key="data")
         except PyODKError as err:
             log.error(err, exc_info=True)
             raise

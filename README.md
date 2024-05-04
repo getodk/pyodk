@@ -64,6 +64,18 @@ The `Client` is not specific to a project, but a default `project_id` can be set
 - An init argument: `Client(project_id=1)`.
 - A property on the client: `client.project_id = 1`.
 
+*Default Identifiers*
+
+For each endpoint, a default can be set for key identifiers, so these identifiers are optional in most methods. When the identifier is required, validation ensures that either a default value is set, or a value is specified. E.g.
+
+```python
+client.projects.default_project_id = 1
+client.forms.default_form_id = "my_form"
+client.submissions.default_form_id = "my_form"
+client.entities.default_entity_list_name = "my_list"
+client.entities.default_project_id = 1
+```
+
 ### Session cache file
 
 The session cache file uses the TOML format. The default file name is `.pyodk_cache.toml`, and the default location is the user home directory. The file name and location can be customised by setting the environment variable `PYODK_CACHE_FILE` to some other file path, or by passing the path at init with `Client(config_path="my_cache.toml")`. This file should not be pre-created as it is used to store a session token after login.
