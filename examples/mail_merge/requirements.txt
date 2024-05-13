@@ -1,0 +1,2 @@
+pyodk==0.3.0
+docx-mailmerge2=0.8.0
