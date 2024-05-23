@@ -96,9 +96,7 @@ class CommentService(bases.Service):
             pid = pv.validate_project_id(project_id, self.default_project_id)
             fid = pv.validate_form_id(form_id, self.default_form_id)
             iid = pv.validate_instance_id(instance_id, self.default_instance_id)
-            comment = pv.wrap_error(
-                validator=pv.v.str_validator, key="comment", value=comment
-            )
+            comment = pv.validate_str(comment, key="comment")
             json = {"body": comment}
         except PyODKError as err:
             log.error(err, exc_info=True)
