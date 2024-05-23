@@ -4,8 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from pydantic.v1 import validators as v
-from pydantic.v1.errors import PydanticValueError
-from pydantic_core._pydantic_core import ValidationError
+from pydantic.v1.errors import PydanticTypeError, PydanticValueError
 
 from pyodk._utils.utils import coalesce
 from pyodk.errors import PyODKError
@@ -22,7 +21,7 @@ def wrap_error(validator: Callable, key: str, value: Any) -> Any:
     """
     try:
         return validator(value)
-    except (ValidationError, PydanticValueError) as err:
+    except (PydanticTypeError, PydanticValueError) as err:
         msg = f"{key}: {err!s}"
         raise PyODKError(msg) from err
 
@@ -99,9 +98,9 @@ def validate_dict(*args: dict, key: str) -> int:
     )
 
 
-def validate_file_path(*args: PathLike | str) -> Path:
+def validate_file_path(*args: PathLike | str, key: str = "file_path") -> Path:
     def validate_fp(f):
         p = v.path_validator(f)
         return v.path_exists_validator(p)
 
-    return wrap_error(validator=validate_fp, key="file_path", value=coalesce(*args))
+    return wrap_error(validator=validate_fp, key=key, value=coalesce(*args))
