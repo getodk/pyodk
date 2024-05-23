@@ -27,7 +27,9 @@ def create_new_or_get_last_submission(
             ),
             form_id=form_id,
         ).instanceId
-    except PyODKError:
+    except PyODKError as err:
+        if not err.is_central_error(code=409.3):
+            raise
         subvs = client.session.get(
             client.session.urlformat(
                 "projects/{pid}/forms/{fid}/submissions/{iid}/versions",
