@@ -286,6 +286,28 @@ class TestUsage(TestCase):
         self.assertEqual("test_value3", forced.currentVersion.data["test_label"])
 
     def test_entity_lists__list(self):
-        """Should return a list of entities"""
+        """Should return a list of Entity Lists."""
         observed = self.client.entity_lists.list()
         self.assertGreater(len(observed), 0)
+
+    def test_entity_lists__create_and_query(self):
+        """Should create a new Entity List, and query it afterwards via list()."""
+        self.client.entity_lists.default_entity_list_name = (
+            self.client.session.get_xform_uuid()
+        )
+        entity_list = self.client.entity_lists.create()
+        entity_lists = self.client.entity_lists.list()
+        self.assertIn(
+            (entity_list.name, entity_list.projectId),
+            [(e.name, e.projectId) for e in entity_lists],
+        )
+
+    def test_entity_lists__add_property(self):
+        """Should create a new property on the Entity List."""
+        self.client.entity_lists.default_entity_list_name = (
+            self.client.session.get_xform_uuid()
+        )
+        self.client.entity_lists.create()
+        self.client.entity_lists.add_property(name="test")
+        entity_list = self.client.entity_lists.get()
+        self.assertEqual(["test"], [p.name for p in entity_list.properties])
