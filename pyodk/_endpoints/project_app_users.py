@@ -81,9 +81,7 @@ class ProjectAppUserService(bases.Service):
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
-            display_name = pv.wrap_error(
-                validator=pv.v.str_validator, key="display_name", value=display_name
-            )
+            display_name = pv.validate_str(display_name, key="display_name")
             json = {"displayName": display_name}
         except PyODKError as err:
             log.error(err, exc_info=True)

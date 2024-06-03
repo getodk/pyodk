@@ -1,4 +1,4 @@
-from pyodk._endpoints.entity_lists import EntityList, log
+from pyodk._endpoints.entity_lists import EntityList
 from pyodk.client import Client
 from pyodk.errors import PyODKError
 
@@ -14,16 +14,10 @@ def create_new_or_get_entity_list(
     :param entity_props: Properties to add to the entity list.
     """
     try:
-        entity_list = client.session.response_or_error(
-            method="POST",
-            url=client.session.urlformat(
-                "projects/{pid}/datasets",
-                pid=client.project_id,
-            ),
-            logger=log,
-            json={"name": entity_list_name},
-        )
-    except PyODKError:
+        entity_list = client.entity_lists.create(entity_list_name=entity_list_name)
+    except PyODKError as err:
+        if not err.is_central_error(code=409.3):
+            raise
         entity_list = client.session.get(
             url=client.session.urlformat(
                 "projects/{pid}/datasets/{eln}",
@@ -31,18 +25,10 @@ def create_new_or_get_entity_list(
                 eln=entity_list_name,
             ),
         )
-    try:
-        for prop in entity_props:
-            client.session.response_or_error(
-                method="GET",
-                url=client.session.urlformat(
-                    "projects/{pid}/datasets/{eln}/properties",
-                    pid=client.project_id,
-                    eln=entity_list_name,
-                ),
-                logger=log,
-                json={"name": prop},
-            )
-    except PyODKError:
-        pass
+    for prop in entity_props:
+        try:
+            client.entity_lists.add_property(name=prop, entity_list_name=entity_list_name)
+        except PyODKError as err:
+            if not err.is_central_error(code=409.3):
+                raise
     return EntityList(**entity_list.json())

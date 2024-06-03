@@ -2,7 +2,6 @@ from os import PathLike
 
 from pyodk.client import Client
 from pyodk.errors import PyODKError
-from requests import Response
 
 from tests.utils import utils
 from tests.utils.md_table import md_table_to_temp_dir
@@ -17,12 +16,8 @@ def create_ignore_duplicate_error(
     try:
         client.forms.create(definition=definition, form_id=form_id)
     except PyODKError as err:
-        if len(err.args) >= 2 and isinstance(err.args[1], Response):
-            err_detail = err.args[1].json()
-            err_code = err_detail.get("code")
-            if err_code is not None and str(err_code) == "409.3":
-                return
-        raise
+        if not err.is_central_error(code=409.3):
+            raise
 
 
 def create_new_form__md(client: Client, form_id: str, form_def: str):
