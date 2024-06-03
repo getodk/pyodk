@@ -25,7 +25,7 @@ class TestEntityLists(TestCase):
                 self.assertIsInstance(o, EntityList)
 
     def test_get__ok(self):
-        """Should an EntityList object."""
+        """Should return an EntityList object."""
         fixture = entity_lists_data.test_entity_lists[2]
         with patch.object(Session, "request") as mock_session:
             mock_session.return_value.status_code = 200

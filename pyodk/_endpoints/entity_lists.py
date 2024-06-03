@@ -160,7 +160,7 @@ class EntityListService(bases.Service):
         project_id: int | None = None,
     ) -> EntityList:
         """
-        Create an Entity.
+        Create an Entity List.
 
         :param approval_required: If False, create Entities as soon as Submissions are
           received by Central. If True, create Entities when Submissions are marked as

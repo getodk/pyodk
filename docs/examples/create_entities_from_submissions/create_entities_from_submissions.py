@@ -1,5 +1,5 @@
 """
-A script that uses CSV data create an entity list and populate it with entities.
+A script that uses CSV data to create an entity list and populate it with entities.
 """
 
 import csv
