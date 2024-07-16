@@ -124,6 +124,7 @@ class FormService(bases.Service):
     def create(
         self,
         definition: PathLike | str | bytes,
+        attachments: Iterable[PathLike | str] | None = None,
         ignore_warnings: bool | None = True,
         form_id: str | None = None,
         project_id: int | None = None,
@@ -133,6 +134,7 @@ class FormService(bases.Service):
 
         :param definition: The path to the file to upload (string or PathLike), or the
           form definition in memory (string (XML) or bytes (XLS/XLSX)).
+        :param attachments: The paths of the form attachment file(s) to upload.
         :param ignore_warnings: If True, create the form if there are XLSForm warnings.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
@@ -145,7 +147,9 @@ class FormService(bases.Service):
             form_id=form_id,
             project_id=project_id,
         )
-        params["publish"] = True
+
+        # Create the new Form definition, in draft state.
+        params["publish"] = False
         response = self.session.response_or_error(
             method="POST",
             url=self.session.urlformat(self.urls.forms, project_id=pid),
@@ -155,7 +159,23 @@ class FormService(bases.Service):
             data=form_def,
         )
         data = response.json()
-        return Form(**data)
+
+        # In case the form_id parameter was None, use the (maybe generated) response value.
+        form = Form(**data)
+        fp_ids = {"form_id": form.xmlFormId, "project_id": project_id}
+
+        # Upload the attachments, if any.
+        if attachments is not None:
+            fda = FormDraftAttachmentService(session=self.session, **self._default_kw())
+            for attach in attachments:
+                if not fda.upload(file_path=attach, **fp_ids):
+                    raise PyODKError("Form create (attachment upload) failed.")
+
+        # Publish the draft.
+        if not fd.publish(**fp_ids):
+            raise PyODKError("Form create (draft publish) failed.")
+
+        return form
 
     def update(
         self,
