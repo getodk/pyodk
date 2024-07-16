@@ -20,12 +20,12 @@ log = logging.getLogger(__name__)
 class Form(bases.Model):
     projectId: int
     xmlFormId: str
-    name: str
     version: str
-    enketoId: str
     hash: str
     state: str  # open, closing, closed
     createdAt: datetime
+    name: str | None  # Null if Central couldn't parse the XForm title, or it was blank.
+    enketoId: str | None  # Null if Enketo not being used with Central.
     keyId: int | None
     updatedAt: datetime | None
     publishedAt: datetime | None

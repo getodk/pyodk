@@ -25,7 +25,7 @@ test_forms = {
             "projectId": 8,
             "xmlFormId": "external_52k",
             "state": "open",
-            "enketoId": "Mscnfqdz7w6Nz21gkPYdNNbmOKP6hpT",
+            "enketoId": None,
             "enketoOnceId": "0510ccec266c8e0c88e939c2597341e523535b0e18460fca7c8b4585826a157d",
             "createdAt": "2021-10-28T19:11:37.064Z",
             "updatedAt": "2021-10-28T19:11:59.047Z",
@@ -36,7 +36,7 @@ test_forms = {
             "sha256": "1c5ffdf837c153672fbd7858753c6fa41a8e5813423932e53162016139f11ca1",
             "draftToken": None,
             "publishedAt": "2021-10-28T19:11:57.082Z",
-            "name": "External 52k",
+            "name": None,
         },
         {
             "projectId": 8,
