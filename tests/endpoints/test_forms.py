@@ -105,7 +105,8 @@ class TestForms(TestCase):
                 )
                 self.assertIsInstance(observed, Form)
 
-    def test_create__ok(self):
+    @get_mock_context
+    def test_create__ok(self, ctx: MockContext):
         """Should return a FormType object."""
         fixture = forms_data.test_forms
         with patch.object(Session, "request") as mock_session:
@@ -125,6 +126,28 @@ class TestForms(TestCase):
                     definition=fp, form_id=fixture["response_data"][1]["xmlFormId"]
                 )
                 self.assertIsInstance(observed, Form)
+
+    @get_mock_context
+    def test_create__with_attachments__ok(self, ctx: MockContext):
+        """Should return a FormType object."""
+        fixture = forms_data.test_forms
+        with patch.object(Session, "request") as mock_session:
+            mock_session.return_value.status_code = 200
+            mock_session.return_value.json.return_value = fixture["response_data"][1]
+            with Client() as client, utils.get_temp_file(suffix=".xml") as fp:
+                fp.write_text(forms_data.get_xml__range_draft())
+                observed = client.forms.create(
+                    definition=fp,
+                    project_id=fixture["project_id"],
+                    form_id=fixture["response_data"][1]["xmlFormId"],
+                    attachments=["/some/path/a.jpg", "/some/path/b.jpg"],
+                )
+                self.assertIsInstance(observed, Form)
+                self.assertEqual(2, ctx.fda_upload.call_count)
+                ctx.fd_publish.assert_called_once_with(
+                    form_id=fixture["response_data"][1]["xmlFormId"],
+                    project_id=fixture["project_id"],
+                )
 
     def test_update__def_or_attach_required(self):
         """Should raise an error if both 'definition' and 'attachments' are None."""

@@ -139,6 +139,16 @@ class TestUsage(TestCase):
         form = self.client.forms.create(definition=wb)
         self.assertTrue(form.xmlFormId.startswith("uuid:"))
 
+    def test_form_create__new_definition_xlsx_and_attachments(self):
+        """Should create a new form with the new definition and attachment."""
+        form_def = forms_data.get_md__pull_data()
+        wb = md_table_to_bytes(mdstr=form_def)
+        form = self.client.forms.create(
+            definition=wb,
+            attachments=[(RESOURCES / "forms" / "fruits.csv").as_posix()],
+        )
+        self.assertTrue(form.xmlFormId.startswith("uuid:"))
+
     # Below tests assume project has forms by these names already published.
     def test_form_update__new_definition(self):
         """Should create a new version with the new definition."""
@@ -175,7 +185,7 @@ class TestUsage(TestCase):
             self.assertEqual(form.xmlFormId, "✅")
 
     def test_form_update__with_version_updater__non_ascii_specials(self):
-        """Should create a new version with new definition and attachment."""
+        """Should create a new version with new definition."""
         self.client.forms.update(
             form_id="'=+/*-451%/%",
             attachments=[],
