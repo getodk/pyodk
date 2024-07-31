@@ -104,3 +104,10 @@ def validate_file_path(*args: PathLike | str, key: str = "file_path") -> Path:
         return v.path_exists_validator(p)
 
     return wrap_error(validator=validate_fp, key=key, value=coalesce(*args))
+
+
+def validate_is_instance(*args: Any, typ: Any, key: str):
+    val = coalesce(*args)
+    if not isinstance(val, typ):
+        raise PyODKError(f"{key}: Unexpected type. Expected '{typ}'.")
+    return val
