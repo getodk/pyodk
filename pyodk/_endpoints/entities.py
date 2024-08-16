@@ -468,6 +468,7 @@ class EntityService(bases.Service):
         project_id: int | None = None,
         match_keys: Iterable[str] | None = None,
         add_new_properties: bool = True,
+        update_matched: bool = True,
         delete_not_matched: bool = False,
         source_label_key: str = "label",
         source_keys: Iterable[str] | None = None,
@@ -480,6 +481,12 @@ class EntityService(bases.Service):
         2. Update Entities in Central that match the source data.
         3. Optionally, delete any Entities in Central that aren't in the source data.
 
+        Creation is performed using the bulk creation endpoint. This method may be slow
+        for large quantities of updates or deletes, since for these operations each
+        change is a request in a loop. If this is a concern, set the parameters
+        `update_matched` and `delete_not_matched` to False and use the return value to
+        perform threaded or async requests for these data.
+
         :param source_data: Data to use for updating Entities in Central.
         :param entity_list_name: The name of the Entity List (Dataset) being referenced.
         :param project_id: The id of the project this Entity belongs to.
@@ -488,6 +495,8 @@ class EntityService(bases.Service):
           key as "label", because it is translated to "label" for matching.
         :param add_new_properties: If True, add any Entity List properties from the
           source data that aren't in Central.
+        :param update_matched: If True, update any Entities in Central that match the
+          source data but have different properties.
         :param delete_not_matched: If True, delete any Entities in Central that aren't
           in the source data.
         :param source_label_key: The key in the source data to use as the label. The
@@ -531,14 +540,15 @@ class EntityService(bases.Service):
                 data={"entities": insert_reshape, "source": {"name": create_source}},
                 entity_list_name=eln,
             )
-        for u in merge_actions.to_update.values():
-            self.update(
-                uuid=u["__id"],
-                entity_list_name=eln,
-                label=u["label"],
-                data={k: u.get(k) for k in u if k in merge_actions.final_keys},
-                base_version=u["__system"]["version"],
-            )
+        if update_matched:
+            for u in merge_actions.to_update.values():
+                self.update(
+                    uuid=u["__id"],
+                    entity_list_name=eln,
+                    label=u["label"],
+                    data={k: u.get(k) for k in u if k in merge_actions.final_keys},
+                    base_version=u["__system"]["version"],
+                )
         if delete_not_matched:
             for d in merge_actions.to_delete.values():
                 self.delete(uuid=d["__id"], entity_list_name=eln)
