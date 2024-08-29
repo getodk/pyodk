@@ -3,7 +3,7 @@ from io import StringIO
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from pyodk._endpoints.entities import Entity
+from pyodk._endpoints.entities import Entity, MergeActions
 from pyodk._endpoints.entities import EntityService as es
 from pyodk._utils.session import Session
 from pyodk.client import Client
@@ -351,6 +351,7 @@ class TestPrepDataForMerge(TestCase):
             {"label": "Melbourne", "state": "VIC"},
         ]
         observed = es._prep_data_for_merge(source_data=source, target_data=target)
+        self.assertIsInstance(observed, MergeActions)
         self.assertEqual(1, len(observed.to_insert))
         self.assertEqual(
             source[1]["label"],

@@ -302,7 +302,7 @@ class TestUsage(TestCase):
         )
         entity_list = self.client.entity_lists.create()
         self.client.entities.merge(
-            source_data=[
+            data=[
                 {"label": "Sydney", "state": "NSW"},
                 {"label": "Melbourne", "state": "VIC"},
             ],
@@ -321,18 +321,15 @@ class TestUsage(TestCase):
             name="state", entity_list_name=entity_list.name
         )
         self.client.entities.create_many(
-            data={
-                "entities": [
-                    {"label": "Sydney", "data": {"state": "VIC"}},
-                    {"label": "Darwin", "data": {"state": "NT"}},
-                ],
-                "source": {"name": "pyodk"},
-            },
+            data=[
+                {"label": "Sydney", "state": "VIC"},
+                {"label": "Darwin", "state": "NT"},
+            ],
             entity_list_name=entity_list.name,
         )
         # Add postcode property, Add Brisbane, update Sydney, delete Darwin.
         self.client.entities.merge(
-            source_data=[
+            data=[
                 {"label": "Sydney", "state": "NSW", "postcode": "2001"},
                 {"label": "Brisbane", "state": "QLD", "postcode": "4000"},
             ],
@@ -366,18 +363,15 @@ class TestUsage(TestCase):
             name="state", entity_list_name=entity_list.name
         )
         self.client.entities.create_many(
-            data={
-                "entities": [
-                    {"label": "Sydney", "data": {"state": "VIC"}},
-                    {"label": "Darwin", "data": {"state": "NT"}},
-                ],
-                "source": {"name": "pyodk"},
-            },
+            data=[
+                {"label": "Sydney", "state": "VIC"},
+                {"label": "Darwin", "state": "NT"},
+            ],
             entity_list_name=entity_list.name,
         )
         # Skip postcode property, add Brisbane, update Sydney, keep Darwin.
         self.client.entities.merge(
-            source_data=[
+            data=[
                 {"label": "Sydney", "state": "NSW", "postcode": "2000"},  # update
                 {"label": "Brisbane", "state": "QLD", "postcode": "4000"},  # insert
             ],

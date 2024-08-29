@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
+from pyodk.__version__ import __version__
 from pyodk._endpoints import bases
 from pyodk._endpoints.entity_list_properties import EntityListPropertyService
 from pyodk._utils import validators as pv
@@ -179,34 +180,65 @@ class EntityService(bases.Service):
 
     def create_many(
         self,
-        data: dict,
+        data: Iterable[Mapping[str, Any]],
         entity_list_name: str | None = None,
         project_id: int | None = None,
-    ) -> Entity:
+        create_source: str | None = None,
+        source_size: str | None = None,
+    ) -> bool:
         """
         Create one or more Entities in a single request.
 
-        Required keys in data: entities[].label, entities[].data, source.name.
-        Example of the required data format:
+        Example input for `data` would be a list of dictionaries from a CSV file:
 
-        {
-            "entities": [
-                {"label": "Sydney", "data": {"state": "NSW", "postcode": "2000"}},
-                {"label": "Melbourne", "data": {"state": "VIC", "postcode": "3000"}},
-            ],
-            "source": {"name": "pyodk", "size": 1},
-        }
+        data = [
+            {"label": "Sydney", "state": "NSW", "postcode": "2000"},
+            {"label": "Melbourne", "state": "VIC", "postcode": "3000"},
+        ]
+
+        Each Entity in `data` must include a "label" key. An Entity List property must be
+        created in advance for each key in `data` that is not "label". The `merge` method
+        can be used to automatically add properties (or a subset) and create Entities.
 
         :param data: Data to store for the Entities.
         :param entity_list_name: The name of the Entity List (Dataset) being referenced.
         :param project_id: The id of the project this Entity belongs to.
+        :param create_source: Used to capture the source of the change in Central, for
+          example a file name. Defaults to the PyODK version.
+        :param source_size: Used to capture the size of the source data in Central, for
+          example a file size or row count. Excluded if None.
         """
+        if create_source is None:
+            create_source = f"pyodk v{__version__}"
+        if source_size is None:
+            size = {}
+        else:
+            size = {"size": source_size}
+
+        def reshape(d):
+            try:
+                new = [
+                    {
+                        "label": i["label"],
+                        "data": {k: i.get(k) for k in i if k != "label"},
+                    }
+                    for i in d
+                ]
+            except KeyError as kerr:
+                raise PyODKError("All data must include a 'label' key.") from kerr
+            else:
+                return new
+
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
             eln = pv.validate_entity_list_name(
                 entity_list_name, self.default_entity_list_name
             )
             data = pv.validate_is_instance(data, typ=Iterable, key="data")
+            final_data = {
+                "entities": reshape(data),
+                "source": {"name": create_source, **size},
+            }
         except PyODKError as err:
             log.error(err, exc_info=True)
             raise
@@ -215,7 +247,7 @@ class EntityService(bases.Service):
             method="POST",
             url=self.session.urlformat(self.urls.post, project_id=pid, el_name=eln),
             logger=log,
-            json=data,
+            json=final_data,
         )
         data = response.json()
         return data["success"]
@@ -463,7 +495,7 @@ class EntityService(bases.Service):
 
     def merge(
         self,
-        source_data: Iterable[Mapping[str, Any]],
+        data: Iterable[Mapping[str, Any]],
         entity_list_name: str | None = None,
         project_id: int | None = None,
         match_keys: Iterable[str] | None = None,
@@ -472,38 +504,48 @@ class EntityService(bases.Service):
         delete_not_matched: bool = False,
         source_label_key: str = "label",
         source_keys: Iterable[str] | None = None,
-        create_source: str = "pyodk",
+        create_source: str | None = None,
+        source_size: str | None = None,
     ) -> MergeActions:
         """
-        Update Entities in Central based on the provided source data.
+        Update Entities in Central based on the provided data:
 
-        1. Create Entities in the source data that don't exist in Central.
-        2. Update Entities in Central that match the source data.
-        3. Optionally, delete any Entities in Central that aren't in the source data.
+        1. Create Entities from `data` that don't exist in Central.
+        2. Update Entities from `data` that exist in Central.
+        3. Optionally, delete any Entities in Central that don't exist in `data`.
 
-        Creation is performed using the bulk creation endpoint. This method may be slow
-        for large quantities of updates or deletes, since for these operations each
-        change is a request in a loop. If this is a concern, set the parameters
-        `update_matched` and `delete_not_matched` to False and use the return value to
-        perform threaded or async requests for these data.
+        Example input for `source_data` would be a list of dictionaries from a CSV file:
 
-        :param source_data: Data to use for updating Entities in Central.
+        data = [
+            {"label": "Sydney", "state": "NSW", "postcode": "2000"},
+            {"label": "Melbourne", "state": "VIC", "postcode": "3000"},
+        ]
+
+        Entity creation is performed in one request using `create_many`. The merge
+        operation may be slow if large quantities of updates or deletes are required,
+        since for these operations each change is a request in a loop. If this is a
+        concern, set the parameters `update_matched` and `delete_not_matched` to False and
+        use the return value to perform threaded or async requests for these data.
+
+        :param data: Data to use for updating Entities in Central.
         :param entity_list_name: The name of the Entity List (Dataset) being referenced.
         :param project_id: The id of the project this Entity belongs to.
         :param match_keys: Dictionary keys common to source and target used to match rows.
           Defaults to ("label",). If a custom source_label_key is provided, specify that
           key as "label", because it is translated to "label" for matching.
-        :param add_new_properties: If True, add any Entity List properties from the
-          source data that aren't in Central.
-        :param update_matched: If True, update any Entities in Central that match the
-          source data but have different properties.
+        :param add_new_properties: If True, add any Entity List properties from `data`
+          that aren't in Central.
+        :param update_matched: If True, update any Entities in Central that match `data`
+          but have different properties.
         :param delete_not_matched: If True, delete any Entities in Central that aren't
-          in the source data.
-        :param source_label_key: The key in the source data to use as the label. The
-          target label key is always "label" because this key is required by Central.
-        :param source_keys: If provided, process only these keys in the source data.
-        :param create_source: When creating Entities in bulk, this value is used to
-          capture the source of the change in Central.
+          in `data`.
+        :param source_label_key: The key in `data` to use as the label. The target label
+          key is always "label" because this key is required by Central.
+        :param source_keys: If provided, process only these keys in `data`.
+        :param create_source: If Entities are created, this is used to capture the source
+          of the change in Central, for example a file name. Defaults to the PyODK version.
+        :param source_size: If Entities are created, this is used to capture the size of
+          `data` in Central, for example a file size. Excluded if None.
         """
         pid = pv.validate_project_id(project_id, self.default_project_id)
         eln = pv.validate_entity_list_name(
@@ -511,7 +553,7 @@ class EntityService(bases.Service):
         )
         target_data = self.get_table(entity_list_name=entity_list_name)["value"]
         merge_actions = self._prep_data_for_merge(
-            source_data=source_data,
+            source_data=data,
             target_data=target_data,
             match_keys=match_keys,
             source_label_key=source_label_key,
@@ -529,16 +571,16 @@ class EntityService(bases.Service):
         else:
             merge_actions.final_keys = merge_actions.keys_intersect
         if len(merge_actions.to_insert) > 0:
-            insert_reshape = [
-                {
-                    "label": i["label"],
-                    "data": {k: i.get(k) for k in i if k in merge_actions.final_keys},
-                }
+            relevant_keys = {"label", *merge_actions.final_keys}
+            insert_filter = [
+                {k: i.get(k) for k in i if k in relevant_keys}
                 for i in merge_actions.to_insert.values()
             ]
             self.create_many(
-                data={"entities": insert_reshape, "source": {"name": create_source}},
+                data=insert_filter,
                 entity_list_name=eln,
+                create_source=create_source,
+                source_size=source_size,
             )
         if update_matched:
             for u in merge_actions.to_update.values():
