@@ -295,6 +295,106 @@ class TestUsage(TestCase):
         )
         self.assertEqual("test_value3", forced.currentVersion.data["test_label"])
 
+    def test_entity__merge__new(self):
+        """Should create a new Entity List, and merge in some new data."""
+        self.client.entity_lists.default_entity_list_name = (
+            self.client.session.get_xform_uuid()
+        )
+        entity_list = self.client.entity_lists.create()
+        self.client.entities.merge(
+            data=[
+                {"label": "Sydney", "state": "NSW"},
+                {"label": "Melbourne", "state": "VIC"},
+            ],
+            entity_list_name=entity_list.name,
+        )
+        entity_data = self.client.entities.get_table(entity_list_name=entity_list.name)
+        self.assertEqual(2, len(entity_data["value"]))
+
+    def test_entity__merge__existing__add_props__delete_unmatched(self):
+        """Should create a new Entity List, and merge in some new data."""
+        self.client.entity_lists.default_entity_list_name = (
+            self.client.session.get_xform_uuid()
+        )
+        entity_list = self.client.entity_lists.create()
+        self.client.entity_lists.add_property(
+            name="state", entity_list_name=entity_list.name
+        )
+        self.client.entities.create_many(
+            data=[
+                {"label": "Sydney", "state": "VIC"},
+                {"label": "Darwin", "state": "NT"},
+            ],
+            entity_list_name=entity_list.name,
+        )
+        # Add postcode property, Add Brisbane, update Sydney, delete Darwin.
+        self.client.entities.merge(
+            data=[
+                {"label": "Sydney", "state": "NSW", "postcode": "2001"},
+                {"label": "Brisbane", "state": "QLD", "postcode": "4000"},
+            ],
+            entity_list_name=entity_list.name,
+            add_new_properties=True,
+            delete_not_matched=True,
+        )
+        entity_data = self.client.entities.get_table(entity_list_name=entity_list.name)
+        expected = [
+            {"label": "Sydney", "state": "NSW", "postcode": "2001"},
+            {"label": "Brisbane", "state": "QLD", "postcode": "4000"},
+        ]
+        observed = [
+            {k: o.get(k) for k in ("state", "label", "postcode")}
+            for o in entity_data["value"]
+        ]
+        self.assertTrue(
+            len(expected) == len(observed)
+            and all(e in observed for e in expected)
+            and expected[0].keys() == observed[0].keys(),
+            observed,
+        )
+
+    def test_entity__merge__existing__ignore_props__keep_unmatched(self):
+        """Should create a new Entity List, and merge in some new data."""
+        self.client.entity_lists.default_entity_list_name = (
+            self.client.session.get_xform_uuid()
+        )
+        entity_list = self.client.entity_lists.create()
+        self.client.entity_lists.add_property(
+            name="state", entity_list_name=entity_list.name
+        )
+        self.client.entities.create_many(
+            data=[
+                {"label": "Sydney", "state": "VIC"},
+                {"label": "Darwin", "state": "NT"},
+            ],
+            entity_list_name=entity_list.name,
+        )
+        # Skip postcode property, add Brisbane, update Sydney, keep Darwin.
+        self.client.entities.merge(
+            data=[
+                {"label": "Sydney", "state": "NSW", "postcode": "2000"},  # update
+                {"label": "Brisbane", "state": "QLD", "postcode": "4000"},  # insert
+            ],
+            entity_list_name=entity_list.name,
+            add_new_properties=False,
+            delete_not_matched=False,
+        )
+        entity_data = self.client.entities.get_table(entity_list_name=entity_list.name)
+        expected = [
+            {"label": "Sydney", "state": "NSW"},
+            {"label": "Brisbane", "state": "QLD"},
+            {"label": "Darwin", "state": "NT"},
+        ]
+        observed = [
+            {k: o.get(k) for k in ("state", "label")} for o in entity_data["value"]
+        ]
+        self.assertTrue(
+            len(expected) == len(observed)
+            and all(e in observed for e in expected)
+            and expected[0].keys() == observed[0].keys(),
+            observed,
+        )
+
     def test_entity_lists__list(self):
         """Should return a list of Entity Lists."""
         observed = self.client.entity_lists.list()

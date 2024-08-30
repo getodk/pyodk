@@ -67,7 +67,11 @@ class EntityListService(bases.Service):
     ):
         self.urls: URLs = urls if urls is not None else URLs()
         self.session: Session = session
-        self._property_service = EntityListPropertyService(session=self.session)
+        self._property_service = EntityListPropertyService(
+            session=self.session,
+            default_project_id=default_project_id,
+            default_entity_list_name=default_entity_list_name,
+        )
         self.add_property = self._property_service.create
 
         self._default_project_id: int | None = None
