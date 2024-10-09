@@ -20,6 +20,10 @@ A Jupyter notebook demonstrating some options for working with repeats.
 
 A script that reads names from a CSV and creates an App User for each one that isn't currently used by an active App User on the server. Also creates customized QR codes for each new App User.
 
+## [Create Entities from CSV data](create_entities_from_submissions/create_entities_from_submissions.py)
+
+A script that creates Entities from CSV data.
+
 ## [Mail merge script](mail_merge/mail_merge.py)
 
 A script that uses mail merge to create personalized Word documents with data from Central.
