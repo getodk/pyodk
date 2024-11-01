@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 class AuthService:
     def __init__(self, session: "Session", cache_path: str | None = None) -> None:
-        self.session: "Session" = session
+        self.session: Session = session
         self.cache_path: str = cache_path
 
     def verify_token(self, token: str) -> str:

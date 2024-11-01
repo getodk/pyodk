@@ -64,7 +64,7 @@ class Adapter(HTTPAdapter):
 
 class Auth(AuthBase):
     def __init__(self, session: "Session", username: str, password: str, cache_path: str):
-        self.session: "Session" = session
+        self.session: Session = session
         self.username: str = username
         self.password: str = password
         self.service: AuthService = AuthService(session=session, cache_path=cache_path)
