@@ -66,7 +66,7 @@ def validate_entity_list_name(*args: str) -> str:
     )
 
 
-def validate_str(*args: str, key: str) -> str:
+def validate_str(*args: str | None, key: str) -> str:
     return wrap_error(
         validator=v.str_validator,
         key=key,
