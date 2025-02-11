@@ -1,7 +1,10 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from pyodk._endpoints.submission_attachments import SubmissionAttachment
+from pyodk._endpoints.submission_attachments import (
+    SubmissionAttachment,
+    SubmissionAttachmentService,
+)
 from pyodk._endpoints.submissions import Submission
 from pyodk._utils.session import Session
 from pyodk.client import Client
@@ -72,6 +75,52 @@ class TestSubmissions(TestCase):
                     xml=submissions_data.test_xml,
                 )
                 self.assertIsInstance(observed, Submission)
+
+    def test_create_with_attachments__ok(self):
+        """Should return a Submission object, with attachments uploaded."""
+        fixture = submissions_data.test_submissions
+        submission_file_path = (
+            RESOURCES / "attachments" / "submission_image.png"
+        ).as_posix()
+
+        with (
+            patch.object(Session, "request") as mock_session,
+            patch.object(
+                SubmissionAttachmentService, "upload", return_value={"success": True}
+            ) as mock_upload,
+        ):
+            mock_session.return_value.status_code = 200
+            mock_session.return_value.json.return_value = fixture["response_data"][0]
+
+            with Client() as client:
+                # Upload the same attachment 3 times
+                observed = client.submissions.create(
+                    project_id=fixture["project_id"],
+                    form_id=fixture["form_id"],
+                    xml=submissions_data.test_xml,
+                    attachments=[
+                        submission_file_path,
+                        submission_file_path,
+                        submission_file_path,
+                    ],
+                )
+                self.assertIsInstance(observed, Submission)
+
+                # Use default
+                observed = client.submissions.create(
+                    form_id=fixture["form_id"],
+                    xml=submissions_data.test_xml,
+                )
+                self.assertIsInstance(observed, Submission)
+
+        # Now test if upload success
+        mock_upload.assert_called_with(
+            file_path_or_bytes=submission_file_path,
+            instance_id=observed.instanceId,
+            file_name="submission_image.png",
+            form_id=fixture["form_id"],
+            project_id=fixture["project_id"],
+        )
 
     def test__put__ok(self):
         """Should return a Submission object."""

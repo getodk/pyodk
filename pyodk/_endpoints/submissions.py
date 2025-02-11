@@ -1,10 +1,13 @@
+import builtins
 import logging
 from collections.abc import Iterable
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from pyodk._endpoints import bases
 from pyodk._endpoints.comments import Comment, CommentService
+from pyodk._endpoints.submission_attachments import SubmissionAttachmentService
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
@@ -198,6 +201,8 @@ class SubmissionService(bases.Service):
         project_id: int | None = None,
         device_id: str | None = None,
         encoding: str = "utf-8",
+        # Here we must use imported typing.List to avoid conflict with .list method
+        attachments: builtins.list[str] | None = None,
     ) -> Submission:
         """
         Create a Submission.
@@ -219,6 +224,7 @@ class SubmissionService(bases.Service):
         :param project_id: The id of the project this form belongs to.
         :param device_id: An optional deviceID associated with the submission.
         :param encoding: The encoding of the submission XML, default "utf-8".
+        :param attachments: A list of file paths to upload as attachments.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -239,7 +245,26 @@ class SubmissionService(bases.Service):
             data=xml.encode(encoding=encoding),
         )
         data = response.json()
-        return Submission(**data)
+        submission = Submission(**data)
+        instance_id = submission.instanceId
+
+        # If there are attachments, upload each one
+        if attachments:
+            attachment_svc = SubmissionAttachmentService(session=self.session)
+            for attachment in attachments:
+                attachment_path = Path(attachment)
+                file_name = attachment_path.name
+                upload_success = attachment_svc.upload(
+                    file_path_or_bytes=attachment,
+                    instance_id=instance_id,
+                    file_name=file_name,
+                    form_id=fid,
+                    project_id=pid,
+                )
+                if not upload_success:
+                    log.error(f"Failed to upload attachment: {attachment}")
+
+        return submission
 
     def _put(
         self,
