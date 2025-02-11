@@ -31,10 +31,7 @@ class Form(bases.Model):
     publishedAt: datetime | None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     forms: str = "projects/{project_id}/forms"
     get: str = f"{forms}/{{form_id}}"
 

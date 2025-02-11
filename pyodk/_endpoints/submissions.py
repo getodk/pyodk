@@ -24,10 +24,7 @@ class Submission(bases.Model):
     updatedAt: datetime | None = None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     _form: str = "projects/{project_id}/forms/{form_id}"
     list: str = f"{_form}/submissions"
     get: str = f"{_form}/submissions/{{instance_id}}"

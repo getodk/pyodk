@@ -22,10 +22,7 @@ class EntityList(bases.Model):
     properties: list[EntityListProperty] | None = None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     _entity_list = "projects/{project_id}/datasets"
     list: str = _entity_list
     post: str = _entity_list

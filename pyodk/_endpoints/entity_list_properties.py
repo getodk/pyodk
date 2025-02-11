@@ -16,10 +16,7 @@ class EntityListProperty(bases.Model):
     forms: list[str]
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     post: str = "projects/{project_id}/datasets/{entity_list_name}/properties"
 
 

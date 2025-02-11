@@ -20,10 +20,7 @@ class ProjectAppUser(bases.Model):
     deletedAt: datetime | None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     list: str = "projects/{project_id}/app-users"
     post: str = "projects/{project_id}/app-users"
 

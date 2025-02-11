@@ -81,10 +81,7 @@ def get_definition_data(
     return definition_data, content_type, file_path_stem
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     _form: str = "projects/{project_id}/forms/{form_id}"
     post: str = f"{_form}/draft"
     post_publish: str = f"{_form}/draft/publish"

@@ -27,10 +27,7 @@ class Project(bases.Model):
     deletedAt: datetime | None = None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     list: str = "projects"
     get: str = "projects/{project_id}"
     get_data: str = "projects/{project_id}/forms/{form_id}.svc/{table_name}"

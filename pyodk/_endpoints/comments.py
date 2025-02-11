@@ -15,10 +15,7 @@ class Comment(bases.Model):
     createdAt: datetime
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     list: str = "projects/{project_id}/forms/{form_id}/submissions/{instance_id}/comments"
     post: str = "projects/{project_id}/forms/{form_id}/submissions/{instance_id}/comments"
 

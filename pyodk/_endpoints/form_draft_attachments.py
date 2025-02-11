@@ -9,10 +9,7 @@ from pyodk.errors import PyODKError
 log = logging.getLogger(__name__)
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     _form: str = "projects/{project_id}/forms/{form_id}"
     post: str = f"{_form}/draft/attachments/{{fname}}"
 

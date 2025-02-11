@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from pyodk._utils.session import Session
 
@@ -6,9 +6,16 @@ from pyodk._utils.session import Session
 class Model(BaseModel):
     """Base configuration for data model classes."""
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_assignment=True)
+
+
+class FrozenModel(Model):
+    """Make the base configuration model faux-immutable.
+
+    NOTE in pydantic v2 inherited model_config are *merged*.
+    """
+
+    model_config = ConfigDict(frozen=True)
 
 
 class Manager:

@@ -65,10 +65,7 @@ class Entity(bases.Model):
     deletedAt: datetime | None = None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+class URLs(bases.FrozenModel):
     _entity_name: str = "projects/{project_id}/datasets/{el_name}"
     _entities: str = f"{_entity_name}/entities"
     list: str = _entities
