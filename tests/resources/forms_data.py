@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 test_forms = {
@@ -80,14 +80,14 @@ def get_xml__range_draft(
     form_id: str | None = "range_draft", version: str | None = None
 ) -> str:
     if version is None:
-        version = datetime.now(UTC).isoformat()
+        version = datetime.now(timezone.utc).isoformat()
     with open(Path(__file__).parent / "forms" / "range_draft.xml") as fd:
         return fd.read().format(form_id=form_id, version=version)
 
 
 def get_md__pull_data(version: str | None = None) -> str:
     if version is None:
-        version = datetime.now(UTC).isoformat()
+        version = datetime.now(timezone.utc).isoformat()
     return f"""
     | settings |
     |          | version   |
