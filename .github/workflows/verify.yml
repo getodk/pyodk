@@ -80,7 +80,7 @@ jobs:
           flit --debug build --no-use-vcs
       - name: Upload sdist and wheel.
         if: success()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pyodk--on-${{ matrix.os }}--py${{ matrix.python }}
           path: ${{ github.workspace }}/dist/pyodk*
