@@ -6,7 +6,7 @@ authors = [
 ]
 description = "The official Python library for ODK 🐍"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     "requests==2.32.3",  # HTTP with Central
     "toml==0.10.2",      # Configuration files
@@ -44,7 +44,7 @@ exclude = ["docs", "tests"]
 
 [tool.ruff]
 line-length = 90
-target-version = "py312"
+target-version = "py310"
 fix = true
 show-fixes = true
 output-format = "full"
