@@ -25,10 +25,10 @@ def create_new_or_get_entity_list(
                 eln=entity_list_name,
             ),
         )
-    for prop in entity_props:
-        try:
+    try:
+        for prop in entity_props:
             client.entity_lists.add_property(name=prop, entity_list_name=entity_list_name)
-        except PyODKError as err:
-            if not err.is_central_error(code=409.3):
-                raise
+    except PyODKError as err:
+        if not err.is_central_error(code=409.3):
+            raise
     return EntityList(**entity_list.json())
