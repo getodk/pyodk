@@ -24,6 +24,7 @@ docs = [
     "mkdocs==1.5.3",
     "mkdocstrings==0.24.1",
     "griffe==0.37",
+    "mkdocs-autorefs==1.2.0",
     "mkdocstrings-python==1.9.0",
     "mkdocs-jupyter==0.24.6",
 ]
