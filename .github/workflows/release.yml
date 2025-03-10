@@ -44,3 +44,6 @@ jobs:
       # Publish docs.
       - name: Publish docs to gh-pages
         run: mkdocs gh-deploy --force
+        env:
+          # Silences platformdirs DeprecationWarning for jupyter v6 (not released yet).
+          JUPYTER_PLATFORM_DIRS: 1
