@@ -88,3 +88,6 @@ jobs:
       # Check docs.
       - name: Check docs
         run: mkdocs build --strict
+        env:
+          # Silences platformdirs DeprecationWarning for jupyter v6 (not released yet).
+          JUPYTER_PLATFORM_DIRS: 1
