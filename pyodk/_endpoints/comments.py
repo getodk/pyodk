@@ -1,7 +1,8 @@
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Model, Service
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
@@ -9,21 +10,19 @@ from pyodk.errors import PyODKError
 log = logging.getLogger(__name__)
 
 
-class Comment(bases.Model):
+class Comment(Model):
     body: str
     actorId: int
     createdAt: datetime
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     list: str = "projects/{project_id}/forms/{form_id}/submissions/{instance_id}/comments"
     post: str = "projects/{project_id}/forms/{form_id}/submissions/{instance_id}/comments"
 
 
-class CommentService(bases.Service):
+class CommentService(Service):
     __slots__ = (
         "urls",
         "session",

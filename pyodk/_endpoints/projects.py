@@ -1,9 +1,10 @@
 import logging
 from collections.abc import Iterable
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Model, Service
 from pyodk._endpoints.form_assignments import FormAssignmentService
 from pyodk._endpoints.project_app_users import ProjectAppUser, ProjectAppUserService
 from pyodk._utils import validators as pv
@@ -13,7 +14,7 @@ from pyodk.errors import PyODKError
 log = logging.getLogger(__name__)
 
 
-class Project(bases.Model):
+class Project(Model):
     id: int
     name: str
     createdAt: datetime
@@ -27,17 +28,15 @@ class Project(bases.Model):
     deletedAt: datetime | None = None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     list: str = "projects"
     get: str = "projects/{project_id}"
     get_data: str = "projects/{project_id}/forms/{form_id}.svc/{table_name}"
     post_app_users: str = "projects/{project_id}/app-users"
 
 
-class ProjectService(bases.Service):
+class ProjectService(Service):
     """
     Project-related functionality is accessed through `client.projects`. For example:
 

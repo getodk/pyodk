@@ -1,7 +1,8 @@
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Model, Service
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
@@ -9,21 +10,19 @@ from pyodk.errors import PyODKError
 log = logging.getLogger(__name__)
 
 
-class EntityListProperty(bases.Model):
+class EntityListProperty(Model):
     name: str
     odataName: str
     publishedAt: datetime
     forms: list[str]
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     post: str = "projects/{project_id}/datasets/{entity_list_name}/properties"
 
 
-class EntityListPropertyService(bases.Service):
+class EntityListPropertyService(Service):
     __slots__ = (
         "urls",
         "session",

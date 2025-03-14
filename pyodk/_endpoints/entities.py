@@ -6,7 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from pyodk.__version__ import __version__
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Model, Service
 from pyodk._endpoints.entity_list_properties import EntityListPropertyService
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
@@ -43,7 +43,7 @@ class MergeActions:
         return (self.source_keys | self.target_keys) - self.reserved_keys
 
 
-class CurrentVersion(bases.Model):
+class CurrentVersion(Model):
     label: str
     current: bool
     createdAt: datetime
@@ -55,7 +55,7 @@ class CurrentVersion(bases.Model):
     conflictingProperties: list[str] | None = None
 
 
-class Entity(bases.Model):
+class Entity(Model):
     uuid: str
     creatorId: int
     createdAt: datetime
@@ -65,10 +65,8 @@ class Entity(bases.Model):
     deletedAt: datetime | None = None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     _entity_name: str = "projects/{project_id}/datasets/{el_name}"
     _entities: str = f"{_entity_name}/entities"
     list: str = _entities
@@ -78,7 +76,7 @@ class URLs(bases.Model):
     get_table: str = f"{_entity_name}.svc/Entities"
 
 
-class EntityService(bases.Service):
+class EntityService(Service):
     """
     Entity-related functionality is accessed through `client.entities`. For example:
 

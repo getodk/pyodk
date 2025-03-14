@@ -1,9 +1,10 @@
 import logging
+from dataclasses import dataclass
 from io import BytesIO
 from os import PathLike
 from zipfile import is_zipfile
 
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Service
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
@@ -81,16 +82,14 @@ def get_definition_data(
     return definition_data, content_type, file_path_stem
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     _form: str = "projects/{project_id}/forms/{form_id}"
     post: str = f"{_form}/draft"
     post_publish: str = f"{_form}/draft/publish"
 
 
-class FormDraftService(bases.Service):
+class FormDraftService(Service):
     __slots__ = ("urls", "session", "default_project_id", "default_form_id")
 
     def __init__(

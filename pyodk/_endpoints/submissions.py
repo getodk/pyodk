@@ -1,9 +1,10 @@
 import logging
 from collections.abc import Iterable
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Model, Service
 from pyodk._endpoints.comments import Comment, CommentService
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
@@ -12,7 +13,7 @@ from pyodk.errors import PyODKError
 log = logging.getLogger(__name__)
 
 
-class Submission(bases.Model):
+class Submission(Model):
     instanceId: str
     submitterId: int
     createdAt: datetime
@@ -24,10 +25,8 @@ class Submission(bases.Model):
     updatedAt: datetime | None = None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     _form: str = "projects/{project_id}/forms/{form_id}"
     list: str = f"{_form}/submissions"
     get: str = f"{_form}/submissions/{{instance_id}}"
@@ -37,7 +36,7 @@ class URLs(bases.Model):
     put: str = f"{_form}/submissions/{{instance_id}}"
 
 
-class SubmissionService(bases.Service):
+class SubmissionService(Service):
     """
     Submission-related functionality is accessed through `client.submissions`. For example:
 

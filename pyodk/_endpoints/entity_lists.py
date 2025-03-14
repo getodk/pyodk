@@ -1,8 +1,9 @@
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Model, Service
 from pyodk._endpoints.entity_list_properties import (
     EntityListProperty,
     EntityListPropertyService,
@@ -14,7 +15,7 @@ from pyodk.errors import PyODKError
 log = logging.getLogger(__name__)
 
 
-class EntityList(bases.Model):
+class EntityList(Model):
     name: str
     projectId: int
     createdAt: datetime
@@ -22,17 +23,15 @@ class EntityList(bases.Model):
     properties: list[EntityListProperty] | None = None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     _entity_list = "projects/{project_id}/datasets"
     list: str = _entity_list
     post: str = _entity_list
     get: str = f"{_entity_list}/{{entity_list_name}}"
 
 
-class EntityListService(bases.Service):
+class EntityListService(Service):
     """
     Entity List-related functionality is accessed through `client.entity_lists`.
 
