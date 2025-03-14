@@ -1,10 +1,11 @@
 import logging
 from collections.abc import Callable, Iterable
+from dataclasses import dataclass
 from datetime import datetime
 from os import PathLike
 from typing import Any
 
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Model, Service
 from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
 from pyodk._endpoints.form_drafts import FormDraftService
 from pyodk._utils import validators as pv
@@ -17,7 +18,7 @@ log = logging.getLogger(__name__)
 # TODO: actual response has undocumented fields: enketoOnceId, sha, sha256, draftToken
 
 
-class Form(bases.Model):
+class Form(Model):
     projectId: int
     xmlFormId: str
     version: str
@@ -31,15 +32,13 @@ class Form(bases.Model):
     publishedAt: datetime | None
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     forms: str = "projects/{project_id}/forms"
     get: str = f"{forms}/{{form_id}}"
 
 
-class FormService(bases.Service):
+class FormService(Service):
     """
     Form-related functionality is accessed through `client.forms`. For example:
 

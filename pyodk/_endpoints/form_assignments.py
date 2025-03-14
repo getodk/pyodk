@@ -1,6 +1,7 @@
 import logging
+from dataclasses import dataclass
 
-from pyodk._endpoints import bases
+from pyodk._endpoints.bases import Service
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
@@ -8,15 +9,13 @@ from pyodk.errors import PyODKError
 log = logging.getLogger(__name__)
 
 
-class URLs(bases.Model):
-    class Config:
-        frozen = True
-
+@dataclass(frozen=True, slots=True)
+class URLs:
     _form: str = "projects/{project_id}/forms/{form_id}"
     post: str = f"{_form}/assignments/{{role_id}}/{{user_id}}"
 
 
-class FormAssignmentService(bases.Service):
+class FormAssignmentService(Service):
     __slots__ = ("urls", "session", "default_project_id", "default_form_id")
 
     def __init__(
