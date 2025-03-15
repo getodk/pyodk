@@ -117,3 +117,12 @@ md__dingbat = """
 |        | calculate | fruit      |           | pulldata('fruits', 'name', 'name_key', 'mango') |
 |        | note      | note_fruit | The fruit ${fruit} pulled from csv |                      |
 """
+md__upload_file = """
+| settings |
+|          | form_title  | form_id     | version |
+|          | upload_file | upload_file | 1       |
+| survey |
+|        | type  | name | label |
+|        | text  | name | Name  |
+|        | file  | file | File  |
+"""

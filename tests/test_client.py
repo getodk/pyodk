@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 from unittest import TestCase, skip
 
 from pyodk.client import Client
@@ -46,6 +47,11 @@ def create_test_forms(client: Client | None = None) -> Client:
         client=client,
         form_id="✅",
         form_def=forms_data.md__dingbat,
+    )
+    create_new_form__md(
+        client=client,
+        form_id="upload_file",
+        form_def=forms_data.md__upload_file,
     )
     return client
 
@@ -233,6 +239,23 @@ class TestUsage(TestCase):
         )
         submission = self.client.submissions.get(form_id=form_id, instance_id=iid)
         self.assertEqual(iid, submission.instanceId)
+        self.assertIsNone(submission.attachments)
+
+    def test_submission_create__attachment(self):
+        """Should create an instance of the form, encoded to utf-8."""
+        form_id = "upload_file"
+        file = Path(__file__).parent / "resources" / "forms" / "fruits.csv"
+        submission = self.client.submissions.create(
+            xml=submissions_data.upload_file_xml.format(
+                iid=self.client.session.get_xform_uuid(),
+                file_name=file.name,
+            ),
+            form_id=form_id,
+            attachments=[file],
+        )
+        attachment = submission.attachments[0]
+        self.assertEqual(file.name, attachment.name)
+        self.assertEqual(True, attachment.exists)
 
     def test_submission_edit__non_ascii(self):
         """Should edit an existing instance of the form, encoded to utf-8."""

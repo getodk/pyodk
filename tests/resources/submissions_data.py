@@ -45,6 +45,27 @@ test_xml = """
   <age>36</age>
 </data>
 """
+upload_file_xml = """
+<data id="upload_file" version="1">
+  <meta><instanceID>{iid}</instanceID></meta>
+  <name>file</name>
+  <file>{file_name}</file>
+</data>
+"""
+upload_file_submissions = {
+    "project_id": 1,
+    "form_id": "upload_file",
+    "response_data": [
+        {
+            "instanceId": "uuid:85cb9aff-005e-4edd-9739-dc9c1a829c45",
+            "submitterId": 10,
+            "deviceId": None,
+            "createdAt": "2025-03-14T06:21:29.581Z",
+            "updatedAt": None,
+            "reviewState": None,
+        },
+    ],
+}
 
 
 def get_xml__fruits(

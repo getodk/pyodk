@@ -2,10 +2,15 @@ import logging
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
+from os import PathLike
 from typing import Any
 
 from pyodk._endpoints.bases import Model, Service
 from pyodk._endpoints.comments import Comment, CommentService
+from pyodk._endpoints.submission_attachments import (
+    SubmissionAttachment,
+    SubmissionAttachmentService,
+)
 from pyodk._utils import validators as pv
 from pyodk._utils.session import Session
 from pyodk.errors import PyODKError
@@ -23,6 +28,7 @@ class Submission(Model):
     userAgent: str | None = None
     instanceName: str | None = None
     updatedAt: datetime | None = None
+    attachments: list[SubmissionAttachment] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -200,6 +206,7 @@ class SubmissionService(Service):
         project_id: int | None = None,
         device_id: str | None = None,
         encoding: str = "utf-8",
+        attachments: Iterable[PathLike | str] | None = None,
     ) -> Submission:
         """
         Create a Submission.
@@ -213,14 +220,28 @@ class SubmissionService(Service):
           </meta>
           <name>Alice</name>
           <age>36</age>
+          <selfie>profile.jpg</selfie>
         </data>
         ```
+
+        If provided, each attachment file name must match a file name reference (just the
+        file name, not a directory path) in the submission XML, otherwise Central will
+        reject the upload since the file is not expected. For example, an `image` question
+        named `bird` with a XML value `<bird>pigeon.jpg</bird>` will allow uploading an
+        attachment named `pigeon.jpg`. Central assumes that clients (you), will ensure
+        unique file name references in the submission XML if necessary, e.g. Central will
+        only store one `pigeon.jpg` file across all questions in a given submission. You
+        may provide directory paths to pyodk e.g. `["/home/u/pigeon.jpg"]`, but only the
+        file name is used to identify the file in the upload to Central.
 
         :param xml: The submission XML.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
         :param device_id: An optional deviceID associated with the submission.
         :param encoding: The encoding of the submission XML, default "utf-8".
+        :param attachments: The file paths of the attachment(s) to upload. For fine-tuned
+          control over how each file is uploaded, wrap the file_path and desired settings
+          in an instance of `SubmissionAttachmentSettings`.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
@@ -241,7 +262,29 @@ class SubmissionService(Service):
             data=xml.encode(encoding=encoding),
         )
         data = response.json()
-        return Submission(**data)
+        iid = data["instanceId"]
+        attachment_svc = SubmissionAttachmentService(
+            session=self.session, **self._default_kw()
+        )
+
+        if attachments:
+            for attach in attachments:
+                if not attachment_svc.upload(
+                    file_path=attach,
+                    project_id=pid,
+                    form_id=fid,
+                    instance_id=iid,
+                ):
+                    raise PyODKError(f"Attachment upload failed: {attach}.")
+
+        # Request list in case the submission XML mentions other files not provided yet.
+        attach_meta = attachment_svc.list(
+            project_id=pid,
+            form_id=fid,
+            instance_id=iid,
+        )
+        # Attachments don't seem to trigger updatedAt so use original data.
+        return Submission(attachments=attach_meta or None, **data)
 
     def _put(
         self,

@@ -18,12 +18,14 @@ def create_new_or_get_entity_list(
     except PyODKError as err:
         if not err.is_central_error(code=409.3):
             raise
-        entity_list = client.session.get(
-            url=client.session.urlformat(
-                "projects/{pid}/datasets/{eln}",
-                pid=client.project_id,
-                eln=entity_list_name,
-            ),
+        entity_list = EntityList(
+            **client.session.get(
+                url=client.session.urlformat(
+                    "projects/{pid}/datasets/{eln}",
+                    pid=client.project_id,
+                    eln=entity_list_name,
+                ),
+            ).json()
         )
     try:
         for prop in entity_props:
@@ -31,4 +33,4 @@ def create_new_or_get_entity_list(
     except PyODKError as err:
         if not err.is_central_error(code=409.3):
             raise
-    return EntityList(**entity_list.json())
+    return entity_list

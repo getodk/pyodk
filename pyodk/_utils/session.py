@@ -53,7 +53,15 @@ class Adapter(HTTPAdapter):
                 status_forcelist=(429, 500, 502, 503, 504),
                 allowed_methods=("GET", "PUT", "POST", "DELETE"),
             )
+        if (blocksize := kwargs.get("blocksize")) is not None:
+            self.blocksize = blocksize
+            del kwargs["blocksize"]
         super().__init__(*args, **kwargs)
+
+    def init_poolmanager(self, *args, **kwargs):
+        if kwargs.get("blocksize") is None and hasattr(self, "blocksize"):
+            kwargs["blocksize"] = self.blocksize
+        super().init_poolmanager(*args, **kwargs)
 
     def send(self, request, **kwargs):
         timeout = kwargs.get("timeout")
@@ -99,6 +107,7 @@ class Session(RequestsSession):
         username: str,
         password: str,
         cache_path: str,
+        chunk_size: int = 16384,
     ) -> None:
         """
         :param base_url: Scheme/domain/port parts of the URL e.g. https://www.example.com
@@ -106,12 +115,15 @@ class Session(RequestsSession):
         :param username: The Central user name to log in with.
         :param password: The Central user's password to log in with.
         :param cache_path: Where to read/write pyodk_cache.toml.
+        :param chunk_size: In bytes. For transferring large files (e.g. >1MB), it may be
+          noticeably faster to use larger chunks than the default 16384 bytes (16KB).
         """
         super().__init__()
         self.base_url: str = self.base_url_validate(
             base_url=base_url, api_version=api_version
         )
-        self.mount("https://", Adapter(timeout=30))
+        self.blocksize: int = chunk_size
+        self.mount("https://", Adapter(timeout=30, blocksize=self.blocksize))
         self.headers.update({"User-Agent": f"pyodk v{__version__}"})
         self.auth: Auth = Auth(
             session=self, username=username, password=password, cache_path=cache_path
