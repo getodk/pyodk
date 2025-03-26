@@ -239,9 +239,7 @@ class SubmissionService(Service):
         :param project_id: The id of the project this form belongs to.
         :param device_id: An optional deviceID associated with the submission.
         :param encoding: The encoding of the submission XML, default "utf-8".
-        :param attachments: The file paths of the attachment(s) to upload. For fine-tuned
-          control over how each file is uploaded, wrap the file_path and desired settings
-          in an instance of `SubmissionAttachmentSettings`.
+        :param attachments: The file paths of the attachment(s) to upload.
         """
         try:
             pid = pv.validate_project_id(project_id, self.default_project_id)
