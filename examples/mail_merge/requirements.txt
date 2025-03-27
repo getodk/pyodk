@@ -1,0 +1,1 @@
+docx-mailmerge2==0.8.0
