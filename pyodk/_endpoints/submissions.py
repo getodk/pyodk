@@ -234,6 +234,9 @@ class SubmissionService(Service):
         may provide directory paths to pyodk e.g. `["/home/u/pigeon.jpg"]`, but only the
         file name is used to identify the file in the upload to Central.
 
+        File attachments are sent in chunks of 16 KB by default. Advanced users can customize
+        the chunk size on [the session](../#session-customization).
+
         :param xml: The submission XML.
         :param form_id: The xmlFormId of the Form being referenced.
         :param project_id: The id of the project this form belongs to.
