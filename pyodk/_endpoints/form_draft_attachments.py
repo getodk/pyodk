@@ -56,6 +56,11 @@ class FormDraftAttachmentService(Service):
             log.error(err, exc_info=True)
             raise
 
+        headers = {}
+        # Add Content-Type header only for CSV files
+        if str(file_path).lower().endswith(".csv"):
+            headers["Content-Type"] = "text/csv"
+
         with open(file_path, "rb") as fd:
             response = self.session.response_or_error(
                 method="POST",
@@ -64,6 +69,7 @@ class FormDraftAttachmentService(Service):
                 ),
                 logger=log,
                 data=fd,
+                headers=headers if headers else None,
             )
         data = response.json()
         return data["success"]
