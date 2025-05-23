@@ -172,22 +172,20 @@ class TestForms(TestCase):
                     ctx.fda_upload.assert_called_once_with(
                         file_path=str(csv_file),
                         form_id=fixture["response_data"][1]["xmlFormId"],
-                        project_id=fixture["project_id"]
+                        project_id=fixture["project_id"],
                     )
 
-    @get_mock_context  
+    @get_mock_context
     def test_update__csv_attachment__ok(self, ctx: MockContext):
         """Should handle CSV attachments correctly in updates."""
         with utils.get_temp_file(suffix=".csv") as csv_file:
             csv_file.write_text("name,age,city\nJohn,25,NYC\nJane,30,LA")
             client = Client()
             client.forms.update("foo", attachments=[str(csv_file)])
-            
+
             # Verify the upload was called
             ctx.fda_upload.assert_called_once_with(
-                file_path=str(csv_file), 
-                form_id="foo", 
-                project_id=None
+                file_path=str(csv_file), form_id="foo", project_id=None
             )
 
     # Test the FormDraftAttachmentService upload method directly
@@ -196,30 +194,27 @@ class TestForms(TestCase):
         with patch.object(Session, "response_or_error") as mock_response:
             # Mock successful response
             mock_response.return_value.json.return_value = {"success": True}
-            
+
             # Create service instance with mocked session
             mock_session = MagicMock()
             mock_session.urlformat.return_value = "http://test.url"
             mock_session.response_or_error = mock_response
-            
+
             service = FormDraftAttachmentService(
-                session=mock_session, 
-                default_project_id=1
+                session=mock_session, default_project_id=1
             )
-            
+
             with utils.get_temp_file(suffix=".csv") as csv_file:
                 csv_file.write_text("name,age\nJohn,25")
-                
+
                 result = service.upload(
-                    file_path=csv_file,
-                    form_id="test_form", 
-                    project_id=1
+                    file_path=csv_file, form_id="test_form", project_id=1
                 )
-                
+
                 # Verify response_or_error was called with CSV headers
                 mock_response.assert_called_once()
                 call_kwargs = mock_response.call_args.kwargs
-                
+
                 self.assertIn("headers", call_kwargs)
                 self.assertEqual(call_kwargs["headers"]["Content-Type"], "text/csv")
                 self.assertTrue(result)
@@ -227,35 +222,32 @@ class TestForms(TestCase):
     def test_form_draft_attachment_upload__non_csv_no_headers(self):
         """Should not set Content-Type header for non-CSV files."""
         with patch.object(Session, "response_or_error") as mock_response:
-            # Mock successful response  
+            # Mock successful response
             mock_response.return_value.json.return_value = {"success": True}
-            
+
             # Create service instance with mocked session
             mock_session = MagicMock()
             mock_session.urlformat.return_value = "http://test.url"
             mock_session.response_or_error = mock_response
-            
+
             service = FormDraftAttachmentService(
-                session=mock_session,
-                default_project_id=1
+                session=mock_session, default_project_id=1
             )
-            
+
             with utils.get_temp_file(suffix=".jpg") as img_file:
                 img_file.write_bytes(b"fake image data")
-                
+
                 result = service.upload(
-                    file_path=img_file,
-                    form_id="test_form",
-                    project_id=1
+                    file_path=img_file, form_id="test_form", project_id=1
                 )
-                
+
                 # Verify response_or_error was called without headers or with None
                 mock_response.assert_called_once()
                 call_kwargs = mock_response.call_args.kwargs
-                
+
                 if "headers" in call_kwargs:
                     self.assertIsNone(call_kwargs["headers"])
-                
+
                 self.assertTrue(result)
 
     def test_update__def_or_attach_required(self):
