@@ -74,6 +74,17 @@ test_forms = {
         },
     ],
 }
+test_form_attachments = [
+    {
+        "name": "fruits.csv",
+        "type": "file",
+        "hash": "b61381f802d5ca6bc054e49e32471500",
+        "exists": True,
+        "blobExists": True,
+        "datasetExists": False,
+        "updatedAt": "2025-05-10T20:51:22.100Z",
+    }
+]
 
 
 def get_xml__range_draft(

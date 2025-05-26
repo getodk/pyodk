@@ -122,13 +122,19 @@ class TestUsage(TestCase):
             form_id="pull_data",
             instance_id=next(s.instanceId for s in submissions),
         )
-        print([projects, forms, submissions, form_data, form_data_params, comments])
+        self.assertIsNotNone(projects)
+        self.assertIsNotNone(forms)
+        self.assertIsNotNone(submissions)
+        self.assertIsNotNone(form_data)
+        self.assertIsNotNone(form_data_params)
+        self.assertIsNotNone(comments)
 
     def test_direct_context(self):
         with Client() as client:
             projects = client.projects.list()
             forms = client.forms.list()
-        print(projects, forms)
+        self.assertIsNotNone(projects)
+        self.assertIsNotNone(forms)
 
     def test_form_create__new_definition_xml(self):
         """Should create a new form with the new definition."""

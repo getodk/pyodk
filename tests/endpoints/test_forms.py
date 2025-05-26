@@ -5,7 +5,10 @@ from functools import wraps
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from pyodk._endpoints.form_draft_attachments import FormDraftAttachmentService
+from pyodk._endpoints.form_draft_attachments import (
+    FormAttachment,
+    FormDraftAttachmentService,
+)
 from pyodk._endpoints.form_drafts import (
     CONTENT_TYPES,
     FormDraftService,
@@ -43,6 +46,15 @@ def get_mock_context(func) -> Callable:
 
     @wraps(func)
     def patched(*args, **kwargs):
+        fa = FormAttachment(
+            name="fruits.csv",
+            type="file",
+            hash="b61381f802d5ca6bc054e49e32471500",
+            exists=True,
+            blobExists=True,
+            datasetExists=False,
+            updatedAt=datetime.now(),
+        )
         with (
             patch.object(
                 FormService,
@@ -51,9 +63,7 @@ def get_mock_context(func) -> Callable:
             ) as form_get,
             patch.object(FormDraftService, "create", return_value=True) as create,
             patch.object(FormDraftService, "publish", return_value=True) as publish,
-            patch.object(
-                FormDraftAttachmentService, "upload", return_value=True
-            ) as upload,
+            patch.object(FormDraftAttachmentService, "upload", return_value=fa) as upload,
             patch("pyodk._endpoints.forms.datetime") as dt,
         ):
             dt.now.return_value = MockContext.now
@@ -147,6 +157,38 @@ class TestForms(TestCase):
                 ctx.fd_publish.assert_called_once_with(
                     form_id=fixture["response_data"][1]["xmlFormId"],
                     project_id=fixture["project_id"],
+                )
+
+    def test_form_attachment_upload__sets_content_type(self):
+        """Should return a FormAttachment object and set the Content-Type header."""
+        fixture = forms_data.test_forms
+        fixture_attachments = forms_data.test_form_attachments
+        from tests.resources import RESOURCES
+
+        with patch.object(Session, "request") as mock_session:
+            mock_session.return_value.status_code = 200
+            mock_session.return_value.json.return_value = fixture_attachments[0]
+            with Client() as client, utils.get_temp_file(suffix=".jpg") as fa_jpg:
+                fda = FormDraftAttachmentService(session=client.session)
+                observed = fda.upload(
+                    file_path=(RESOURCES / "forms" / "fruits.csv").as_posix(),
+                    project_id=fixture["project_id"],
+                    form_id=fixture["response_data"][1]["xmlFormId"],
+                )
+                self.assertIsInstance(observed, FormAttachment)
+                self.assertEqual(
+                    {"Content-Type": "text/csv", "Transfer-Encoding": "chunked"},
+                    mock_session.call_args.kwargs["headers"],
+                )
+                observed = fda.upload(
+                    file_path=fa_jpg.as_posix(),
+                    project_id=fixture["project_id"],
+                    form_id=fixture["response_data"][1]["xmlFormId"],
+                )
+                self.assertIsInstance(observed, FormAttachment)
+                self.assertEqual(
+                    {"Content-Type": "image/jpeg", "Transfer-Encoding": "chunked"},
+                    mock_session.call_args.kwargs["headers"],
                 )
 
     def test_update__def_or_attach_required(self):
