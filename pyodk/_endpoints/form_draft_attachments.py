@@ -49,7 +49,7 @@ class FormDraftAttachmentService(Service):
         file_name: str | None = None,
         form_id: str | None = None,
         project_id: int | None = None,
-    ) -> FormAttachment:
+    ) -> bool:
         """
         Upload a Form Draft Attachment.
 
@@ -94,4 +94,9 @@ class FormDraftAttachmentService(Service):
             data=file_stream(),
         )
         data = response.json()
-        return FormAttachment(**data)
+        try:
+            # Response format prior to Central v2025.1 is constant `{"success": True}`.
+            return data["success"]
+        except KeyError:
+            # Response introduced in Central v2025.1. Model details currently not used.
+            return FormAttachment(**data).exists

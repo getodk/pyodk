@@ -167,7 +167,7 @@ class FormService(Service):
         if attachments is not None:
             fda = FormDraftAttachmentService(session=self.session, **self._default_kw())
             for attach in attachments:
-                if not fda.upload(file_path=attach, **fp_ids).exists:
+                if not fda.upload(file_path=attach, **fp_ids):
                     raise PyODKError("Form create (attachment upload) failed.")
 
         # Publish the draft.
@@ -231,7 +231,7 @@ class FormService(Service):
         if attachments is not None:
             fda = FormDraftAttachmentService(session=self.session, **self._default_kw())
             for attach in attachments:
-                if not fda.upload(file_path=attach, **fp_ids).exists:
+                if not fda.upload(file_path=attach, **fp_ids):
                     raise PyODKError("Form update (attachment upload) failed.")
 
         new_version = None

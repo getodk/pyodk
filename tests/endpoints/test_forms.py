@@ -175,7 +175,7 @@ class TestForms(TestCase):
                     project_id=fixture["project_id"],
                     form_id=fixture["response_data"][1]["xmlFormId"],
                 )
-                self.assertIsInstance(observed, FormAttachment)
+                self.assertIsInstance(observed, bool)
                 self.assertEqual(
                     {"Content-Type": "text/csv", "Transfer-Encoding": "chunked"},
                     mock_session.call_args.kwargs["headers"],
@@ -185,7 +185,7 @@ class TestForms(TestCase):
                     project_id=fixture["project_id"],
                     form_id=fixture["response_data"][1]["xmlFormId"],
                 )
-                self.assertIsInstance(observed, FormAttachment)
+                self.assertIsInstance(observed, bool)
                 self.assertEqual(
                     {"Content-Type": "image/jpeg", "Transfer-Encoding": "chunked"},
                     mock_session.call_args.kwargs["headers"],
