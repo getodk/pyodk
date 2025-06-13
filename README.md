@@ -9,7 +9,7 @@ This library aims to make common data analysis and workflow automation tasks as 
 
 The currently supported Python versions for `pyodk` are 3.10 to 3.13 (the primary development version is 3.12). If this is different from the version you use for other projects, consider using [`pyenv`](https://github.com/pyenv/pyenv) to manage multiple versions of Python.
 
-The currently supported Central version is v2024.3.2. Newer or older Central versions will likely work too, but convenience (non-HTTP) methods assume this version. If you see a 404 error or another server error, please verify the version of your Central server.
+The currently supported Central version is v2025.1.4. Newer or older Central versions will likely work too, but convenience (non-HTTP) methods assume this version. If you see a 404 error or another server error, please verify the version of your Central server.
 
 ### From pip
 
