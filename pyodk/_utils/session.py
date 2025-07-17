@@ -51,7 +51,6 @@ class Adapter(HTTPAdapter):
                 total=3,
                 backoff_factor=2,
                 status_forcelist=(429, 500, 502, 503, 504),
-                allowed_methods=("GET", "PUT", "POST", "DELETE"),
             )
         if (blocksize := kwargs.get("blocksize")) is not None:
             self.blocksize = blocksize
@@ -123,7 +122,7 @@ class Session(RequestsSession):
             base_url=base_url, api_version=api_version
         )
         self.blocksize: int = chunk_size
-        self.mount("https://", Adapter(timeout=30, blocksize=self.blocksize))
+        self.mount("https://", Adapter(timeout=120, blocksize=self.blocksize))
         self.headers.update({"User-Agent": f"pyodk v{__version__}"})
         self.auth: Auth = Auth(
             session=self, username=username, password=password, cache_path=cache_path
