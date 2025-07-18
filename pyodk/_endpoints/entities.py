@@ -92,7 +92,7 @@ class EntityService(Service):
     Entities are like instances.
     """
 
-    __slots__ = ("urls", "session", "default_project_id", "default_entity_list_name")
+    __slots__ = ("default_entity_list_name", "default_project_id", "session", "urls")
 
     def __init__(
         self,

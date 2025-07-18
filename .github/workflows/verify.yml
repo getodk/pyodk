@@ -41,7 +41,7 @@ jobs:
       matrix:
         python: ['3.10', '3.11', '3.12', '3.13']
         os: [ubuntu-latest, macos-latest, windows-latest]
-        pydantic: ['2.9.2']
+        pydantic: ['2.11.7']
         # Test pydantic at lower boundary of requirement compatibility spec.
         include:
           - python: '3.12'
