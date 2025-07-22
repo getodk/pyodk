@@ -49,12 +49,12 @@ class EntityListService(Service):
     """
 
     __slots__ = (
-        "urls",
-        "session",
-        "_default_project_id",
         "_default_entity_list_name",
+        "_default_project_id",
         "_property_service",
         "add_property",
+        "session",
+        "urls",
     )
 
     def __init__(

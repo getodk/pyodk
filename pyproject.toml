@@ -8,15 +8,15 @@ description = "The official Python library for ODK 🐍"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "requests==2.32.3",  # HTTP with Central
+    "requests>=2.32.4,<2.33",  # HTTP with Central.
     "toml==0.10.2",      # Configuration files
-    "pydantic>=2.6.4,<2.9.3",   # Data validation. Ensure actions verify.yml matches range.
+    "pydantic>=2.6.4,<=2.11.7",   # Data validation. Ensure actions verify.yml matches range.
 ]
 
 [project.optional-dependencies]
 # Install with `pip install pyodk[dev]`.
 dev = [
-    "ruff==0.7.1",        # Format and lint
+    "ruff==0.12.4",        # Format and lint
     "openpyxl==3.1.5",    # Create test XLSX files
     "xlwt==1.3.0",        # Create test XLS files
 ]
@@ -84,7 +84,6 @@ ignore = [
     "PLW2901",  # redefined-loop-name (usually not a bug)
     "RUF001",  # ambiguous-unicode-character-string (false positives on unicode tests)
     "S310",  # suspicious-url-open-usage (prone to false positives, ruff 0.1.11)
-    "S320",  # suspicious-xmle-tree-usage (according to defusedxml author lxml is safe)
     "S603",  # subprocess-without-shell-equals-true (prone to false positives, ruff 0.1.11)
     "TRY003",  # raise-vanilla-args (reasonable lint but would require large refactor)
 ]

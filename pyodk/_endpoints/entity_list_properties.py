@@ -24,10 +24,10 @@ class URLs:
 
 class EntityListPropertyService(Service):
     __slots__ = (
-        "urls",
-        "session",
-        "default_project_id",
         "default_entity_list_name",
+        "default_project_id",
+        "session",
+        "urls",
     )
 
     def __init__(

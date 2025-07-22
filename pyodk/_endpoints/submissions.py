@@ -54,7 +54,7 @@ class SubmissionService(Service):
     ```
     """
 
-    __slots__ = ("urls", "session", "default_project_id", "default_form_id")
+    __slots__ = ("default_form_id", "default_project_id", "session", "urls")
 
     def __init__(
         self,

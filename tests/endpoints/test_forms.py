@@ -22,7 +22,7 @@ from pyodk._utils.session import Session
 from pyodk.client import Client
 from pyodk.errors import PyODKError
 
-from tests.resources import CONFIG_DATA, forms_data
+from tests.resources import CONFIG_DATA, RESOURCES, forms_data
 from tests.utils import utils
 from tests.utils.md_table import md_table_to_bytes, md_table_to_bytes_xls
 
@@ -163,7 +163,6 @@ class TestForms(TestCase):
         """Should return a FormAttachment object and set the Content-Type header."""
         fixture = forms_data.test_forms
         fixture_attachments = forms_data.test_form_attachments
-        from tests.resources import RESOURCES
 
         with patch.object(Session, "request") as mock_session:
             mock_session.return_value.status_code = 200

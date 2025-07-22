@@ -29,9 +29,9 @@ class URLs:
 
 class ProjectAppUserService(Service):
     __slots__ = (
-        "urls",
-        "session",
         "default_project_id",
+        "session",
+        "urls",
     )
 
     def __init__(
