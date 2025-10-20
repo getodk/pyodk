@@ -8,6 +8,7 @@ from pyodk._endpoints.projects import ProjectService
 from pyodk._endpoints.submissions import SubmissionService
 from pyodk._utils import config
 from pyodk._utils.session import Session
+from pyodk.errors import PyODKError
 
 
 class Client:
@@ -16,8 +17,17 @@ class Client:
     access to Central functionality through methods organized by the Central resource
     they are most related to.
 
-    :param config_path: Where to read the pyodk_config.toml. Defaults to the
-        path in PYODK_CONFIG_FILE, then the user home directory.
+    :param config_path: Where to read the pyodk_config.toml, if using a config
+        file to store credentials. If no direct credentials are provided (via
+        base_url, username, and password) the config path defaults to the path
+        in PYODK_CONFIG_FILE, then the user home directory.
+    :param base_url: If authentication credentials are provided directly, the base
+        URL is for the Central server to connect to. Must also provide username and
+        password.
+    :param username: If authentication credentials are provided directly, the
+        username to use. Must also provide base_url and password.
+    :param password: If authentication credentials are provided directly, the
+        password to use. Must also provide base_url and username.
     :param cache_path: Where to read/write pyodk_cache.toml. Defaults to the
         path in PYODK_CACHE_FILE, then the user home directory.
     :param project_id: The project ID to use for all client calls. Defaults to the
@@ -31,12 +41,33 @@ class Client:
     def __init__(
         self,
         config_path: str | None = None,
+        base_url: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
         cache_path: str | None = None,
         project_id: int | None = None,
         session: Session | None = None,
         api_version: str | None = "v1",
     ) -> None:
-        self.config: config.Config = config.read_config(config_path=config_path)
+        if any([base_url, username, password]):
+            if not all([base_url, username, password]):
+                raise PyODKError(
+                    "When overriding credentials, base_url, username, and "
+                    "password must all be provided."
+                )
+
+            self.config = config.Config(
+                central=config.CentralConfig(
+                    base_url=base_url,
+                    username=username,
+                    password=password,
+                )
+            )
+        else:
+            # If direct credentials not provided, read from config file. If
+            # no config path provided, a default path will be used.
+            self.config: config.Config = config.read_config(config_path=config_path)
+
         self._project_id: int | None = project_id
         if session is None:
             session = Session(

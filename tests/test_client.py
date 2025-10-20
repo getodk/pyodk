@@ -2,7 +2,9 @@ from datetime import datetime
 from pathlib import Path
 from unittest import TestCase, skip
 
+from pyodk._utils import config
 from pyodk.client import Client
+from pyodk.errors import PyODKError
 
 from tests.resources import RESOURCES, forms_data, submissions_data
 from tests.utils import utils
@@ -450,3 +452,70 @@ class TestUsage(TestCase):
         self.client.entity_lists.add_property(name="test")
         entity_list = self.client.entity_lists.get()
         self.assertEqual(["test"], [p.name for p in entity_list.properties])
+
+
+@skip
+class TestClientDirectCredentials(TestCase):
+    """Tests for Client initialization with direct credentials."""
+
+    def test_raises_error_when_only_partial_credentials_provided(self):
+        cases = [
+            {
+                "base_url": "",
+                "username": "alice@test.example",
+                "password": "test-password",
+            },
+            {
+                "base_url": "https://api.example.com",
+                "username": "",
+                "password": "test-password",
+            },
+            {
+                "base_url": "https://api.example.com",
+                "username": "alice@test.example",
+                "password": "",
+            },
+            {
+                "base_url": None,
+                "username": "alice@test.example",
+                "password": "test-password",
+            },
+            {
+                "base_url": "https://api.example.com",
+                "username": None,
+                "password": "test-password",
+            },
+            {
+                "base_url": "https://api.example.com",
+                "username": "alice@test.example",
+                "password": None,
+            },
+        ]
+        for case in cases:
+            with self.subTest(case=case):
+                with self.assertRaises(PyODKError) as context:
+                    Client(
+                        base_url=case["base_url"],
+                        username=case["username"],
+                        password=case["password"],
+                    )
+
+                self.assertEqual(
+                    str(context.exception),
+                    (
+                        "When overriding credentials, base_url, username, "
+                        "and password must all be provided."
+                    ),
+                )
+
+    def test_direct_credentials_success(self):
+        """Should initialize Client successfully with all direct credentials provided."""
+        config_file_path = config.get_path(path=None, env_key="PYODK_CONFIG_FILE")
+        config_data = config.read_toml(path=config_file_path)
+        base_url = config_data["central"]["base_url"]
+        username = config_data["central"]["username"]
+        password = config_data["central"]["password"]
+
+        client = Client(base_url=base_url, username=username, password=password)
+        projects = client.projects.list()
+        self.assertIsNotNone(projects)
