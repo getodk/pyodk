@@ -1,10 +1,18 @@
+import os
 from datetime import datetime
 from pathlib import Path
-from unittest import TestCase, skip
+from unittest import TestCase, skipUnless
+from unittest.mock import MagicMock, patch
 
-from pyodk.client import Client
+from pyodk.client import Client, Session, cfg
 
-from tests.resources import RESOURCES, forms_data, submissions_data
+from tests.resources import (
+    CACHE_FILE,
+    CONFIG_FILE,
+    RESOURCES,
+    forms_data,
+    submissions_data,
+)
 from tests.utils import utils
 from tests.utils.entity_lists import create_new_or_get_entity_list
 from tests.utils.forms import (
@@ -17,6 +25,8 @@ from tests.utils.submissions import (
     create_new_or_get_last_submission,
     create_or_update_submission_with_comment,
 )
+
+E2E_WITH_REAL_REQUESTS = False
 
 
 def create_test_forms(client: Client | None = None) -> Client:
@@ -94,7 +104,7 @@ def create_test_entity_lists(client: Client | None = None) -> Client:
     return client
 
 
-@skip
+@skipUnless(condition=E2E_WITH_REAL_REQUESTS, reason="Requires Central instance.")
 class TestUsage(TestCase):
     """Tests for experimenting with usage scenarios / general debugging / integration."""
 
@@ -450,3 +460,105 @@ class TestUsage(TestCase):
         self.client.entity_lists.add_property(name="test")
         entity_list = self.client.entity_lists.get()
         self.assertEqual(["test"], [p.name for p in entity_list.properties])
+
+
+def client_init__default():
+    """Read the config file is in the default location."""
+    return Client()
+
+
+def client_init__with_kwargs():
+    """Use the defaults but specify them manually."""
+    return Client(
+        config=cfg.read_config(),
+        cache_path=cfg.get_cache_path(),
+    )
+
+
+def client_init__with_config__with_session__with_cache():
+    """Provide a pre-made Config and customised Session."""
+    config = cfg.read_config()
+    return Client(
+        config=config,
+        session=Session(
+            base_url=config.central.base_url,
+            api_version="v1",
+            username=config.central.username,
+            password=config.central.password,
+            cache_path=cfg.get_cache_path(),
+        ),
+    )
+
+
+def client_init__with_config__with_session__no_cache(config: cfg.Config | None = None):
+    """Provide a pre-made Config and customised Session, but don't write a session cache."""
+    if not config:
+        config = cfg.read_config()
+    return Client(
+        config=config,
+        session=Session(
+            base_url=config.central.base_url,
+            api_version="v1",
+            username=config.central.username,
+            password=config.central.password,
+        ),
+    )
+
+
+class TestClientInit(TestCase):
+    patterns = (
+        client_init__default,
+        client_init__with_kwargs,
+        client_init__with_config__with_session__with_cache,
+        client_init__with_config__with_session__no_cache,
+    )
+
+    @patch("pyodk._utils.session.AuthService.get_new_token", MagicMock(return_value="x"))
+    @patch("pyodk._utils.session.AuthService.verify_token", MagicMock(return_value="x"))
+    def test_init_patterns_with_open(self):
+        """Should find that Client can be opened using supported init patterns."""
+        cf = {
+            "PYODK_CONFIG_FILE": CONFIG_FILE.as_posix(),
+            "PYODK_CACHE_FILE": CACHE_FILE.as_posix(),
+        }
+        for i, init in enumerate(self.patterns):
+            with self.subTest(i), patch.dict(os.environ, cf, clear=True):
+                client = init()
+                client.open()
+                self.assertEqual("Bearer x", client.session.headers["Authorization"])
+
+    @skipUnless(condition=E2E_WITH_REAL_REQUESTS, reason="Requires Central instance.")
+    def test_init_patterns_with_request(self):
+        """Should find that Client can be used with supported init patterns."""
+        for i, init in enumerate(self.patterns):
+            with self.subTest(i):
+                client = init()
+                client.forms.list()
+
+    @skipUnless(condition=E2E_WITH_REAL_REQUESTS, reason="Requires Central instance.")
+    def test_init_with_session_but_no_cache_does_not_read_or_write_files(self):
+        """Should find that for this pattern config files are not manipulated."""
+        config = cfg.read_config()
+        with (
+            patch("pyodk._utils.config.read_toml") as read_toml,
+            patch("pyodk.client.cfg.read_config") as read_config,
+            patch("pyodk._endpoints.auth.config.read_cache_token") as read_cache_token,
+            patch("pyodk._endpoints.auth.config.write_cache") as write_cache,
+            patch("pyodk._utils.config.delete_cache") as delete_cache,
+        ):
+            client = client_init__with_config__with_session__no_cache(config=config)
+            client.forms.list()
+            token = client.session.headers.get("Authorization", None)
+            self.assertTrue(token and token.startswith("Bearer"))
+            client2 = client_init__with_config__with_session__no_cache(config=config)
+            client2.forms.list()
+            token2 = client.session.headers.get("Authorization", None)
+            self.assertTrue(token2 and token2.startswith("Bearer"))
+            # May be useful to assert token/token2 are different here, but it seems Central
+            # caches sessions, so the same token comes back - presumably unless there is
+            # an explicit logout request, which pyodk doesn't current do on close/exit.
+            self.assertEqual(0, read_toml.call_count)
+            self.assertEqual(0, read_config.call_count)
+            self.assertEqual(0, read_cache_token.call_count)
+            self.assertEqual(0, write_cache.call_count)
+            self.assertEqual(0, delete_cache.call_count)
