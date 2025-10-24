@@ -25,6 +25,7 @@ class Client:
         "default_project_id" in pyodk_config.toml, or can be specified per call.
     :param session: A prepared pyodk.session.Session class instance, or an instance
         of a customised subclass.
+    :param config: A Config object containing details from pyodk_config.toml.
     :param api_version: The ODK Central API version, which is used in the URL path
         e.g. 'v1' in 'https://www.example.com/v1/projects'.
     """
@@ -100,7 +101,11 @@ class Client:
         return self
 
     def close(self, *args):
-        """Close the session."""
+        """
+        Close the session.
+
+        This only cleans up the Session, it does not invoke logout from Central.
+        """
         self.session.__exit__(*args)
 
     def __enter__(self) -> "Client":

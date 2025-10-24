@@ -35,6 +35,13 @@ class CentralConfig:
 
 @dataclass
 class Config:
+    """
+    Configuration data for pyodk.
+
+    This is intended for users who already have credentials in memory and should not be
+    used to write credentials directly in a script.
+    """
+
     central: CentralConfig
 
 
@@ -84,7 +91,7 @@ def read_config(config_path: str | Path | None = None) -> Config:
     """
     Read the config file.
     """
-    file_path = get_path(path=config_path, env_key="PYODK_CONFIG_FILE")
+    file_path = get_config_path(config_path=config_path)
     file_data = read_toml(path=file_path)
     return objectify_config(config_data=file_data)
 
