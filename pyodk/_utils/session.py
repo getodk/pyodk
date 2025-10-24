@@ -1,4 +1,5 @@
 from logging import Logger
+from pathlib import Path
 from string import Formatter
 from typing import Any
 from urllib.parse import quote, urljoin
@@ -70,7 +71,9 @@ class Adapter(HTTPAdapter):
 
 
 class Auth(AuthBase):
-    def __init__(self, session: "Session", username: str, password: str, cache_path: str):
+    def __init__(
+        self, session: "Session", username: str, password: str, cache_path: str | Path
+    ):
         self.session: Session = session
         self.username: str = username
         self.password: str = password
@@ -105,7 +108,7 @@ class Session(RequestsSession):
         api_version: str,
         username: str,
         password: str,
-        cache_path: str,
+        cache_path: str | Path | None = None,
         chunk_size: int = 16384,
     ) -> None:
         """
@@ -113,7 +116,8 @@ class Session(RequestsSession):
         :param api_version: The Central API version (first part of the URL path).
         :param username: The Central user name to log in with.
         :param password: The Central user's password to log in with.
-        :param cache_path: Where to read/write pyodk_cache.toml.
+        :param cache_path: Where to read/write pyodk_cache.toml. If None, the auth
+          session is stored only in memory in the "Authorization" session header.
         :param chunk_size: In bytes. For transferring large files (e.g. >1MB), it may be
           noticeably faster to use larger chunks than the default 16384 bytes (16KB).
         """

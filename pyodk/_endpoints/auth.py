@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyodk._utils import config
@@ -11,9 +12,9 @@ log = logging.getLogger(__name__)
 
 
 class AuthService:
-    def __init__(self, session: "Session", cache_path: str | None = None) -> None:
+    def __init__(self, session: "Session", cache_path: str | Path | None = None) -> None:
         self.session: Session = session
-        self.cache_path: str = cache_path
+        self.cache_path: str | Path | None = cache_path
 
     def verify_token(self, token: str) -> str:
         """
@@ -77,12 +78,16 @@ class AuthService:
         """
         Get a verified session token with the provided credential.
 
-        Tries to verify token in cache_file, or requests a new session.
+        Tries to verify token in cache_file, or requests a new session. If the cache_path
+        is not set, this will request a new session token for each call.
 
         :param username: The username of the Web User to auth with.
         :param password: The Web User's password.
         :return: The session token or None if anything has gone wrong
         """
+        if self.cache_path is None:
+            return self.get_new_token(username=username, password=password)
+
         try:
             token = config.read_cache_token(cache_path=self.cache_path)
             return self.verify_token(token=token)

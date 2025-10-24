@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from pathlib import Path
 
 from pyodk._endpoints.comments import CommentService
 from pyodk._endpoints.entities import EntityService
@@ -6,7 +7,7 @@ from pyodk._endpoints.entity_lists import EntityListService
 from pyodk._endpoints.forms import FormService
 from pyodk._endpoints.projects import ProjectService
 from pyodk._endpoints.submissions import SubmissionService
-from pyodk._utils import config
+from pyodk._utils import config as cfg
 from pyodk._utils.session import Session
 
 
@@ -24,29 +25,35 @@ class Client:
         "default_project_id" in pyodk_config.toml, or can be specified per call.
     :param session: A prepared pyodk.session.Session class instance, or an instance
         of a customised subclass.
+    :param config: A Config object containing details from pyodk_config.toml.
     :param api_version: The ODK Central API version, which is used in the URL path
         e.g. 'v1' in 'https://www.example.com/v1/projects'.
     """
 
     def __init__(
         self,
-        config_path: str | None = None,
-        cache_path: str | None = None,
+        config_path: str | Path | None = None,
+        cache_path: str | Path | None = None,
         project_id: int | None = None,
         session: Session | None = None,
         api_version: str | None = "v1",
+        config: cfg.Config | None = None,
     ) -> None:
-        self.config: config.Config = config.read_config(config_path=config_path)
-        self._project_id: int | None = project_id
+        if config is None:
+            config = cfg.read_config(config_path=config_path)
+
         if session is None:
             session = Session(
-                base_url=self.config.central.base_url,
+                base_url=config.central.base_url,
                 api_version=api_version,
-                username=self.config.central.username,
-                password=self.config.central.password,
-                cache_path=cache_path,
+                username=config.central.username,
+                password=config.central.password,
+                cache_path=cfg.get_cache_path(cache_path=cache_path),
             )
+
+        self.config: cfg.Config = config
         self.session: Session = session
+        self._project_id: int | None = project_id
 
         # Delegate http verbs for ease of use.
         self.get: Callable = self.session.get
@@ -94,7 +101,11 @@ class Client:
         return self
 
     def close(self, *args):
-        """Close the session."""
+        """
+        Close the session.
+
+        This only cleans up the Session, it does not invoke logout from Central.
+        """
         self.session.__exit__(*args)
 
     def __enter__(self) -> "Client":
