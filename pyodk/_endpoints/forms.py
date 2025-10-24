@@ -36,6 +36,7 @@ class Form(Model):
 class URLs:
     forms: str = "projects/{project_id}/forms"
     get: str = f"{forms}/{{form_id}}"
+    get_xml: str = f"{forms}/{{form_id}}.xml"
 
 
 class FormService(Service):
@@ -119,6 +120,40 @@ class FormService(Service):
             )
             data = response.json()
             return Form(**data)
+
+    def get_xml(
+        self,
+        form_id: str,
+        project_id: int | None = None,
+        encoding: str | None = "utf-8",
+    ) -> str | bytes:
+        """
+        Read the form XForms XML document.
+
+        :param form_id: The id of this form as given in its XForms XML definition.
+        :param project_id: The id of the project this form belongs to.
+        :param encoding: The string encoding of the XML document. If "bytes" then the
+          document will be returned as bytes, otherwise the encoding parameter value will
+          be used to decode the bytes to return a string.
+
+        :return: The XForms XML document.
+        """
+        try:
+            pid = pv.validate_project_id(project_id, self.default_project_id)
+            fid = pv.validate_form_id(form_id, self.default_form_id)
+        except PyODKError as err:
+            log.error(err, exc_info=True)
+            raise
+
+        response = self.session.response_or_error(
+            method="GET",
+            url=self.session.urlformat(self.urls.get_xml, project_id=pid, form_id=fid),
+            logger=log,
+        )
+        if encoding:
+            return response.content.decode(encoding)
+        else:
+            return response.content
 
     def create(
         self,

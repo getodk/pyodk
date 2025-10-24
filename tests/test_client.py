@@ -136,6 +136,12 @@ class TestUsage(TestCase):
         self.assertIsNotNone(projects)
         self.assertIsNotNone(forms)
 
+    def test_form_get_xml__returns_xform(self):
+        """Should return the XForm XML document."""
+        xml = self.client.forms.get_xml(form_id="pull_data")
+        self.assertIsInstance(xml, str)
+        self.assertIn("<h:title>pull_data</h:title>", xml)
+
     def test_form_create__new_definition_xml(self):
         """Should create a new form with the new definition."""
         form_id = self.client.session.get_xform_uuid()

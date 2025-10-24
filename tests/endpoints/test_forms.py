@@ -115,6 +115,23 @@ class TestForms(TestCase):
                 )
                 self.assertIsInstance(observed, Form)
 
+    def test_get_xml__ok(self):
+        """Should return a str or bytes depending on the encoding parameter."""
+        fixture = forms_data.get_xml__range_draft().encode("utf-8")
+        with patch.object(Session, "request") as mock_session:
+            mock_session.return_value.status_code = 200
+            mock_session.return_value.content = fixture
+            with Client() as client:
+                # Specify project
+                observed = client.forms.get_xml(project_id=1, form_id="range_draft")
+                self.assertIsInstance(observed, str)
+                # Use default
+                observed = client.forms.get_xml(form_id="range_draft")
+                self.assertIsInstance(observed, str)
+                # Get bytes instead of string
+                observed = client.forms.get_xml(form_id="range_draft", encoding=None)
+                self.assertIsInstance(observed, bytes)
+
     @get_mock_context
     def test_create__ok(self, ctx: MockContext):
         """Should return a FormType object."""
