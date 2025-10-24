@@ -49,6 +49,21 @@ password = "my_password"
 default_project_id = 123
 ```
 
+If you prefer not to manage credentials via a file, provide the connection details
+directly when constructing the client:
+
+```python
+client = Client(
+    base_url="https://www.example.com",
+    username="my_user",
+    password="my_password",
+)
+```
+
+All three parameters must be supplied together. When they are provided the configuration
+file is not read, so this pattern works even when no TOML file exists. Omit the trio to
+fall back to the configuration file (optionally pointed to with `config_path`).
+
 ### Custom configuration file paths
 
 The `Client` is specific to a configuration and cache file. These approximately correspond to the session which the `Client` represents; it also encourages segregating credentials. These paths can be set by:
