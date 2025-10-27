@@ -49,6 +49,9 @@ password = "my_password"
 default_project_id = 123
 ```
 
+Users with configuration in environment variables, for example, can [pass them in as a Config object](https://getodk.github.io/pyodk/client/)
+
+
 ### Custom configuration file paths
 
 The `Client` is specific to a configuration and cache file. These approximately correspond to the session which the `Client` represents; it also encourages segregating credentials. These paths can be set by:

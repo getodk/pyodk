@@ -35,6 +35,13 @@ class CentralConfig:
 
 @dataclass
 class Config:
+    """
+    Configuration data for pyodk.
+
+    This is intended for users who already have credentials in memory and should not be
+    used to write credentials directly in a script.
+    """
+
     central: CentralConfig
 
 
@@ -47,7 +54,7 @@ def objectify_config(config_data: dict) -> Config:
     return config
 
 
-def get_path(path: str, env_key: str) -> Path:
+def get_path(path: str | Path, env_key: str) -> Path:
     """
     Get a path from the path argument, the environment key, or the default.
     """
@@ -59,11 +66,11 @@ def get_path(path: str, env_key: str) -> Path:
     return defaults[env_key]
 
 
-def get_config_path(config_path: str | None = None) -> Path:
+def get_config_path(config_path: str | Path | None = None) -> Path:
     return get_path(path=config_path, env_key="PYODK_CONFIG_FILE")
 
 
-def get_cache_path(cache_path: str | None = None) -> Path:
+def get_cache_path(cache_path: str | Path | None = None) -> Path:
     return get_path(path=cache_path, env_key="PYODK_CACHE_FILE")
 
 
@@ -80,16 +87,16 @@ def read_toml(path: Path) -> dict:
         raise pyodk_err from err
 
 
-def read_config(config_path: str | None = None) -> Config:
+def read_config(config_path: str | Path | None = None) -> Config:
     """
     Read the config file.
     """
-    file_path = get_path(path=config_path, env_key="PYODK_CONFIG_FILE")
+    file_path = get_config_path(config_path=config_path)
     file_data = read_toml(path=file_path)
     return objectify_config(config_data=file_data)
 
 
-def read_cache_token(cache_path: str | None = None) -> str:
+def read_cache_token(cache_path: str | Path | None = None) -> str:
     """
     Read the "token" key from the cache file.
     """
@@ -102,7 +109,7 @@ def read_cache_token(cache_path: str | None = None) -> str:
     return file_data["token"]
 
 
-def write_cache(key: str, value: str, cache_path: str | None = None) -> None:
+def write_cache(key: str, value: str, cache_path: str | Path | None = None) -> None:
     """
     Append or overwrite the given key/value pair to the cache file.
     """
@@ -116,7 +123,7 @@ def write_cache(key: str, value: str, cache_path: str | None = None) -> None:
         toml.dump(file_data, outfile)
 
 
-def delete_cache(cache_path: str | None = None) -> None:
+def delete_cache(cache_path: str | Path | None = None) -> None:
     """
     Delete the cache file, if it exists.
     """
