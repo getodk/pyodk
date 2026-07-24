@@ -8,9 +8,9 @@ description = "The official Python library for ODK 🐍"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "requests>=2.32.4,<2.33",  # HTTP with Central.
-    "toml==0.10.2",      # Configuration files
-    "pydantic>=2.6.4,<=2.11.7",   # Data validation. Ensure actions verify.yml matches range.
+    "requests>=2.33.1,<2.35",   # HTTP with Central.
+    "toml==0.10.2",             # Configuration files
+    "pydantic>=2.11.0,<=2.14",  # Data validation. Ensure actions verify.yml matches range.
 ]
 
 [project.optional-dependencies]

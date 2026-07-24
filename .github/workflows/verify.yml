@@ -41,12 +41,12 @@ jobs:
       matrix:
         python: ['3.11', '3.12', '3.13', '3.14']
         os: [ubuntu-latest, macos-latest, windows-latest]
-        pydantic: ['2.11.7']
+        pydantic: ['2.13.4']
         # Test pydantic at lower boundary of requirement compatibility spec.
         include:
           - python: '3.13'
             os: ubuntu-latest
-            pydantic: '2.6.4'
+            pydantic: '2.11.0'
     steps:
       - uses: actions/checkout@v7
       - name: Set up Python
