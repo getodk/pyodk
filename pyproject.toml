@@ -6,7 +6,7 @@ authors = [
 ]
 description = "The official Python library for ODK 🐍"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "requests>=2.32.4,<2.33",  # HTTP with Central.
     "toml==0.10.2",      # Configuration files
