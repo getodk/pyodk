@@ -10,14 +10,14 @@ jobs:
         python: ['3.12']
         os: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         name: Python cache with dependencies.
         id: python-cache
         with:
@@ -48,14 +48,14 @@ jobs:
             os: ubuntu-latest
             pydantic: '2.6.4'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
 
       # Install dependencies.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         name: Python cache with dependencies.
         id: python-cache
         with:
@@ -80,7 +80,7 @@ jobs:
           flit --debug build --no-use-vcs
       - name: Upload sdist and wheel.
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pyodk--on-${{ matrix.os }}--py${{ matrix.python }}--pydantic${{ matrix.pydantic }}
           path: ${{ github.workspace }}/dist/pyodk*
