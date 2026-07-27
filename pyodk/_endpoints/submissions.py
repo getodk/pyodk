@@ -237,7 +237,7 @@ class SubmissionService(Service):
         file name is used to identify the file in the upload to Central.
 
         File attachments are sent in chunks of 16 KB by default. Advanced users can customize
-        the chunk size on [the session](../#session-customization).
+        the chunk size on [the session](index.md/#session-customization).
 
         :param xml: The submission XML.
         :param form_id: The xmlFormId of the Form being referenced.

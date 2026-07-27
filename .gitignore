@@ -21,6 +21,7 @@ MANIFEST
 */.ipynb_checkpoints/*
 
 # Mkdocs
+.cache/*
 site/*
 
 # MS Office temp files
