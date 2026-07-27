@@ -44,7 +44,9 @@ class URLs:
 
 class SubmissionService(Service):
     """
-    Submission-related functionality is accessed through `client.submissions`. For example:
+    Submission-related functionality is accessed through `client.submissions`.
+
+    For example:
 
     ```python
     from pyodk.client import Client

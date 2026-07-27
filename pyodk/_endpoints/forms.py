@@ -41,7 +41,9 @@ class URLs:
 
 class FormService(Service):
     """
-    Form-related functionality is accessed through `client.forms`. For example:
+    Form-related functionality is accessed through `client.forms`.
+
+    For example:
 
     ```python
     from pyodk.client import Client

@@ -46,18 +46,14 @@ class Config:
 
 
 def objectify_config(config_data: dict) -> Config:
-    """
-    Convert a config dict into objects to validate the data.
-    """
+    """Convert a config dict into objects to validate the data."""
     central = CentralConfig(**config_data["central"])
     config = Config(central=central)
     return config
 
 
 def get_path(path: str | Path, env_key: str) -> Path:
-    """
-    Get a path from the path argument, the environment key, or the default.
-    """
+    """Get a path from the path argument, the environment key, or the default."""
     if path is not None:
         return Path(path)
     env_file_path = os.environ.get(env_key)
@@ -75,9 +71,7 @@ def get_cache_path(cache_path: str | Path | None = None) -> Path:
 
 
 def read_toml(path: Path) -> dict:
-    """
-    Read a toml file.
-    """
+    """Read a toml file."""
     try:
         with open(path) as f:
             return toml.load(f)
@@ -88,18 +82,14 @@ def read_toml(path: Path) -> dict:
 
 
 def read_config(config_path: str | Path | None = None) -> Config:
-    """
-    Read the config file.
-    """
+    """Read the config file."""
     file_path = get_config_path(config_path=config_path)
     file_data = read_toml(path=file_path)
     return objectify_config(config_data=file_data)
 
 
 def read_cache_token(cache_path: str | Path | None = None) -> str:
-    """
-    Read the "token" key from the cache file.
-    """
+    """Read the "token" key from the cache file."""
     file_path = get_cache_path(cache_path=cache_path)
     file_data = read_toml(path=file_path)
     if "token" not in file_data:
@@ -110,9 +100,7 @@ def read_cache_token(cache_path: str | Path | None = None) -> str:
 
 
 def write_cache(key: str, value: str, cache_path: str | Path | None = None) -> None:
-    """
-    Append or overwrite the given key/value pair to the cache file.
-    """
+    """Append or overwrite the given key/value pair to the cache file."""
     file_path = get_cache_path(cache_path=cache_path)
     if file_path.exists() and file_path.is_file():
         file_data = read_toml(path=file_path)
@@ -124,8 +112,6 @@ def write_cache(key: str, value: str, cache_path: str | Path | None = None) -> N
 
 
 def delete_cache(cache_path: str | Path | None = None) -> None:
-    """
-    Delete the cache file, if it exists.
-    """
+    """Delete the cache file, if it exists."""
     file_path = get_cache_path(cache_path=cache_path)
     file_path.unlink(missing_ok=True)

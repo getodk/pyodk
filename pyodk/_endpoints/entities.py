@@ -18,7 +18,7 @@ SENTINEL = object()
 
 @dataclass
 class MergeActions:
-    """Return type for EntityService._prep_data_for_merge / merge"""
+    """Return type for EntityService._prep_data_for_merge / merge."""
 
     match_keys: list
     to_insert: dict = field(default_factory=dict)
@@ -78,7 +78,9 @@ class URLs:
 
 class EntityService(Service):
     """
-    Entity-related functionality is accessed through `client.entities`. For example:
+    Entity-related functionality is accessed through `client.entities`.
+
+    For example:
 
     ```python
     from pyodk.client import Client
@@ -506,7 +508,9 @@ class EntityService(Service):
         source_size: str | None = None,
     ) -> MergeActions:
         """
-        Update Entities in Central based on the provided data:
+        Update Entities in Central based on the provided data.
+
+        Steps:
 
         1. Create Entities from `data` that don't exist in Central.
         2. Update Entities from `data` that exist in Central.

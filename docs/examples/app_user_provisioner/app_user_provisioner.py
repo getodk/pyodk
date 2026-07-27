@@ -1,5 +1,5 @@
 """
-App User Provisioner
+App User Provisioner.
 
 Put a series of user names (one on each line) in a file named `users.csv` in the same
 directory as this script. The script will create App Users for each user, using the

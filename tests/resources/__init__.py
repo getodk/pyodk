@@ -1,3 +1,5 @@
+"""Test resources (fixtures)."""
+
 from pathlib import Path
 
 from pyodk._utils import config

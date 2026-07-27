@@ -55,9 +55,12 @@ src = ["pyodk", "tests"]
 select = [
     "B",  # flake8-bugbear
     "C4",  # flake8-comprehensions
+    "D",  # pydocstyle
     "E",  # pycodestyle error
     #  "ERA",  # eradicate (commented out code)
     "F",  # pyflakes
+    "FLY",  # flynt
+    "FURB",  # refurb
     "I",  # isort
     "PERF",  # perflint
     "PIE",  # flake8-pie
@@ -88,4 +91,12 @@ ignore = [
     "S603",  # subprocess-without-shell-equals-true (prone to false positives, ruff 0.1.11)
     "TRY003",  # raise-vanilla-args (reasonable lint but would require large refactor)
 ]
-# per-file-ignores = {"tests/*" = ["E501"]}
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "D100",  # undocumented-public-module (low value for tests)
+    "D101",  # undocumented-public-class (low value for tests)
+]
+
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"

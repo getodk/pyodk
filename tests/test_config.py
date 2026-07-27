@@ -11,6 +11,7 @@ from tests.utils.utils import get_temp_dir
 
 class TestConfig(TestCase):
     def setUp(self) -> None:
+        """Create the test defaults."""
         self.section_data = {
             "base_url": "https://www.example.com",
             "username": "user",
@@ -68,12 +69,14 @@ class TestConfig(TestCase):
             self.assertTrue(path.exists())
 
     def test_objectify_config__error__missing_section(self):
+        """Should raise an error if the config is missing a required section."""
         cfg = {"centrall": {}}
         with self.assertRaises(KeyError) as err:
             config.objectify_config(config_data=cfg)
         self.assertEqual("central", err.exception.args[0])
 
     def test_objectify_config__error__missing_key(self):
+        """Should raise an error if the config is missing a required key."""
         del self.section_data["password"]
         cfg = {"central": self.section_data}
         with self.assertRaises(TypeError) as err:
@@ -85,6 +88,7 @@ class TestConfig(TestCase):
         )
 
     def test_objectify_config__error__empty_key(self):
+        """Should raise an error if the config has an empty required key."""
         self.section_data["password"] = ""
         cfg = {"central": self.section_data}
         with self.assertRaises(PyODKError) as err:

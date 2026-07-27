@@ -90,6 +90,7 @@ test_form_attachments = [
 def get_xml__range_draft(
     form_id: str | None = "range_draft", version: str | None = None
 ) -> str:
+    """Get the `range_draft.xml` fixture data, optionally with modified identifiers."""
     if version is None:
         version = datetime.now(UTC).isoformat()
     with open(Path(__file__).parent / "forms" / "range_draft.xml") as fd:
@@ -97,6 +98,7 @@ def get_xml__range_draft(
 
 
 def get_md__pull_data(version: str | None = None) -> str:
+    """Get a markdown XLSForm containing a pulldata call."""
     if version is None:
         version = datetime.now(UTC).isoformat()
     return f"""

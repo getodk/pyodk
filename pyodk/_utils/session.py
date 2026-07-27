@@ -112,6 +112,8 @@ class Session(RequestsSession):
         chunk_size: int = 16384,
     ) -> None:
         """
+        Customises session behaviour.
+
         :param base_url: Scheme/domain/port parts of the URL e.g. https://www.example.com
         :param api_version: The Central API version (first part of the URL path).
         :param username: The Central user name to log in with.
@@ -178,7 +180,5 @@ class Session(RequestsSession):
 
     @staticmethod
     def get_xform_uuid() -> str:
-        """
-        Get XForm UUID, which is "uuid:" followed by a random uuid v4.
-        """
+        """Get XForm UUID, which is "uuid:" followed by a random uuid v4."""
         return f"uuid:{uuid4()}"

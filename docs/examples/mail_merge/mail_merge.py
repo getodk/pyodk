@@ -1,5 +1,5 @@
 """
-Mail Merge
+Mail Merge.
 
 This script will use mail merge to create personalized Word documents with
 data from Central. In this example, only data from approved submissions
