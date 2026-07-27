@@ -16,7 +16,7 @@ dependencies = [
 [project.optional-dependencies]
 # Install with `pip install pyodk[dev]`.
 dev = [
-    "ruff==0.12.4",        # Format and lint
+    "ruff==0.15.21",      # Format and lint
     "openpyxl==3.1.5",    # Create test XLSX files
     "xlwt==1.3.0",        # Create test XLS files
 ]
@@ -32,6 +32,7 @@ Homepage = "https://pypi.python.org/pypi/pyodk/"
 Repository = "https://github.com/getodk/pyodk/"
 
 [build-system]
+# As of 3.12.0 this is still the flit readme template.
 requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
@@ -43,7 +44,7 @@ exclude = ["docs", "tests"]
 
 [tool.ruff]
 line-length = 90
-target-version = "py310"
+target-version = "py311"
 fix = true
 show-fixes = true
 output-format = "full"

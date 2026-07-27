@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from pathlib import Path
+from typing import Self
 
 from pyodk._endpoints.comments import CommentService
 from pyodk._endpoints.entities import EntityService
@@ -94,7 +95,7 @@ class Client:
     def project_id(self, v: str):
         self._project_id = v
 
-    def open(self) -> "Client":
+    def open(self) -> "Self":
         """Enter the session, and authenticate."""
         self.session.__enter__()
         self.session.auth.login()
@@ -108,7 +109,7 @@ class Client:
         """
         self.session.__exit__(*args)
 
-    def __enter__(self) -> "Client":
+    def __enter__(self) -> "Self":
         return self.open()
 
     def __exit__(self, *args):
