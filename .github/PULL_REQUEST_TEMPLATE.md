@@ -4,7 +4,7 @@ Closes #
 Thank you for contributing to pyodk!
 
 Before sending this PR, please read
-https://github.com/getodk/pyodk/blob/master/CONTRIBUTING.md
+https://github.com/getodk/pyodk/blob/master/README.md#contribute
 -->
 
 #### What has been done to verify that this works as intended?
