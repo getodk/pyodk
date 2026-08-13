@@ -41,7 +41,9 @@ class URLs:
 
 class FormService(Service):
     """
-    Form-related functionality is accessed through `client.forms`. For example:
+    Form-related functionality is accessed through `client.forms`.
+
+    For example:
 
     ```python
     from pyodk.client import Client
@@ -175,7 +177,7 @@ class FormService(Service):
         :return: An object representation of the Form's metadata.
         """
         fd = FormDraftService(session=self.session, **self._default_kw())
-        pid, fid, headers, params, form_def = fd._prep_form_post(
+        pid, _, headers, params, form_def = fd._prep_form_post(
             definition=definition,
             ignore_warnings=ignore_warnings,
             form_id=form_id,

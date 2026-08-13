@@ -24,6 +24,7 @@ def get_temp_file(**kwargs) -> Path:
 
 @contextmanager
 def get_temp_dir() -> Path:
+    """Create a temporary directory."""
     temp_dir = tempfile.mkdtemp(prefix="pyodk_tmp_")
     temp_path = Path(temp_dir)
     try:

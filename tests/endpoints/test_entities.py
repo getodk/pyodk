@@ -123,7 +123,7 @@ class TestEntities(TestCase):
 
 class TestPrepDataForMerge(TestCase):
     def test_noop__source_same_as_target(self):
-        """Should identify no rows for insert/update/delete"""
+        """Should identify no rows for insert/update/delete."""
         source = [
             {"label": "Sydney", "state": "NSW", "postcode": "2000"},
         ]
@@ -136,7 +136,7 @@ class TestPrepDataForMerge(TestCase):
         self.assertEqual({"label", "state", "postcode"}, observed.target_keys)
 
     def test_noop__source_has_no_value_for_key(self):
-        """Should identify no rows for insert/update/delete"""
+        """Should identify no rows for insert/update/delete."""
         source = [
             {"label": "Sydney", "state": "NSW"},
         ]

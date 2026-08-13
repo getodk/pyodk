@@ -44,7 +44,9 @@ class URLs:
 
 class SubmissionService(Service):
     """
-    Submission-related functionality is accessed through `client.submissions`. For example:
+    Submission-related functionality is accessed through `client.submissions`.
+
+    For example:
 
     ```python
     from pyodk.client import Client
@@ -235,7 +237,7 @@ class SubmissionService(Service):
         file name is used to identify the file in the upload to Central.
 
         File attachments are sent in chunks of 16 KB by default. Advanced users can customize
-        the chunk size on [the session](../#session-customization).
+        the chunk size on [the session](index.md/#session-customization).
 
         :param xml: The submission XML.
         :param form_id: The xmlFormId of the Form being referenced.

@@ -1,3 +1,5 @@
+"""pyodk public interface."""
+
 import logging
 
 from pyodk import errors

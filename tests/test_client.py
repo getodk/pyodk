@@ -91,6 +91,7 @@ def create_test_submissions(client: Client | None = None) -> Client:
 def create_test_entity_lists(client: Client | None = None) -> Client:
     """
     Create test entity lists, if they don't already exist.
+
     :param client: Client instance to use for API calls.
     :return: The original client instance, or a new one if none was provided.
     """
@@ -112,12 +113,14 @@ class TestUsage(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """Create test fixtures."""
         cls.client = Client()
         create_test_forms(client=cls.client)
         create_test_submissions(client=cls.client)
         create_test_entity_lists(client=cls.client)
 
     def test_direct(self):
+        """Should find that each get API call returns data."""
         projects = self.client.projects.list()
         forms = self.client.forms.list()
         submissions = self.client.submissions.list(form_id="pull_data")
@@ -140,6 +143,7 @@ class TestUsage(TestCase):
         self.assertIsNotNone(comments)
 
     def test_direct_context(self):
+        """Should find that each get API call returns data (with use as context manager)."""
         with Client() as client:
             projects = client.projects.list()
             forms = client.forms.list()

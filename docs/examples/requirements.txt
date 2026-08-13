@@ -1,3 +1,0 @@
-geopandas
-pandas
-flatten_json

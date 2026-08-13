@@ -19,7 +19,7 @@ CONTENT_TYPES = {
 
 def is_xls_file(buf: bytes) -> bool:
     """
-    Implements the Microsoft Excel (Office 97-2003) document type matcher.
+    Check for the Microsoft Excel (Office 97-2003) document type.
 
     From h2non/filetype v1.2.0, MIT License, Copyright (c) 2016 Tomás Aparicio
 

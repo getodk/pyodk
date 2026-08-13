@@ -1,6 +1,4 @@
-"""
-A script that uses CSV data to create an entity list and populate it with entities.
-"""
+"""A script that uses CSV data to create an entity list and populate it with entities."""
 
 from csv import DictReader
 from pathlib import Path
@@ -15,6 +13,7 @@ csv_path = Path("./imported_answers.csv")
 
 
 def create_one_at_a_time():
+    """Create each entity with a separate `create()` call."""
     with Client(project_id=project_id) as client, open(csv_path) as csv_file:
         # Create the entity list.
         entity_list = client.entity_lists.create(
@@ -33,6 +32,7 @@ def create_one_at_a_time():
 
 
 def create_with_merge():
+    """Create a list of entities in a single `merge()` call."""
     with Client(project_id=project_id) as client, open(csv_path) as csv_file:
         client.entity_lists.default_entity_list_name = f"previous_survey_{uuid4()}"
         entity_list = client.entity_lists.create()

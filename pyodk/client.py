@@ -1,5 +1,8 @@
+"""Client interface."""
+
 from collections.abc import Callable
 from pathlib import Path
+from typing import Self
 
 from pyodk._endpoints.comments import CommentService
 from pyodk._endpoints.entities import EntityService
@@ -13,21 +16,10 @@ from pyodk._utils.session import Session
 
 class Client:
     """
-    A connection to a specific ODK Central server. Manages authentication and provides
-    access to Central functionality through methods organized by the Central resource
-    they are most related to.
+    Manages a connection to an ODK Central server.
 
-    :param config_path: Where to read the pyodk_config.toml. Defaults to the
-        path in PYODK_CONFIG_FILE, then the user home directory.
-    :param cache_path: Where to read/write pyodk_cache.toml. Defaults to the
-        path in PYODK_CACHE_FILE, then the user home directory.
-    :param project_id: The project ID to use for all client calls. Defaults to the
-        "default_project_id" in pyodk_config.toml, or can be specified per call.
-    :param session: A prepared pyodk.session.Session class instance, or an instance
-        of a customised subclass.
-    :param config: A Config object containing details from pyodk_config.toml.
-    :param api_version: The ODK Central API version, which is used in the URL path
-        e.g. 'v1' in 'https://www.example.com/v1/projects'.
+    Handles authentication, and provides access to Central functionality through methods
+    organized by the Central resource they are most related to.
     """
 
     def __init__(
@@ -39,6 +31,21 @@ class Client:
         api_version: str | None = "v1",
         config: cfg.Config | None = None,
     ) -> None:
+        """
+        Create a new Client.
+
+        :param config_path: Where to read the pyodk_config.toml. Defaults to the
+            path in PYODK_CONFIG_FILE, then the user home directory.
+        :param cache_path: Where to read/write pyodk_cache.toml. Defaults to the
+            path in PYODK_CACHE_FILE, then the user home directory.
+        :param project_id: The project ID to use for all client calls. Defaults to the
+            "default_project_id" in pyodk_config.toml, or can be specified per call.
+        :param session: A prepared pyodk.session.Session class instance, or an instance
+            of a customised subclass.
+        :param config: A Config object containing details from pyodk_config.toml.
+        :param api_version: The ODK Central API version, which is used in the URL path
+            e.g. 'v1' in 'https://www.example.com/v1/projects'.
+        """
         if config is None:
             config = cfg.read_config(config_path=config_path)
 
@@ -85,6 +92,7 @@ class Client:
 
     @property
     def project_id(self) -> int | None:
+        """Get the default project_id."""
         if self._project_id is None:
             return self.config.central.default_project_id
         else:
@@ -94,7 +102,7 @@ class Client:
     def project_id(self, v: str):
         self._project_id = v
 
-    def open(self) -> "Client":
+    def open(self) -> "Self":
         """Enter the session, and authenticate."""
         self.session.__enter__()
         self.session.auth.login()
@@ -108,8 +116,14 @@ class Client:
         """
         self.session.__exit__(*args)
 
-    def __enter__(self) -> "Client":
+    def __enter__(self) -> "Self":
+        """Enter the session, and authenticate."""
         return self.open()
 
     def __exit__(self, *args):
+        """
+        Close the session.
+
+        This only cleans up the Session, it does not invoke logout from Central.
+        """
         self.close(*args)

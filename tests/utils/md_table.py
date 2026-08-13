@@ -1,6 +1,4 @@
-"""
-Markdown table utility functions.
-"""
+"""Markdown table utility functions."""
 
 import re
 from contextlib import contextmanager
@@ -42,6 +40,7 @@ def _is_null_row(r_arr):
 
 
 def md_table_to_ss_structure(mdstr: str) -> list[tuple[str, list[list[str]]]]:
+    """Convert a markdown XLSForm to a list of rows per sheet."""
     ss_arr = []
     for item in mdstr.split("\n"):
         arr = _extract_array(item)
@@ -65,9 +64,7 @@ def md_table_to_ss_structure(mdstr: str) -> list[tuple[str, list[list[str]]]]:
 
 
 def md_table_to_workbook(mdstr: str) -> Workbook:
-    """
-    Convert Markdown table string to an openpyxl.Workbook. Call wb.save() to persist.
-    """
+    """Convert Markdown table string to an openpyxl.Workbook. Call wb.save() to persist."""
     md_data = md_table_to_ss_structure(mdstr=mdstr)
     wb = Workbook(write_only=True)
     for key, rows in md_data:

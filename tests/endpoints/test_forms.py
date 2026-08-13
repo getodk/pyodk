@@ -295,6 +295,7 @@ class TestForms(TestCase):
     def update__def_encoding_steps(
         form_id: str, definition: str, expected_url: str, expected_fallback_id: str
     ):
+        """Run client.forms.update with patches to test encoding handling."""
         client = Client()
 
         def mock_get_def_data(*args, **kwargs):

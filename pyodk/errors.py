@@ -1,3 +1,5 @@
+"""Project error classes."""
+
 from requests import Response
 
 
@@ -6,7 +8,7 @@ class PyODKError(Exception):
 
     def is_central_error(self, code: float | str) -> bool:
         """
-        Does the PyODK error represent a Central error with the specified code?
+        Check if the PyODK error represents a Central error with the specified code.
 
         Per central-backend/lib/util/problem.js.
         """

@@ -38,7 +38,9 @@ class URLs:
 
 class ProjectService(Service):
     """
-    Project-related functionality is accessed through `client.projects`. For example:
+    Project-related functionality is accessed through `client.projects`.
+
+    For example:
 
     ```python
     from pyodk.client import Client
