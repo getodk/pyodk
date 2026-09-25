@@ -2,9 +2,30 @@ from pathlib import Path
 from unittest import TestCase
 
 from pyodk._utils.session import Session
+from requests.adapters import Retry
 
 
 class TestSession(TestCase):
+    def test_login_adapter_retries_post_requests(self):
+        """Should retry the login POST request."""
+        session = Session(
+            base_url="https://example.com",
+            api_version="v1",
+            username="user",
+            password="pass",  # noqa: S106
+        )
+
+        login_adapter = session.get_adapter(session.urljoin("sessions"))
+        default_adapter = session.get_adapter("https://example.com/v1/projects")
+
+        self.assertIn("POST", login_adapter.max_retries.allowed_methods)
+        self.assertNotIn("POST", default_adapter.max_retries.allowed_methods)
+        self.assertEqual(3, login_adapter.max_retries.total)
+        self.assertEqual(
+            Retry.DEFAULT_ALLOWED_METHODS,
+            default_adapter.max_retries.allowed_methods,
+        )
+
     def test_base_url_validate(self):
         """Should return base_url suffixed with '/{version}/', if not already added."""
         cases = (

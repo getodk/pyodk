@@ -15,6 +15,8 @@ from pyodk.__version__ import __version__
 from pyodk._endpoints.auth import AuthService
 from pyodk.errors import PyODKError
 
+_DEFAULT_RETRY_STATUS_CODES = (429, 500, 502, 503, 504)
+
 
 class URLFormatter(Formatter):
     """
@@ -51,7 +53,7 @@ class Adapter(HTTPAdapter):
             kwargs["max_retries"] = Retry(
                 total=3,
                 backoff_factor=2,
-                status_forcelist=(429, 500, 502, 503, 504),
+                status_forcelist=_DEFAULT_RETRY_STATUS_CODES,
             )
         if (blocksize := kwargs.get("blocksize")) is not None:
             self.blocksize = blocksize
@@ -129,6 +131,22 @@ class Session(RequestsSession):
         )
         self.blocksize: int = chunk_size
         self.mount("https://", Adapter(timeout=120, blocksize=self.blocksize))
+        # POST requests are not retried; however, we want to allow login
+        # POST requests to be retried:
+        self.mount(
+            self.urljoin("sessions"),
+            Adapter(
+                timeout=120,
+                blocksize=self.blocksize,
+                max_retries=Retry(
+                    total=3,
+                    backoff_factor=2,
+                    status_forcelist=_DEFAULT_RETRY_STATUS_CODES,
+                    allowed_methods=("POST",),
+                    raise_on_status=False,
+                ),
+            ),
+        )
         self.headers.update({"User-Agent": f"pyodk v{__version__}"})
         self.auth: Auth = Auth(
             session=self, username=username, password=password, cache_path=cache_path
